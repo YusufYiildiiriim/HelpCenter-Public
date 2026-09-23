@@ -1,0 +1,8 @@
+{$APP_DOMAIN} {
+    tls {$ACME_EMAIL}
+
+    reverse_proxy /api/* helpcenter.webapi:8080
+    reverse_proxy /requestHub* helpcenter.webapi:8080
+    reverse_proxy /health/* helpcenter.webapi:8080
+    reverse_proxy helpcenter.ui:3000
+}

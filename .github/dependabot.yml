@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /help-center-backend
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      microsoft:
+        patterns: ['Microsoft.*', 'System.*']
+      testing:
+        patterns: ['xunit*', 'FluentAssertions', 'NSubstitute', 'Testcontainers*']
+      analyzers:
+        patterns: ['SonarAnalyzer*', 'Meziantou*', 'Roslynator*']
+
+  - package-ecosystem: npm
+    directory: /help-center-ui
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      react:
+        patterns: ['react', 'react-dom', 'next', '@types/react*']
+      lint:
+        patterns: ['eslint*', 'prettier', '@typescript-eslint/*']
+      testing:
+        patterns: ['vitest', '@testing-library/*', 'happy-dom']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }

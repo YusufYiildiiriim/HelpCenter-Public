@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HelpCenter.Application": {
+      "commandName": "Project",
+      "sqlDebugging": false
+    }
+  }
+}

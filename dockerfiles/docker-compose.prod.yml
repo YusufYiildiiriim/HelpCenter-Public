@@ -1,0 +1,98 @@
+name: HelpCenterProd
+
+services:
+  db:
+    container_name: helpcenter-db-prod
+    build:
+      context: .
+      dockerfile: Dockerfile.sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:?SA_PASSWORD is not set — copy .env.example to .env}"
+    volumes:
+      - helpcenter-db-data-prod:/var/opt/mssql
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - helpcenter-network-prod
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 40s
+
+  helpcenter.webapi:
+    container_name: helpcenter-api-prod
+    build:
+      context: ../help-center-backend
+      dockerfile: HelpCenter.WebApi/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Server=db;Database=HelpCenterDb;User Id=sa;Password=${SA_PASSWORD:?SA_PASSWORD is not set — copy .env.example to .env};TrustServerCertificate=True;"
+      JwtSettings__SecretKey: "${JwtSettings__SecretKey:?JwtSettings__SecretKey is not set — copy .env.example to .env}"
+      AppSettings__FrontendUrl: "${AppSettings__FrontendUrl:?AppSettings__FrontendUrl is not set — copy .env.example to .env}"
+      SmtpSettings__Host: "${SmtpSettings__Host:?SmtpSettings__Host is not set — copy .env.example to .env}"
+      SmtpSettings__Port: "${SmtpSettings__Port:?SmtpSettings__Port is not set — copy .env.example to .env}"
+      SmtpSettings__Username: "${SmtpSettings__Username:?SmtpSettings__Username is not set — copy .env.example to .env}"
+      SmtpSettings__Password: "${SmtpSettings__Password:?SmtpSettings__Password is not set — copy .env.example to .env}"
+      SmtpSettings__FromAddress: "${SmtpSettings__FromAddress:?SmtpSettings__FromAddress is not set — copy .env.example to .env}"
+      SmtpSettings__DisplayName: "${SmtpSettings__DisplayName:?SmtpSettings__DisplayName is not set — copy .env.example to .env}"
+      SmtpSettings__EnableSsl: "${SmtpSettings__EnableSsl:?SmtpSettings__EnableSsl is not set — copy .env.example to .env}"
+    volumes:
+      - ../help-center-backend/HelpCenter.WebApi/Uploads:/app/Uploads
+      - ../help-center-backend/HelpCenter.WebApi/wwwroot:/app/wwwroot
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - helpcenter-network-prod
+    restart: always
+
+  helpcenter.ui:
+    container_name: helpcenter-ui-prod
+    build:
+      context: ../help-center-ui
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is not set — copy .env.example to .env}"
+        NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:?NEXT_PUBLIC_APP_URL is not set — copy .env.example to .env}"
+    environment:
+      NODE_ENV: "production"
+    depends_on:
+      - helpcenter.webapi
+    networks:
+      - helpcenter-network-prod
+    restart: always
+
+  caddy:
+    image: caddy:2.10-alpine
+    container_name: helpcenter-caddy-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: "${APP_DOMAIN:?APP_DOMAIN is not set}"
+      ACME_EMAIL: "${ACME_EMAIL:?ACME_EMAIL is not set}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - helpcenter-caddy-data:/data
+      - helpcenter-caddy-config:/config
+    depends_on:
+      - helpcenter.webapi
+      - helpcenter.ui
+    networks:
+      - helpcenter-network-prod
+    restart: always
+
+volumes:
+  helpcenter-db-data-prod:
+  helpcenter-caddy-data:
+  helpcenter-caddy-config:
+
+networks:
+  helpcenter-network-prod:
+    driver: bridge

@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="HelpCenter.Application/HelpCenter.Application.csproj" />
+    <Project Path="HelpCenter.Domain/HelpCenter.Domain.csproj" />
+    <Project Path="HelpCenter.Infrastructure/HelpCenter.Infrastructure.csproj" />
+    <Project Path="HelpCenter.Persistence/HelpCenter.Persistence.csproj" />
+    <Project Path="HelpCenter.WebApi/HelpCenter.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HelpCenter.Application.Tests/HelpCenter.Application.Tests.csproj" />
+    <Project Path="tests/HelpCenter.ArchitectureTests/HelpCenter.ArchitectureTests.csproj" />
+    <Project Path="tests/HelpCenter.WebApi.IntegrationTests/HelpCenter.WebApi.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "HelpCenter API contract snapshot",
+    "version": "v1",
+    "description": "Checked-in contract slice for frontend-adopted endpoints. It is deliberately generated from a saved schema rather than a running Swagger endpoint, because Swagger is disabled in production. Expand this snapshot endpoint-by-endpoint as services adopt generated types."
+  },
+  "paths": {
+    "/api/auth/change-password": {
+      "post": {
+        "operationId": "changePassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChangePasswordCommand" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed",
+            "content": {
+              "application/json": {
+                "schema": { "type": "boolean" }
+              }
+            }
+          },
+          "400": { "description": "Validation failure" },
+          "429": { "description": "Rate limit exceeded" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChangePasswordCommand": {
+        "type": "object",
+        "required": ["email", "newPassword", "confirmPassword", "isCustomer"],
+        "properties": {
+          "email": { "type": "string" },
+          "newPassword": { "type": "string", "minLength": 6 },
+          "confirmPassword": { "type": "string", "minLength": 6 },
+          "isCustomer": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

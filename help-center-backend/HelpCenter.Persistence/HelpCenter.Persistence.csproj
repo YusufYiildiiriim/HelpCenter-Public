@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Only for ProjectTo (IQueryable -> DTO projection) — allows reusing the AutoMapper
+         profiles in the Application layer instead of REDEFINING them here.
+         GenericRepository.FirstOrDefaultProjectedAsync/GetPaginatedProjectedAsync's
+         overloads taking an IConfigurationProvider use this. -->
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.19" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.19" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HelpCenter.Application\HelpCenter.Application.csproj" />
+    <ProjectReference Include="..\HelpCenter.Domain\HelpCenter.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- HttpContext / IWebHostEnvironment / BackgroundService are legitimately used in this layer.
+         They used to come transitively via Application; Application is now ASP.NET-independent. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

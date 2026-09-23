@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    name: Security (secrets + dependencies)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Scan committed changes for verified secrets
+        uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
+        with:
+          version: 3.96.0
+          extra_args: --only-verified
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: help-center-ui/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: help-center-ui
+        run: npm ci
+
+      - name: Audit runtime frontend dependencies
+        working-directory: help-center-ui
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Report all frontend dependency findings
+        shell: bash
+        working-directory: help-center-ui
+        run: |
+          set +e
+          npm audit --json > npm-audit.json
+          audit_status=$?
+          set -e
+          jq '.metadata.vulnerabilities' npm-audit.json
+          {
+            echo '### Frontend dependency audit (report only)'
+            echo
+            echo 'Development and transitive tooling findings are reported here but do not block the CV/demo release gate.'
+            echo
+            echo '```json'
+            jq '.metadata.vulnerabilities' npm-audit.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore backend dependencies
+        working-directory: help-center-backend
+        run: dotnet restore
+
+      - name: Audit NuGet dependencies
+        shell: bash
+        working-directory: help-center-backend
+        run: |
+          dotnet list HelpCenter.slnx package --include-transitive --vulnerable --format json > vulnerable-packages.json
+          vulnerable_count=$(jq '[.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities? // []) | length > 0)] | length' vulnerable-packages.json)
+          if [ "$vulnerable_count" -gt 0 ]; then
+            echo "Vulnerable NuGet packages found:"
+            jq '.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities? // []) | length > 0)' vulnerable-packages.json
+            exit 1
+          fi
+
+  backend-build-test:
+    name: Backend (build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('help-center-backend/**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Restore
+        working-directory: help-center-backend
+        run: dotnet restore
+
+      - name: Build (Release, WarningsAsErrors)
+        working-directory: help-center-backend
+        run: dotnet build --no-restore -c Release
+
+      - name: Run tests (arch + unit, no integration)
+        working-directory: help-center-backend
+        run: dotnet test --no-build -c Release --filter "FullyQualifiedName!~IntegrationTests"
+
+  backend-integration-tests:
+    name: Backend (SQL Server integration smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('help-center-backend/**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Run SQL Server integration smoke tests
+        working-directory: help-center-backend
+        run: dotnet test tests/HelpCenter.WebApi.IntegrationTests/HelpCenter.WebApi.IntegrationTests.csproj -c Release --logger "trx;LogFileName=integration-results.trx" --results-directory TestResults
+
+      - name: Require integration test discovery
+        shell: pwsh
+        working-directory: help-center-backend
+        run: |
+          $result = Get-Item -Path TestResults/integration-results.trx -ErrorAction SilentlyContinue
+          if ($null -eq $result) { throw 'Integration test results were not produced.' }
+          [xml]$trx = Get-Content $result.FullName
+          if ([int]$trx.TestRun.ResultSummary.Counters.total -lt 1) {
+            throw 'No integration tests were discovered.'
+          }
+
+  frontend-lint-build:
+    name: Frontend (lint + build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: help-center-ui/package-lock.json
+
+      - name: Install
+        working-directory: help-center-ui
+        run: npm ci
+
+      - name: Lint
+        working-directory: help-center-ui
+        run: npm run lint
+
+      - name: Test
+        working-directory: help-center-ui
+        run: npm run test
+
+      - name: Build
+        working-directory: help-center-ui
+        env:
+          # Repository Actions Variables; values stay outside this workflow.
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+        run: npm run build
