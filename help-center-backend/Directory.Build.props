@@ -14,14 +14,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.34.0.3385">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.163">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.287">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.12.4">
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
