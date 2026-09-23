@@ -1,0 +1,148 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{json,yml,yaml,md}]
+indent_size = 2
+
+[*.{ts,tsx,js,jsx,css}]
+indent_size = 2
+
+[*.cs]
+# Naming
+dotnet_naming_rule.private_fields_underscore.severity = error
+dotnet_naming_rule.private_fields_underscore.symbols  = private_fields
+dotnet_naming_rule.private_fields_underscore.style    = underscore_prefix
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+
+# Style
+csharp_prefer_braces = true:error
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+csharp_new_line_before_open_brace = all
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Analyzer severity — all suggestions, progressive enablement in 1.6
+dotnet_analyzer_diagnostic.category-Security.severity = suggestion
+dotnet_analyzer_diagnostic.category-Reliability.severity = suggestion
+dotnet_analyzer_diagnostic.category-Performance.severity = suggestion
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+dotnet_analyzer_diagnostic.category-Design.severity = suggestion
+dotnet_analyzer_diagnostic.category-Maintainability.severity = suggestion
+dotnet_analyzer_diagnostic.category-Naming.severity = suggestion
+dotnet_analyzer_diagnostic.category-Globalization.severity = suggestion
+
+# Nullable
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8603.severity = error
+dotnet_diagnostic.CS8604.severity = error
+
+# Common noise silences
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA2007.severity = none
+
+# Progressive enablement — suppressed to suggestion, promoted in later phases
+dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.S6562.severity = suggestion
+dotnet_diagnostic.S1075.severity = suggestion
+dotnet_diagnostic.S3626.severity = suggestion
+dotnet_diagnostic.S3881.severity = suggestion
+dotnet_diagnostic.S6580.severity = suggestion
+dotnet_diagnostic.S2365.severity = suggestion
+dotnet_diagnostic.S2325.severity = suggestion
+dotnet_diagnostic.S1481.severity = suggestion
+dotnet_diagnostic.CA1816.severity = suggestion
+dotnet_diagnostic.S1066.severity = suggestion
+dotnet_diagnostic.S6781.severity = suggestion
+dotnet_diagnostic.MA0015.severity = suggestion
+dotnet_diagnostic.S3963.severity = suggestion
+dotnet_diagnostic.CA1850.severity = suggestion
+dotnet_diagnostic.S6610.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.MA0074.severity = suggestion
+dotnet_diagnostic.CA1866.severity = suggestion
+dotnet_diagnostic.CA1835.severity = suggestion
+dotnet_diagnostic.S3993.severity = suggestion
+dotnet_diagnostic.S2629.severity = suggestion
+dotnet_diagnostic.CA2254.severity = suggestion
+dotnet_diagnostic.CA1847.severity = suggestion
+dotnet_diagnostic.S6968.severity = suggestion
+dotnet_diagnostic.S6964.severity = suggestion
+dotnet_diagnostic.S6608.severity = suggestion
+dotnet_diagnostic.S6966.severity = suggestion
+dotnet_diagnostic.CA1825.severity = suggestion
+dotnet_diagnostic.CA1707.severity = suggestion
+dotnet_diagnostic.S1144.severity = suggestion
+
+# Domain-specific suppressions
+dotnet_diagnostic.CA1716.severity = none      # 'Module' is VB keyword, not C#
+dotnet_diagnostic.CA1711.severity = none      # 'Permission' suffix is domain concept
+dotnet_diagnostic.CA1805.severity = none      # Explicit default init in EF entities
+dotnet_diagnostic.MA0048.severity = none      # Multiple types per file
+dotnet_diagnostic.S101.severity = none        # Domain naming (e.g. FAQ)
+
+# Warnings to fix later (1.6 domain cleanup)
+dotnet_diagnostic.CA1304.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1311.severity = suggestion
+dotnet_diagnostic.MA0011.severity = suggestion
+dotnet_diagnostic.MA0002.severity = suggestion
+dotnet_diagnostic.MA0006.severity = suggestion
+dotnet_diagnostic.MA0009.severity = suggestion
+dotnet_diagnostic.MA0110.severity = suggestion
+dotnet_diagnostic.SYSLIB1045.severity = suggestion
+
+# ASP.NET Core — no SynchronizationContext
+dotnet_diagnostic.MA0004.severity = none
+
+# Logger source-gen deferred
+dotnet_diagnostic.CA1873.severity = none
+
+# Method length / complexity deferred to 1.6
+dotnet_diagnostic.MA0051.severity = suggestion
+
+# Minor style / performance deferred
+dotnet_diagnostic.MA0020.severity = suggestion
+dotnet_diagnostic.MA0089.severity = suggestion
+dotnet_diagnostic.CA1862.severity = suggestion
+dotnet_diagnostic.S3358.severity = suggestion
+dotnet_diagnostic.CA1854.severity = suggestion
+dotnet_diagnostic.MA0016.severity = suggestion
+dotnet_diagnostic.RCS1194.severity = suggestion
+dotnet_diagnostic.S4487.severity = suggestion
+dotnet_diagnostic.CA1000.severity = suggestion
+dotnet_diagnostic.CA1869.severity = suggestion
+dotnet_diagnostic.CA2016.severity = suggestion
+dotnet_diagnostic.CA1860.severity = suggestion
+dotnet_diagnostic.CA1806.severity = suggestion
+dotnet_diagnostic.S2486.severity = suggestion
+dotnet_diagnostic.S108.severity = suggestion
+dotnet_diagnostic.S2139.severity = suggestion
+dotnet_diagnostic.S3267.severity = suggestion
+dotnet_diagnostic.S6605.severity = suggestion
+dotnet_diagnostic.S6602.severity = suggestion
+
+
+dotnet_diagnostic.IDE0011.severity = none
+csharp_prefer_braces = false:none
+
+
+[*.cs]
+# 1. Parametrelerin PascalCase (ServiceCollection) yazılmasına izin ver / uyarmayı kapat
+dotnet_diagnostic.IDE1006.severity = none
+dotnet_diagnostic.ResharperInconsistentNaming.severity = none
+
+# 2. Tek satır 'if' ve parantezsiz kullanım uyarılarını kapat
+csharp_prefer_braces = false:none
+dotnet_diagnostic.IDE0011.severity = none
