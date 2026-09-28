@@ -3,13 +3,13 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Radio } from "lucide-react";
-import type { AdminRequest } from "@/services/admin/AdminRequestService";
+import type { TicketFlow as TicketFlowData } from "@/services/admin/AdminStatisticsService";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
 interface TicketFlowProps {
-  requests: AdminRequest[];
+  flow?: TicketFlowData | null;
   loading?: boolean;
 }
 
@@ -57,14 +57,14 @@ const STAGES: Stage[] = [
   },
 ];
 
-export const TicketFlow: React.FC<TicketFlowProps> = ({ requests, loading }) => {
+export const TicketFlow: React.FC<TicketFlowProps> = ({ flow, loading }) => {
   const { stages, total } = useMemo(() => {
     const computed = STAGES.map((stage) => ({
       ...stage,
-      count: requests.filter((r) => stage.match(r.status)).length,
+      count: flow?.stages.find((item) => stage.match(item.name))?.count ?? 0,
     }));
-    return { stages: computed, total: requests.length };
-  }, [requests]);
+    return { stages: computed, total: flow?.total ?? 0 };
+  }, [flow]);
 
   const maxStage = useMemo(() => {
     const max = stages.reduce((a, b) => (b.count > a.count ? b : a), stages[0]);

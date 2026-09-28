@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -13,8 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/lib/permissions";
 import type { AdminStatistics, AdminReports } from "@/services/admin/AdminStatisticsService";
 import { AdminStatisticsService as StatisticsService } from "@/services/admin/AdminStatisticsService";
-import type { AdminRequest } from "@/services/admin/AdminRequestService";
-import { AdminRequestService } from "@/services/admin/AdminRequestService";
 import { apiMetrics } from "@/lib/axios";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { useDashboardWidgets } from "@/lib/useDashboardWidgets";
@@ -61,24 +59,20 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStatistics | null>(null);
   const [reports, setReports] = useState<AdminReports | null>(null);
   const { can: canWidget } = useDashboardWidgets(stats?.allowedFields);
-  const [requests, setRequests] = useState<AdminRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [metrics, setMetrics] = useState(apiMetrics);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("All");
 
   const loadData = useCallback(async () => {
-    const [statsRes, requestsRes, reportsRes] = await Promise.allSettled([
+    const [statsRes, reportsRes] = await Promise.allSettled([
       StatisticsService.getStatistics(),
-      AdminRequestService.getAll({}),
       StatisticsService.getReports(),
     ]);
     if (statsRes.status === "rejected") console.error("Error fetching statistics:", statsRes.reason);
-    if (requestsRes.status === "rejected") console.error("Error fetching requests:", requestsRes.reason);
     if (reportsRes.status === "rejected") console.error("Error fetching reports:", reportsRes.reason);
     return {
       statsData: statsRes.status === "fulfilled" ? statsRes.value : null,
-      requestsData: requestsRes.status === "fulfilled" ? requestsRes.value : null,
       reportsData: reportsRes.status === "fulfilled" ? reportsRes.value : null,
     };
   }, []);
@@ -86,9 +80,8 @@ export default function AdminDashboard() {
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      const { statsData, requestsData, reportsData } = await loadData();
+      const { statsData, reportsData } = await loadData();
       if (statsData) setStats(statsData);
-      if (requestsData) setRequests(requestsData);
       if (reportsData) setReports(reportsData);
       setMetrics({ ...apiMetrics });
     } finally {
@@ -99,10 +92,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     let isMounted = true;
     loadData()
-      .then(({ statsData, requestsData, reportsData }) => {
+      .then(({ statsData, reportsData }) => {
         if (!isMounted) return;
         if (statsData) setStats(statsData);
-        if (requestsData) setRequests(requestsData);
         if (reportsData) setReports(reportsData);
         setMetrics({ ...apiMetrics });
       })
@@ -117,10 +109,10 @@ export default function AdminDashboard() {
     };
   }, [loadData]);
 
-  const filteredRequests = useMemo(() => {
-    if (selectedStatusFilter === "All") return requests;
-    return requests.filter(r => r.status === selectedStatusFilter);
-  }, [requests, selectedStatusFilter]);
+  const recentRequests = reports?.dashboard?.recentRequests ?? [];
+  const filteredRecentRequests = selectedStatusFilter === "All"
+    ? recentRequests
+    : recentRequests.filter((request) => request.status === selectedStatusFilter);
 
   if (!hasViewPerm) {
     return (
@@ -186,7 +178,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.55 }}
         >
-          <TicketFlow requests={requests} loading={loading} />
+          <TicketFlow flow={reports?.dashboard?.ticketFlow} loading={loading} />
         </motion.div>
       )}
 
@@ -204,7 +196,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <WeeklyAnalysisChart requests={requests} loading={loading} />
+              <WeeklyAnalysisChart points={reports?.dashboard?.weeklyOpened} loading={loading} />
             </motion.div>
           )}
 
@@ -247,7 +239,7 @@ export default function AdminDashboard() {
             </div>
 
             <RecentRequestsTable
-              requests={filteredRequests.slice(0, 7)}
+              requests={filteredRecentRequests}
               onRowClick={(id) => router.push(`/admin/requests/${id}`)}
               getTimeAgo={getTimeAgo}
             />
@@ -264,7 +256,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <PriorityDonutChart requests={requests} loading={loading} />
+              <PriorityDonutChart priorities={reports?.dashboard?.priorityDistribution} loading={loading} />
             </motion.div>
           )}
 

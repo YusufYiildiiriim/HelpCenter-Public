@@ -105,6 +105,74 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         };
     }
 
+    public async Task<TicketFlowDto> GetTicketFlowAsync(CancellationToken cancellationToken = default)
+    {
+        var stages = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .GroupBy(x => new { x.StatusId, x.Status.Name })
+            .Select(x => new NameCountDto { Id = x.Key.StatusId, Name = x.Key.Name, Count = x.Count() })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(cancellationToken);
+
+        return new TicketFlowDto { Total = stages.Sum(x => x.Count), Stages = stages };
+    }
+
+    public async Task<List<DailyOpenedCountDto>> GetWeeklyOpenedAsync(int days, CancellationToken cancellationToken = default)
+    {
+        var start = DateTime.UtcNow.Date.AddDays(-(Math.Max(days, 1) - 1));
+        var rows = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.CreatedAt >= start)
+            .GroupBy(x => x.CreatedAt.Date)
+            .Select(x => new DailyOpenedCountDto { Date = x.Key, Count = x.Count() })
+            .ToListAsync(cancellationToken);
+
+        var counts = rows.ToDictionary(x => x.Date, x => x.Count);
+        return Enumerable.Range(0, Math.Max(days, 1))
+            .Select(offset => start.AddDays(offset))
+            .Select(date => new DailyOpenedCountDto { Date = date, Count = counts.GetValueOrDefault(date) })
+            .ToList();
+    }
+
+    public async Task<List<PriorityCountDto>> GetPriorityDistributionAsync(CancellationToken cancellationToken = default)
+    {
+        var grouped = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .GroupBy(x => x.Priority)
+            .Select(x => new { Priority = x.Key, Count = x.Count() })
+            .ToListAsync(cancellationToken);
+
+        return Enum.GetValues<HelpCenter.Domain.Enums.RequestPriority>()
+            .Select(priority => new PriorityCountDto
+            {
+                Priority = priority.ToString(),
+                Count = grouped.FirstOrDefault(x => x.Priority == priority)?.Count ?? 0
+            })
+            .ToList();
+    }
+
+    public Task<List<DashboardRecentRequestDto>> GetRecentRequestsAsync(int take, CancellationToken cancellationToken = default) =>
+        _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .OrderByDescending(x => x.CreatedAt)
+            .ThenByDescending(x => x.Id)
+            .Take(Math.Clamp(take, 1, 50))
+            .Select(x => new DashboardRecentRequestDto
+            {
+                PublicId = x.PublicId,
+                TicketId = x.TicketId,
+                Title = x.Title,
+                Status = x.Status.Name,
+                PriorityName = x.Priority.ToString(),
+                CustomerName = x.Customer.Account.FirstName + " " + x.Customer.Account.LastName,
+                CompanyName = x.Customer.Company.Name,
+                CreatedAt = x.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
     private async Task<List<NameCountDto>> ReadNameCountsAsync(string procedureName, string idColumn, CancellationToken cancellationToken)
     {
         var rows = new List<NameCountDto>();

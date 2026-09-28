@@ -3,12 +3,12 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Gauge } from "lucide-react";
-import type { AdminRequest } from "@/services/admin/AdminRequestService";
+import type { PriorityCount } from "@/services/admin/AdminStatisticsService";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
 interface PriorityDonutChartProps {
-  requests: AdminRequest[];
+  priorities?: PriorityCount[] | null;
   loading?: boolean;
 }
 
@@ -26,15 +26,11 @@ const STROKE = 17;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-export const PriorityDonutChart: React.FC<PriorityDonutChartProps> = ({ requests, loading }) => {
+export const PriorityDonutChart: React.FC<PriorityDonutChartProps> = ({ priorities, loading }) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
   const segments = useMemo(() => {
-    const counts: Record<string, number> = {};
-    requests.forEach((r) => {
-      const key = r.priorityName || "Low";
-      counts[key] = (counts[key] || 0) + 1;
-    });
+    const counts = Object.fromEntries((priorities ?? []).map((item) => [item.priority, item.count]));
 
     const keys = [
       ...PRIORITY_ORDER.filter((k) => counts[k] > 0),
@@ -57,7 +53,7 @@ export const PriorityDonutChart: React.FC<PriorityDonutChartProps> = ({ requests
     });
 
     return { data, total };
-  }, [requests]);
+  }, [priorities]);
 
   const donutHovered = hovered !== null && hovered !== undefined;
 

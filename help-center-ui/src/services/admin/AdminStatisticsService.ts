@@ -36,7 +36,41 @@ export interface ReopenStats {
   ratePercent: number;
 }
 
+export interface PriorityCount {
+  priority: string;
+  count: number;
+}
+
+export interface DailyOpenedCount {
+  date: string;
+  count: number;
+}
+
+export interface TicketFlow {
+  total: number;
+  stages: NameCount[];
+}
+
+export interface DashboardRecentRequest {
+  publicId: string;
+  ticketId: string;
+  title: string;
+  status: string;
+  priorityName: string;
+  customerName: string;
+  companyName: string;
+  createdAt: string;
+}
+
+export interface DashboardOverview {
+  ticketFlow?: TicketFlow | null;
+  weeklyOpened?: DailyOpenedCount[] | null;
+  priorityDistribution?: PriorityCount[] | null;
+  recentRequests?: DashboardRecentRequest[] | null;
+}
+
 export interface AdminReports {
+  dashboard?: DashboardOverview | null;
   statusDistribution?: NameCount[] | null;
   moduleDistribution?: NameCount[] | null;
   companyTopN?: NameCount[] | null;

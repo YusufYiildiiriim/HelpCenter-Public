@@ -7,11 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { AdminRequest } from "@/services/admin/AdminRequestService";
+import type { DashboardRecentRequest } from "@/services/admin/AdminStatisticsService";
 import { cn } from "@/lib/utils";
 
 interface RecentRequestsTableProps {
-  requests: AdminRequest[];
+  requests: DashboardRecentRequest[];
   onRowClick: (publicId: string) => void;
   getTimeAgo: (date: string) => string;
 }
@@ -110,7 +110,7 @@ export const RecentRequestsTable: React.FC<RecentRequestsTableProps> = ({
             const grad = AVATAR_GRADIENTS[hashString(req.companyName || req.customerName) % AVATAR_GRADIENTS.length];
             return (
               <div
-                key={req.id}
+                key={req.publicId}
                 onClick={() => onRowClick(req.publicId)}
                 className="group flex cursor-pointer items-center gap-3.5 rounded-2xl border border-transparent p-3 transition-all hover:border-slate-700 hover:bg-slate-800/60 active:scale-[0.99]"
               >

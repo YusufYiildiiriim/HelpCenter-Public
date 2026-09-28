@@ -56,6 +56,8 @@ interface DataTableProps<TData> {
   onSearchChange?: (search: string) => void;
   searchValue?: string;
   onFetchAllData?: () => Promise<TData[]>;
+  onExportAllCsv?: () => Promise<void>;
+  allowFullPdf?: boolean;
 }
 
 export function DataTable<TData extends object>({
@@ -82,6 +84,8 @@ export function DataTable<TData extends object>({
   onSearchChange,
   searchValue,
   onFetchAllData,
+  onExportAllCsv,
+  allowFullPdf = true,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [internalGlobalFilter, setInternalGlobalFilter] = useState("");
@@ -145,7 +149,7 @@ export function DataTable<TData extends object>({
 
   const openExportModal = (type: "excel" | "pdf") => {
     setExportModalType(type);
-    setExportScope("all");
+    setExportScope(type === "pdf" && !allowFullPdf ? "page" : "all");
   };
 
   const executeExport = async () => {
@@ -153,6 +157,11 @@ export function DataTable<TData extends object>({
     setExporting(true);
 
     try {
+      if (exportModalType === "excel" && exportScope === "all" && onExportAllCsv) {
+        await onExportAllCsv();
+        setExportModalType(null);
+        return;
+      }
       let exportData = data;
       if (exportScope === "all" && onFetchAllData) {
         exportData = await onFetchAllData();
@@ -461,7 +470,7 @@ export function DataTable<TData extends object>({
 
             {/* Modal Body */}
             <div className="p-6 space-y-3.5">
-              <button
+              {!(exportModalType === "pdf" && !allowFullPdf) && <button
                 type="button"
                 onClick={() => setExportScope("all")}
                 className={cn(
@@ -490,7 +499,7 @@ export function DataTable<TData extends object>({
                     Filtrelenmiş veya mevcut olan tüm kayıtların tamamını dışa aktarır.
                   </p>
                 </div>
-              </button>
+              </button>}
 
               <button
                 type="button"

@@ -29,6 +29,35 @@ public class GetAdminReportsQueryHandler : IRequestHandler<GetAdminReportsQuery,
         bool Allow(string k) => allowedFields == null || allowedFields.Contains(k, StringComparer.OrdinalIgnoreCase);
 
         var dto = new AdminReportsDto { AllowedFields = allowedFields };
+        var dashboard = new DashboardOverviewDto();
+        var hasDashboardData = false;
+
+        if (Allow(DashboardWidgets.TicketFlow))
+        {
+            dashboard.TicketFlow = await _statistics.GetTicketFlowAsync(cancellationToken);
+            hasDashboardData = true;
+        }
+
+        if (Allow(DashboardWidgets.WeeklyChart))
+        {
+            dashboard.WeeklyOpened = await _statistics.GetWeeklyOpenedAsync(14, cancellationToken);
+            hasDashboardData = true;
+        }
+
+        if (Allow(DashboardWidgets.DonutChart))
+        {
+            dashboard.PriorityDistribution = await _statistics.GetPriorityDistributionAsync(cancellationToken);
+            hasDashboardData = true;
+        }
+
+        if (Allow(DashboardWidgets.RecentTable) && await _scope.HasPermissionAsync(AppResources.Requests, PermissionActions.Read, cancellationToken))
+        {
+            dashboard.RecentRequests = await _statistics.GetRecentRequestsAsync(7, cancellationToken);
+            hasDashboardData = true;
+        }
+
+        if (hasDashboardData)
+            dto.Dashboard = dashboard;
 
         if (Allow(DashboardWidgets.StatusDistribution))
             dto.StatusDistribution = await _statistics.GetStatusDistributionAsync(cancellationToken);

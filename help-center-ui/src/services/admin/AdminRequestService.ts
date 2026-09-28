@@ -77,6 +77,19 @@ function buildRequestQueryParams(params: AdminRequestQueryParams): URLSearchPara
 }
 
 export const AdminRequestService = {
+  downloadCsvExport: async (params: AdminRequestQueryParams): Promise<void> => {
+    const queryParams = buildRequestQueryParams(params);
+    const response = await api.get(`/api/admin/requests/export.csv?${queryParams.toString()}`, { responseType: "blob" });
+    const url = URL.createObjectURL(response.data);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `HelpCenter_Talepler_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  },
+
   getAll: async (params: AdminRequestQueryParams): Promise<AdminRequest[]> => {
     const queryParams = buildRequestQueryParams({ pageSize: 1000, ...params });
     const url = `/api/admin/requests/get-all${queryParams.toString() ? "?" + queryParams.toString() : ""}`;

@@ -288,6 +288,11 @@ export default function AdminRequestsPage() {
                         const { statusFilter, companyPublicId } = currentStatusAndCompany();
                         return AdminRequestService.getAll({ status: statusFilter, companyPublicId, search: searchQuery });
                     }}
+                    onExportAllCsv={() => {
+                        const { statusFilter, companyPublicId } = currentStatusAndCompany();
+                        return AdminRequestService.downloadCsvExport({ status: statusFilter, companyPublicId, search: searchQuery });
+                    }}
+                    allowFullPdf={false}
                     searchPlaceholder="Talep başlığı, firma veya müşteri ara..."
                     canExport={canExport("Requests")}
                     canPrint={canPrint("Requests")}

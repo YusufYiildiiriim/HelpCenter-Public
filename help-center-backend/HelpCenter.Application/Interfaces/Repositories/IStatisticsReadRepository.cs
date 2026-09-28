@@ -25,4 +25,9 @@ public interface IStatisticsReadRepository
     Task<List<AgentPerformanceDto>> GetAgentPerformanceAsync(CancellationToken cancellationToken = default);
 
     Task<ReopenStatsDto> GetReopenStatsAsync(CancellationToken cancellationToken = default);
+
+    Task<TicketFlowDto> GetTicketFlowAsync(CancellationToken cancellationToken = default);
+    Task<List<DailyOpenedCountDto>> GetWeeklyOpenedAsync(int days, CancellationToken cancellationToken = default);
+    Task<List<PriorityCountDto>> GetPriorityDistributionAsync(CancellationToken cancellationToken = default);
+    Task<List<DashboardRecentRequestDto>> GetRecentRequestsAsync(int take, CancellationToken cancellationToken = default);
 }

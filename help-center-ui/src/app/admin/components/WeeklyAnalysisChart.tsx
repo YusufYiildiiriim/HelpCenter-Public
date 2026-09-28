@@ -3,12 +3,12 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, TrendingUp, TrendingDown } from "lucide-react";
-import type { AdminRequest } from "@/services/admin/AdminRequestService";
+import type { DailyOpenedCount } from "@/services/admin/AdminStatisticsService";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
 interface WeeklyAnalysisChartProps {
-  requests: AdminRequest[];
+  points?: DailyOpenedCount[] | null;
   loading?: boolean;
 }
 
@@ -20,41 +20,23 @@ const PAD = { top: 18, right: 12, bottom: 8, left: 12 };
 const innerW = W - PAD.left - PAD.right;
 const innerH = H - PAD.top - PAD.bottom;
 
-export const WeeklyAnalysisChart: React.FC<WeeklyAnalysisChartProps> = ({ requests, loading }) => {
+export const WeeklyAnalysisChart: React.FC<WeeklyAnalysisChartProps> = ({ points: reportPoints, loading }) => {
   const [active, setActive] = useState<number | null>(null);
 
   const { days, total, deltaPct } = useMemo(() => {
-    const now = new Date();
-
-    const dayStart = (offset: number) => {
-      const d = new Date(now);
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() - offset);
-      return d;
-    };
-
-    const inRange = (r: AdminRequest, start: Date, end: Date) => {
-      const t = new Date(r.createdAt).getTime();
-      return t >= start.getTime() && t < end.getTime();
-    };
-
-    const arr: { label: string; count: number }[] = [];
-    let sum = 0;
-    for (let i = 6; i >= 0; i--) {
-      const start = dayStart(i);
-      const end = dayStart(i - 1);
-      const count = requests.filter((r) => inRange(r, start, end)).length;
-      sum += count;
-      arr.push({ label: DAY_LABELS[start.getDay()], count });
-    }
-
-    const prevStart = dayStart(13);
-    const prevEnd = dayStart(6);
-    const prevCount = requests.filter((r) => inRange(r, prevStart, prevEnd)).length;
+    const points = reportPoints ?? [];
+    const current = points.slice(-7);
+    const previous = points.slice(-14, -7);
+    const arr = current.map((point) => {
+      const date = new Date(point.date);
+      return { label: DAY_LABELS[date.getDay()], count: point.count };
+    });
+    const sum = current.reduce((total, point) => total + point.count, 0);
+    const prevCount = previous.reduce((total, point) => total + point.count, 0);
     const deltaPct = prevCount > 0 ? Math.round(((sum - prevCount) / prevCount) * 100) : sum > 0 ? 100 : 0;
 
     return { days: arr, total: sum, deltaPct };
-  }, [requests]);
+  }, [reportPoints]);
 
   const maxVal = Math.max(...days.map((d) => d.count), 1);
   const stepX = innerW / Math.max(days.length - 1, 1);

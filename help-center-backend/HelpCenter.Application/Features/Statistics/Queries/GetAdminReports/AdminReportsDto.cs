@@ -32,6 +32,7 @@ public class ReopenStatsDto
 
 public class AdminReportsDto
 {
+    public DashboardOverviewDto? Dashboard { get; set; }
     public List<NameCountDto>? StatusDistribution { get; set; }
     public List<NameCountDto>? ModuleDistribution { get; set; }
     public List<NameCountDto>? CompanyTopN { get; set; }
@@ -40,4 +41,42 @@ public class AdminReportsDto
     public List<AgentPerformanceDto>? AgentPerformance { get; set; }
     public ReopenStatsDto? ReopenStats { get; set; }
     public List<string>? AllowedFields { get; set; }
+}
+
+public class DashboardOverviewDto
+{
+    public TicketFlowDto? TicketFlow { get; set; }
+    public List<DailyOpenedCountDto>? WeeklyOpened { get; set; }
+    public List<PriorityCountDto>? PriorityDistribution { get; set; }
+    public List<DashboardRecentRequestDto>? RecentRequests { get; set; }
+}
+
+public class TicketFlowDto
+{
+    public int Total { get; set; }
+    public List<NameCountDto> Stages { get; set; } = [];
+}
+
+public class DailyOpenedCountDto
+{
+    public DateTime Date { get; set; }
+    public int Count { get; set; }
+}
+
+public class PriorityCountDto
+{
+    public string Priority { get; set; } = string.Empty;
+    public int Count { get; set; }
+}
+
+public class DashboardRecentRequestDto
+{
+    public Guid PublicId { get; set; }
+    public string TicketId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string PriorityName { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CompanyName { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
