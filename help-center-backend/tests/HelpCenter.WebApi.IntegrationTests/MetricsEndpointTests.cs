@@ -29,6 +29,12 @@ public sealed class MetricsEndpointTests(SqlServerWebApplicationFactory factory)
         {
             using var response = await client.GetAsync("/metrics");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            if (requestNumber == 0)
+            {
+                Assert.Equal("text/plain", response.Content.Headers.ContentType?.MediaType);
+                Assert.Contains("# TYPE ", await response.Content.ReadAsStringAsync());
+            }
         }
 
         using var limitedResponse = await client.GetAsync("/metrics");
