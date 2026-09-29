@@ -31,9 +31,10 @@ public class AdminModulesController : ControllerBase
 
     [HttpGet("get-all")]
     [HasPermission(AppResources.Modules, PermissionActions.Read)]
-    public async Task<IActionResult> GetAll([FromQuery] bool onlyActive = false, [FromQuery] int? pageNumber = null, [FromQuery] int? pageSize = null, [FromQuery] string? search = null)
+    public async Task<IActionResult> GetAll([FromQuery] bool? onlyActive = null, [FromQuery] int? pageNumber = null, [FromQuery] int? pageSize = null, [FromQuery] string? search = null)
     {
-        var query = new GetModulesQuery { OnlyActive = onlyActive, Search = search };
+        var query = new GetModulesQuery { Search = search };
+        if (onlyActive.HasValue) query.OnlyActive = onlyActive.Value;
         if (pageNumber.HasValue) query.PageNumber = pageNumber.Value;
         if (pageSize.HasValue) query.PageSize = pageSize.Value;
 
