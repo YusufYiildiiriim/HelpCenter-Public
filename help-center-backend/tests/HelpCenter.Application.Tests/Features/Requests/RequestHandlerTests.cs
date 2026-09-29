@@ -1,6 +1,5 @@
 using FluentAssertions;
 using HelpCenter.Application.Exceptions;
-using HelpCenter.Application.Features.Requests.Commands.AdminCloseRequest;
 using HelpCenter.Application.Features.Requests.Commands.AdminSendMessage;
 using HelpCenter.Application.Features.Requests.Commands.CloseRequest;
 using HelpCenter.Application.Features.Requests.Commands.ConsultExpert;
@@ -273,42 +272,6 @@ public class RequestHandlerTests : HandlerTestBase
         result.Should().BeTrue();
         var updated = Db.CustomerRequests.Find(req.Id);
         updated!.StatusId.Should().Be(RequestStatusConstants.Completed);
-    }
-
-    [Fact]
-    public async Task AdminCloseRequest_should_attribute_the_close_to_the_authenticated_actor()
-    {
-        var customer = SeedCustomer();
-        var req = SeedRequest(customer);
-        var actorAccount = new Account
-        {
-            Email = "closing.agent@test.com",
-            Username = "closing.agent",
-            FirstName = "Closing",
-            LastName = "Agent",
-            Password = "pwd"
-        };
-        var actor = new User { Account = actorAccount, IsActive = true };
-        Db.Accounts.Add(actorAccount);
-        Db.Users.Add(actor);
-        await Db.SaveChangesAsync();
-        Db.ChangeTracker.Clear();
-
-        var userContext = Substitute.For<IUserContext>();
-        userContext.UserId.Returns(actor.Id);
-        var handler = new AdminCloseRequestCommandHandler(Uow, userContext);
-
-        var result = await handler.Handle(new AdminCloseRequestCommand
-        {
-            Id = req.Id
-        }, CancellationToken.None);
-
-        result.Should().BeTrue();
-        var evaluation = Db.CustomerRequestEvaluations.Single(x => x.CustomerRequestId == req.Id);
-        evaluation.CustomerUserId.Should().Be(actor.Id);
-        evaluation.CustomerName.Should().Be("Closing Agent");
-        evaluation.Note.Should().Be("Closing Agent tarafından kapatıldı.");
-        Db.RequestHistories.Single(x => x.RequestId == req.Id).ActorAccountId.Should().Be(actor.AccountId);
     }
 
     [Fact]

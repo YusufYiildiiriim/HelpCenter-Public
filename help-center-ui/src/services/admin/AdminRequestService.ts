@@ -155,11 +155,6 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  closeTicket: async (id: number, note?: string): Promise<boolean> => {
-    const response = await api.post("/api/admin/requests/close", { id, note });
-    return response.data;
-  },
-
   markAsRead: async (requestPublicId: string): Promise<void> => {
     await api.post(`/api/admin/requests/${requestPublicId}/mark-read`);
   },

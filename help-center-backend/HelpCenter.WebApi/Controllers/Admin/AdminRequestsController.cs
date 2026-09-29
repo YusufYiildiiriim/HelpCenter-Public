@@ -1,5 +1,4 @@
 using HelpCenter.Application.Features.Requests.Commands;
-using HelpCenter.Application.Features.Requests.Commands.AdminCloseRequest;
 using HelpCenter.Application.Features.Requests.Commands.AdminSendMessage;
 using HelpCenter.Application.Features.Requests.Commands.ConsultExpert;
 using HelpCenter.Application.Features.Requests.Commands.MarkMessagesRead;
@@ -122,15 +121,6 @@ public class AdminRequestsController : ControllerBase
     [HasPermission(AppResources.Requests, PermissionActions.Update)]
     [EnableRateLimiting("admin-write")]
     public async Task<IActionResult> SendMessage([FromForm] AdminSendMessageCommand command)
-    {
-        var response = await _mediator.Send(command);
-        return Ok(response);
-    }
-
-    [HttpPost("close")]
-    [HasPermission(AppResources.Requests, PermissionActions.Update)]
-    [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> Close([FromBody] AdminCloseRequestCommand command)
     {
         var response = await _mediator.Send(command);
         return Ok(response);
