@@ -104,7 +104,7 @@ action-list yalnız `AppResourceDefinitions`a yeni aksiyon ekler. Feature packag
 
 Browser HTTPS ile TLS termination yapan Caddy'ye bağlanır. Caddy `/api/*`, `/requestHub*` ve
 `/health/*`i API'ye, kalan trafiği Next.js'e yollar. API SQL Server'a 1433 üzerinden ulaşır; SMTP,
-isteğe bağlı OTLP trace export ve Prometheus `/metrics` çıkışları vardır. Production compose yalnız
+isteğe bağlı OTLP trace export ve kimlik doğrulamalı/rate-limitli Prometheus `/metrics` çıkışı vardır. Production compose yalnız
 Caddy'nin 80/443 portlarını açar; API ile SQL Server Docker ağı içinde private kalır.
 
 Production için kökteki `.env`de `SA_PASSWORD`, `JwtSettings__SecretKey`, tüm `SmtpSettings__*`
@@ -113,7 +113,8 @@ anahtarları, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL`, `AppSettings__Fronte
 Development da aynı dosyayı kullanır. Backend `mcr.microsoft.com/dotnet/aspnet:8.0`
 (Debian) üzerinde non-root `$APP_UID` ile, frontend gerçek `node:22-alpine` üzerinde çalışır. İmajlar
 multi-stage'dir; service-specific `.dockerignore` secret, build output, log ve uploadları dışlar.
-OTLP trace export yalnız `Otel:OtlpEndpoint` varsa aktiftir; Prometheus `/metrics` her ortamda açıktır.
+OTLP trace export yalnız `Otel:OtlpEndpoint` varsa aktiftir; Prometheus `/metrics` her ortamda eşlenir,
+ancak geçerli JWT ve endpoint'e özel rate limit gerektirir.
 
 ## 5. Kesitsel konular
 
@@ -124,10 +125,10 @@ OTLP trace export yalnız `Otel:OtlpEndpoint` varsa aktiftir; Prometheus `/metri
 | Hatalar | `GlobalExceptionHandler` (`IExceptionHandler`) | Exception'ı sanitize edip `ApiResponse<T>` ve türüne göre HTTP code üretir; ayrı `ExceptionMiddleware` yoktur. |
 | Auth | JWT + `PermissionHandler`/`PermissionPolicyProvider` | Policy adı `"{Module}.{Action}"` biçimindedir; örnek `Roles.Delete`. |
 | Correlation | `CorrelationIdMiddleware` | `X-Correlation-Id` üretir/okur ve Serilog context'ine iter. |
-| Rate limit | Native ASP.NET Core `RateLimiter` | Kullanıcı id veya IP ile partition; auth 5/30s, password 3/5dk, public 60/dk, write/heavy 30/dk, upload 15/dk, global 200/dk. |
+| Rate limit | Native ASP.NET Core `RateLimiter` | Kullanıcı id veya IP ile partition; auth 5/30s, password 3/5dk, public 60/dk, write/heavy/metrics 30/dk, upload 15/dk, global 200/dk. |
 | Security headers | `SecurityHeadersMiddleware` | CSP, HSTS, X-Frame-Options ve ilişkili başlıkları ekler. |
 | Config | Strongly typed `*Options` | `ValidateDataAnnotations().ValidateOnStart()`; geçersiz config boot'u durdurur. |
-| Health/metrics | Health Checks + OTel + Prometheus | `/health/live` süreç, `/health/ready` DB, `/metrics` Prometheus endpointidir. |
+| Health/metrics | Health Checks + OTel + Prometheus | `/health/live` süreç, `/health/ready` DB; `/metrics` JWT ve endpoint'e özel rate limit gerektiren Prometheus endpointidir. |
 
 ## 6. Test piramidi
 

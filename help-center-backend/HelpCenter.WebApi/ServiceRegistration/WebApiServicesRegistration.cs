@@ -160,6 +160,7 @@ public static class WebApiServicesRegistration
         //   - "rbac-mutation" → role/permission mutations : 10 requests / 1 min per authenticated user
         //   - "session-refresh" → refresh requests : 10 requests / 1 min per client IP
         //   - "session-logout"  → logout requests  : 20 requests / 1 min per client IP
+        //   - "metrics"          → Prometheus scrape: 30 requests / 1 min per authenticated user
         // Global fallback: 200 requests / 1 min (for anything not matched by a policy).
         services.AddRateLimiter(options =>
         {
@@ -211,6 +212,7 @@ public static class WebApiServicesRegistration
             options.AddPolicy("rbac-mutation", ctx => Fixed(ctx, 10, TimeSpan.FromMinutes(1)));
             options.AddPolicy("session-refresh", ctx => FixedByClientIp(ctx, 10, TimeSpan.FromMinutes(1)));
             options.AddPolicy("session-logout", ctx => FixedByClientIp(ctx, 20, TimeSpan.FromMinutes(1)));
+            options.AddPolicy("metrics", ctx => Fixed(ctx, 30, TimeSpan.FromMinutes(1)));
 
             // Global fallback — also covers endpoints without attributes
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>

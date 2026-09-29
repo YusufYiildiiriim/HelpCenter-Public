@@ -65,7 +65,9 @@ app.UseMiddleware<HelpCenter.WebApi.Middleware.UserLoggingMiddleware>();
 app.MapHub<RequestHub>("/requestHub");
 app.MapControllers();
 app.MapHealthCheckEndpoints();
-app.MapPrometheusScrapingEndpoint();
+app.MapPrometheusScrapingEndpoint()
+    .RequireAuthorization()
+    .RequireRateLimiting("metrics");
 
 if (app.Environment.IsDevelopment())
 {

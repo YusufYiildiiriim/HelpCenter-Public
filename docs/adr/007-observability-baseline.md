@@ -75,11 +75,13 @@ wires the OpenTelemetry SDK in full, not just a "path to" it:
 - **Tracing:** ASP.NET Core, `HttpClient`, and EF Core instrumentation are always on;
   `AddOtlpExporter` is added conditionally, only when `Otel:OtlpEndpoint` is configured.
 - **Metrics:** ASP.NET Core, `HttpClient`, runtime, and process instrumentation feed a
-  **Prometheus exporter**, scraped at `/metrics` (`app.MapPrometheusScrapingEndpoint()` in
-  `Program.cs`) — this endpoint is always exposed, independent of the OTLP setting above.
+  **Prometheus exporter**, scraped at authenticated, rate-limited `/metrics`
+  (`app.MapPrometheusScrapingEndpoint()` in `Program.cs`) — this endpoint is mapped in every
+  environment, independently of the OTLP setting above.
 
 So "OTEL collector optional" in the deployment diagram is only true for the trace-export leg; the
-Prometheus metrics endpoint has no on/off switch and is live in every environment.
+Prometheus metrics endpoint has no on/off switch and is mapped in every environment; a scraper
+must present a valid JWT and stay within its endpoint-specific rate limit.
 
 Also worth correcting here: the error pipeline in this ADR's "Errors" section says
 `ExceptionMiddleware` — the actual class is `GlobalExceptionHandler`, a .NET `IExceptionHandler`

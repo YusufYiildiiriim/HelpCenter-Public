@@ -39,8 +39,8 @@ ekip konvansiyonuna bırakılmaz: CI içinde çalışan NetArchTest kuralları k
   Yeni parolalar Argon2id ile hashlenir; BCrypt yalnız eski hashleri doğrulamak için korunur.
   FluentValidation, endpoint kapsamlı native rate limiting, temizlenmiş `IExceptionHandler` cevapları
   ve `SecurityHeadersMiddleware` temel koruma katmanını tamamlar. Ayrıntı için [güvenlik politikasına](SECURITY.tr.md) bakın.
-- **Gözlemlenebilirlik:** Serilog, correlation ID, sağlık endpoint'leri, OpenTelemetry ve Prometheus
-  bulunur. Hata cevapları `ApiResponse<T>` ile sarmalanır; başarılı cevapların çoğu ham DTO döndürür.
+- **Gözlemlenebilirlik:** Serilog, correlation ID, sağlık endpoint'leri, OpenTelemetry ve kimlik
+  doğrulamalı/rate-limitli Prometheus endpoint'i bulunur. Hata cevapları `ApiResponse<T>` ile sarmalanır; başarılı cevapların çoğu ham DTO döndürür.
   Dosya tabanlı operasyon loglarıyla SQL Server'daki append-only AuditLog farklı amaçlarla tutulur.
 - **Üretim teslimatı:** Çok aşamalı Dockerfile'lar, Caddy TLS, private API/veritabanı container'ları,
   GitHub Actions CI, bağımlılık/secret taraması ve Dependabot birlikte kullanılır.

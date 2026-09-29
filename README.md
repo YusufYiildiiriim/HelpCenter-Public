@@ -25,7 +25,7 @@
 - **Hierarchical action-list RBAC** — resource × action matrix, no boolean-column bloat. 5 preset **feature packages** for one-click role setup (Project Manager, Module Manager, Support Agent, Content Editor, Read-Only Observer).
 - **Clean Architecture + CQRS + MediatR** — Domain / Application / Persistence / Infrastructure / WebApi. Boundaries enforced by **NetArchTest** in CI, not by convention.
 - **Security-first** — JWT access tokens are memory-only, refresh tokens are `HttpOnly` rotating cookies, and passwords use Argon2id (BCrypt is verify-only for legacy hashes). FluentValidation, endpoint-scoped native rate limiting, sanitized `IExceptionHandler` responses and `SecurityHeadersMiddleware` complete the baseline. See [SECURITY.md](SECURITY.md) for precise scope and known limitations.
-- **Observability from day one** — Serilog structured logging, `X-Correlation-Id` propagation, `/health/live` + `/health/ready` (with SQL Server dependency check), OpenTelemetry tracing + a Prometheus `/metrics` endpoint. `ApiResponse<T>` wraps every **error** response; most success responses return the raw DTO, unwrapped.
+- **Observability from day one** — Serilog structured logging, `X-Correlation-Id` propagation, `/health/live` + `/health/ready` (with SQL Server dependency check), OpenTelemetry tracing + an authenticated, rate-limited Prometheus `/metrics` endpoint. `ApiResponse<T>` wraps every **error** response; most success responses return the raw DTO, unwrapped.
 - **Production delivery** — Multi-stage Dockerfiles, Caddy-managed TLS, private API/database containers, GitHub Actions CI, dependency/secret scanning and Dependabot.
 
 ## 🏗️ Architecture at a glance

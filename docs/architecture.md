@@ -230,7 +230,7 @@ Development uses the same file and keeps direct localhost ports for local debugg
   logs, and uploads through service-specific `.dockerignore` files.
 - OpenTelemetry OTLP trace export is optional (enabled only when `Otel:OtlpEndpoint` is
   configured); the Prometheus metrics endpoint (`/metrics`, via `MapPrometheusScrapingEndpoint()`)
-  is always exposed regardless — see §5.
+  is mapped in every environment but requires a valid JWT and has an endpoint-specific rate limit — see §5.
 
 ## 5. Cross-cutting concerns
 
@@ -241,10 +241,10 @@ Development uses the same file and keeps direct localhost ports for local debugg
 | Errors | `GlobalExceptionHandler` (`IExceptionHandler`, `.NET 8` native — registered via `AddGlobalExceptionHandling()` / `app.UseExceptionHandler()`) | Sanitizes exceptions → `ApiResponse<T>` envelope, HTTP code by exception type. There is no separate `ExceptionMiddleware` class. |
 | Auth | JWT bearer + custom `PermissionHandler`/`PermissionPolicyProvider` | Policy name is `"{Module}.{Action}"` (e.g. `"Roles.Delete"`), built dynamically by `PermissionPolicyProvider.GetPolicyAsync` from any policy string containing a `.` — not the `Perm:{Resource}:{Action}` format previously documented here. |
 | Correlation | `CorrelationIdMiddleware` | Reads/generates `X-Correlation-Id`, pushed into Serilog log context |
-| Rate limit | ASP.NET Core's native `RateLimiter` (`AddRateLimiter`/`UseRateLimiter`, no custom middleware class) | Partitioned by user id (or client IP as fallback). Named policies: `auth` 5/30s, `password` 3/5min, `public` 60/1min, `write` 30/1min, `upload` 15/1min, `heavy` 30/1min, plus a 200/1min global fallback. |
+| Rate limit | ASP.NET Core's native `RateLimiter` (`AddRateLimiter`/`UseRateLimiter`, no custom middleware class) | Partitioned by user id (or client IP as fallback). Named policies: `auth` 5/30s, `password` 3/5min, `public` 60/1min, `write` 30/1min, `upload` 15/1min, `heavy` 30/1min, `metrics` 30/1min, plus a 200/1min global fallback. |
 | Security headers | `SecurityHeadersMiddleware` (`HelpCenter.WebApi/Middleware/SecurityHeadersMiddleware.cs`) | Registered in the HTTP pipeline; supplies CSP/HSTS/X-Frame-Options and related headers. |
 | Config | Strongly-typed `*Options` classes | `ValidateDataAnnotations().ValidateOnStart()` — bad config = fail to boot |
-| Health / metrics | ASP.NET Core Health Checks + `AspNetCore.HealthChecks.SqlServer`; OpenTelemetry SDK (tracing + metrics) with a Prometheus scrape endpoint | `/health/live` (self), `/health/ready` (DB); `/metrics` (Prometheus, via `MapPrometheusScrapingEndpoint()`) is always on; OTLP trace export is optional, enabled only when `Otel:OtlpEndpoint` is configured. |
+| Health / metrics | ASP.NET Core Health Checks + `AspNetCore.HealthChecks.SqlServer`; OpenTelemetry SDK (tracing + metrics) with a Prometheus scrape endpoint | `/health/live` (self), `/health/ready` (DB); `/metrics` (Prometheus, via `MapPrometheusScrapingEndpoint()`) requires a valid JWT and its own rate limit. OTLP trace export is optional, enabled only when `Otel:OtlpEndpoint` is configured. |
 
 ## 6. Testing pyramid
 

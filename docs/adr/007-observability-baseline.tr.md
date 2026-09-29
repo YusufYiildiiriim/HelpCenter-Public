@@ -74,8 +74,9 @@ opsiyonel ve kapalıdır. Birden çok sink, maliyet tekrarını önlemek için d
 - **Tracing:** ASP.NET Core, `HttpClient` ve EF Core instrumentation'ı her zaman açıktır;
   `AddOtlpExporter`, yalnız `Otel:OtlpEndpoint` yapılandırılmışsa eklenir.
 - **Metrics:** ASP.NET Core, `HttpClient`, runtime ve process instrumentation'ı,
-  `Program.cs` içindeki `app.MapPrometheusScrapingEndpoint()` ile `/metrics`ten scrape edilen
-  **Prometheus exporter**a besler. Endpoint, OTLP ayarından bağımsız her ortamda açıktır.
+  `Program.cs` içindeki `app.MapPrometheusScrapingEndpoint()` ile kimlik doğrulamalı ve rate-limitli
+  `/metrics` endpoint'inden scrape edilen **Prometheus exporter**a besler. Endpoint, OTLP ayarından
+  bağımsız her ortamda eşlenir.
 
 Hatalar bölümündeki `ExceptionMiddleware` adı tarihsel olarak yanlıştır. Gerçek sınıf,
 `AddGlobalExceptionHandling()` / `app.UseExceptionHandler()` ile kayıtlı .NET `IExceptionHandler`
