@@ -18,4 +18,15 @@ public static class AdminCloseRequestRules
             throw new RequestNotFoundException();
         }
     }
+
+    /// <summary>
+    /// Verifies that the authenticated actor still has a staff user record.
+    /// </summary>
+    public static void ActorShouldExist(User? actor)
+    {
+        if (actor == null || actor.IsDeleted)
+        {
+            throw new UserNotFoundException();
+        }
+    }
 }

@@ -7,10 +7,12 @@ namespace HelpCenter.Application.Features.Requests.Commands.AdminCloseRequest;
 public class AdminCloseRequestCommandHandler : IRequestHandler<AdminCloseRequestCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserContext _userContext;
 
-    public AdminCloseRequestCommandHandler(IUnitOfWork unitOfWork)
+    public AdminCloseRequestCommandHandler(IUnitOfWork unitOfWork, IUserContext userContext)
     {
         _unitOfWork = unitOfWork;
+        _userContext = userContext;
     }
 
     public async Task<bool> Handle(AdminCloseRequestCommand request, CancellationToken cancellationToken)
@@ -19,7 +21,11 @@ public class AdminCloseRequestCommandHandler : IRequestHandler<AdminCloseRequest
         AdminCloseRequestRules.RequestShouldExist(customerRequest);
 
         var oldStatus = await _unitOfWork.Repository<CustomerRequestStatus>().GetAsync(customerRequest!.StatusId, cancellationToken);
-        var agent = (await _unitOfWork.Repository<User>().FindAsync(x => x.Id == request.AgentUserId, cancellationToken, x => x.Account)).FirstOrDefault();
+        var actor = (await _unitOfWork.Repository<User>().FindAsync(
+            x => x.Id == _userContext.UserId,
+            cancellationToken,
+            x => x.Account)).FirstOrDefault();
+        AdminCloseRequestRules.ActorShouldExist(actor);
 
         var evaluation = new CustomerRequestEvaluation
         {
@@ -27,13 +33,12 @@ public class AdminCloseRequestCommandHandler : IRequestHandler<AdminCloseRequest
             Note = request.Note ?? "Admin tarafından kapatıldı.",
             OldStatus = oldStatus?.Name ?? "Bilinmiyor",
             NewStatus = "Tamamlandı",
-            CustomerUserId = request.AgentUserId,
-            CustomerName = agent != null ? $"{agent.FirstName} {agent.LastName}" : "Sistem",
+            CustomerUserId = actor!.Id,
+            CustomerName = $"{actor.FirstName} {actor.LastName}",
             Rating = 5
         };
 
-        int actorAccountId = agent?.AccountId ?? 1;
-        customerRequest.Complete(actorAccountId, request.Note ?? "Admin tarafından kapatıldı.");
+        customerRequest.Complete(actor.AccountId, request.Note ?? "Admin tarafından kapatıldı.");
 
         await _unitOfWork.Repository<CustomerRequestEvaluation>().AddAsync(evaluation, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);

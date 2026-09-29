@@ -276,6 +276,42 @@ public class RequestHandlerTests : HandlerTestBase
     }
 
     [Fact]
+    public async Task AdminCloseRequest_should_attribute_the_close_to_the_authenticated_actor()
+    {
+        var customer = SeedCustomer();
+        var req = SeedRequest(customer);
+        var actorAccount = new Account
+        {
+            Email = "closing.agent@test.com",
+            Username = "closing.agent",
+            FirstName = "Closing",
+            LastName = "Agent",
+            Password = "pwd"
+        };
+        var actor = new User { Account = actorAccount, IsActive = true };
+        Db.Accounts.Add(actorAccount);
+        Db.Users.Add(actor);
+        await Db.SaveChangesAsync();
+        Db.ChangeTracker.Clear();
+
+        var userContext = Substitute.For<IUserContext>();
+        userContext.UserId.Returns(actor.Id);
+        var handler = new AdminCloseRequestCommandHandler(Uow, userContext);
+
+        var result = await handler.Handle(new AdminCloseRequestCommand
+        {
+            Id = req.Id,
+            Note = "Resolved by the authenticated actor."
+        }, CancellationToken.None);
+
+        result.Should().BeTrue();
+        var evaluation = Db.CustomerRequestEvaluations.Single(x => x.CustomerRequestId == req.Id);
+        evaluation.CustomerUserId.Should().Be(actor.Id);
+        evaluation.CustomerName.Should().Be("Closing Agent");
+        Db.RequestHistories.Single(x => x.RequestId == req.Id).ActorAccountId.Should().Be(actor.AccountId);
+    }
+
+    [Fact]
     public async Task ConsultExpert_should_add_consulted_expert_to_request()
     {
         var customer = SeedCustomer();

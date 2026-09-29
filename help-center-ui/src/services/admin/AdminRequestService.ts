@@ -155,8 +155,8 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  closeTicket: async (id: number, note?: string, agentUserId?: number): Promise<boolean> => {
-    const response = await api.post("/api/admin/requests/close", { id, note, agentUserId });
+  closeTicket: async (id: number, note?: string): Promise<boolean> => {
+    const response = await api.post("/api/admin/requests/close", { id, note });
     return response.data;
   },
 
