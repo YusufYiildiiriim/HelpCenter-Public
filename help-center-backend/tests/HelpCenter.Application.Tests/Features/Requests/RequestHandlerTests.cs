@@ -300,14 +300,14 @@ public class RequestHandlerTests : HandlerTestBase
 
         var result = await handler.Handle(new AdminCloseRequestCommand
         {
-            Id = req.Id,
-            Note = "Resolved by the authenticated actor."
+            Id = req.Id
         }, CancellationToken.None);
 
         result.Should().BeTrue();
         var evaluation = Db.CustomerRequestEvaluations.Single(x => x.CustomerRequestId == req.Id);
         evaluation.CustomerUserId.Should().Be(actor.Id);
         evaluation.CustomerName.Should().Be("Closing Agent");
+        evaluation.Note.Should().Be("Closing Agent tarafından kapatıldı.");
         Db.RequestHistories.Single(x => x.RequestId == req.Id).ActorAccountId.Should().Be(actor.AccountId);
     }
 

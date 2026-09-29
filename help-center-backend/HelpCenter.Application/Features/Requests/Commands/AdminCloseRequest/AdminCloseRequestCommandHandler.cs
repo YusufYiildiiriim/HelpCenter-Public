@@ -26,19 +26,21 @@ public class AdminCloseRequestCommandHandler : IRequestHandler<AdminCloseRequest
             cancellationToken,
             x => x.Account)).FirstOrDefault();
         AdminCloseRequestRules.ActorShouldExist(actor);
+        var actorName = $"{actor!.FirstName} {actor.LastName}";
+        var closeNote = request.Note ?? $"{actorName} tarafından kapatıldı.";
 
         var evaluation = new CustomerRequestEvaluation
         {
             CustomerRequestId = customerRequest.Id,
-            Note = request.Note ?? "Admin tarafından kapatıldı.",
+            Note = closeNote,
             OldStatus = oldStatus?.Name ?? "Bilinmiyor",
             NewStatus = "Tamamlandı",
-            CustomerUserId = actor!.Id,
-            CustomerName = $"{actor.FirstName} {actor.LastName}",
+            CustomerUserId = actor.Id,
+            CustomerName = actorName,
             Rating = 5
         };
 
-        customerRequest.Complete(actor.AccountId, request.Note ?? "Admin tarafından kapatıldı.");
+        customerRequest.Complete(actor.AccountId, closeNote);
 
         await _unitOfWork.Repository<CustomerRequestEvaluation>().AddAsync(evaluation, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
