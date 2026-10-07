@@ -82,10 +82,23 @@ docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d db
 ```
 
 `scripts/with-env.sh` reads the root `.env` and exports its values only for the command it starts.
-Use it for local .NET and Next.js commands because neither process automatically reads the
+Use it for local .NET commands; Next.js configuration automatically loads public values from the
 repository-root `.env`; Docker Compose reads the same file through `--env-file .env`.
 
 Default seeded admin account: `admin@helpcenter.com` / `Admin123!`. Its password is public; rotate it (or remove the seed) before any real deployment. See [SECURITY.md](SECURITY.md).
+
+### Windows (PowerShell)
+
+After filling the root `.env`, run from the repository root:
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
+This starts SQL Server and the API in Docker, applies pending migrations using the .NET SDK
+container, installs missing frontend dependencies, and starts local Next.js at localhost:3000.
+The API is available at localhost:5005. Docker Desktop must be running. Stop an existing
+frontend on port 3000 before starting another instance.
 
 ## 🧪 Tests
 

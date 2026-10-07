@@ -19,14 +19,13 @@ lockfile'a göre bağımlılıkları kurun ve `npm run dev` ile uygulamayı `htt
 
 ```bash
 # help-center-ui klasöründen
-../scripts/with-env.sh npm ci
-../scripts/with-env.sh npm run dev
+npm ci
+npm run dev
 ```
 
-`../scripts/with-env.sh`, repository kökündeki `.env` değerlerini yalnız başlattığı komut için
-yükler. Next.js üst dizindeki `.env` dosyasını kendiliğinden okumadığı için ortak ayarları tekrar
-`help-center-ui/.env.local` oluşturarak çoğaltmayın.
-
+Next.js yapılandırması kök `.env` dosyasından yalnız `NEXT_PUBLIC_*` alanlarını otomatik yükler.
+Mevcut süreç değişkenleri, Docker build argümanları ve CI değerleri önceliklidir.
+Ortak ayarları kökte tutun.
 `src/proxy.ts`, `refresh_token` HttpOnly cookie'sini yalnız kaba bir rota geçidi olarak kullanır.
 Access token modül belleğinde kalır; korumalı layout'lar tokenı API üzerinden doğrular. Frontend
 JWT imzalama secret'ına ihtiyaç duymaz. CKEditor repo'nun GPL-3.0-only lisansı kapsamında çalışır;

@@ -74,14 +74,27 @@ docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d db
 ```
 
 `scripts/with-env.sh`, kökteki `.env` değerlerini yalnız başlattığı komut için environment variable
-olarak export eder. Yerelde .NET ve Next.js repository kökündeki `.env` dosyasını kendiliğinden
-okumadığı için bu komutlarda kullanılmalıdır; Docker Compose ise aynı dosyayı `--env-file .env` ile okur.
+olarak export eder. Yerelde .NET repository kökündeki `.env` dosyasını kendiliğinden
+okumadığı için bu wrapper kullanılmalıdır. Next.js public değerleri otomatik alır; Docker Compose aynı dosyayı `--env-file .env` ile okur.
 
 API varsayılan olarak `http://localhost:5005`, istemci `http://localhost:3000` adresindedir. Seed
 edilen varsayılan yönetici `admin@helpcenter.com` / `Admin123!` bilgisidir. Parolası publictir;
 gerçek bir dağıtımdan önce parolayı değiştirin veya seed'i kaldırın. Ayrıntı için [güvenlik politikasına](SECURITY.tr.md)
 bakın. Swagger yalnız Production dışındaki
 ortamlarda `/swagger` yolundadır.
+
+### Windows (PowerShell)
+
+Kök `.env` doldurulduktan sonra repo kökünde çalıştırın:
+
+```powershell
+.\scripts\start-dev.ps1
+```
+
+SQL Server ve API Docker'da başlatılır; bekleyen migration'lar .NET SDK container'ıyla uygulanır.
+Eksik frontend bağımlılıkları kurulur ve Next.js yerelde localhost:3000 adresinde açılır.
+API localhost:5005 adresindedir. Docker Desktop açık olmalı. Yeni bir frontend başlatmadan önce
+3000 portundaki mevcut frontend'i durdurun. `npm run dev` kök env'deki public alanları otomatik okur.
 
 ## 🧪 Testler
 

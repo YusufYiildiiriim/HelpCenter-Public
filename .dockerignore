@@ -1,0 +1,13 @@
+.git
+**/.env*
+**/.vs
+**/.idea
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/Logs
+**/Uploads
+**/TestResults
+**/*.log
+help-center-ui

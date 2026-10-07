@@ -11,14 +11,14 @@ stack) and [SECURITY.md](../SECURITY.md) for the security posture.
 ```bash
 # First, from the repository root: cp .env.example .env
 # Then, from help-center-ui:
-../scripts/with-env.sh npm ci
-../scripts/with-env.sh npm run dev
+npm ci
+npm run dev
 # → http://localhost:3000
 ```
 
-`../scripts/with-env.sh` loads the repository-root `.env` for that command only. Next.js does not
-automatically read a parent-directory `.env`, so keep the shared local configuration in the root
-file instead of recreating `help-center-ui/.env.local`.
+Next.js configuration loads only NEXT_PUBLIC_* values from the repository-root .env automatically.
+Existing process variables take precedence, including Docker build args and CI variables.
+Keep shared settings in that root file.
 
 `src/proxy.ts` uses the `refresh_token` HttpOnly cookie only as a coarse route gate. The access
 token stays in module memory and protected layouts verify it through the API; no frontend JWT

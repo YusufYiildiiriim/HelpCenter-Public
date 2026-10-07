@@ -237,3 +237,6 @@ help-center-backend/HelpCenter.WebApi/Uploads/
 
 # JetBrains Rider
 .idea/
+
+# Shared backend Docker build context exclusions
+!/.dockerignore

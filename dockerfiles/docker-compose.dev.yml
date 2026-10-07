@@ -30,8 +30,8 @@ services:
   helpcenter.webapi:
     container_name: helpcenter-api-dev
     build:
-      context: ../help-center-backend
-      dockerfile: HelpCenter.WebApi/Dockerfile
+      context: ..
+      dockerfile: help-center-backend/HelpCenter.WebApi/Dockerfile
     ports:
       - "5005:8080"
     environment:

@@ -14,13 +14,14 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["HelpCenter.WebApi/HelpCenter.WebApi.csproj", "HelpCenter.WebApi/"]
-COPY ["HelpCenter.Application/HelpCenter.Application.csproj", "HelpCenter.Application/"]
-COPY ["HelpCenter.Domain/HelpCenter.Domain.csproj", "HelpCenter.Domain/"]
-COPY ["HelpCenter.Infrastructure/HelpCenter.Infrastructure.csproj", "HelpCenter.Infrastructure/"]
-COPY ["HelpCenter.Persistence/HelpCenter.Persistence.csproj", "HelpCenter.Persistence/"]
+COPY ["help-center-backend/HelpCenter.WebApi/HelpCenter.WebApi.csproj", "HelpCenter.WebApi/"]
+COPY ["help-center-backend/HelpCenter.Application/HelpCenter.Application.csproj", "HelpCenter.Application/"]
+COPY ["help-center-backend/HelpCenter.Domain/HelpCenter.Domain.csproj", "HelpCenter.Domain/"]
+COPY ["help-center-backend/HelpCenter.Infrastructure/HelpCenter.Infrastructure.csproj", "HelpCenter.Infrastructure/"]
+COPY ["help-center-backend/HelpCenter.Persistence/HelpCenter.Persistence.csproj", "HelpCenter.Persistence/"]
 RUN dotnet restore "./HelpCenter.WebApi/HelpCenter.WebApi.csproj"
-COPY . .
+COPY .editorconfig /src/.editorconfig
+COPY help-center-backend/ .
 WORKDIR "/src/HelpCenter.WebApi"
 RUN dotnet build "./HelpCenter.WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
