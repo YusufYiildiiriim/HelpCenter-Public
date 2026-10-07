@@ -48,7 +48,9 @@ export const WeeklyAnalysisChart: React.FC<WeeklyAnalysisChartProps> = ({ points
   }));
 
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${PAD.top + innerH} L ${points[0].x} ${PAD.top + innerH} Z`;
+  const areaPath = points.length > 0
+    ? `${linePath} L ${points[points.length - 1].x} ${PAD.top + innerH} L ${points[0].x} ${PAD.top + innerH} Z`
+    : "";
 
   const gridLines = [1, 0.75, 0.5, 0.25].map((f) => ({
     y: PAD.top + innerH * (1 - f),
@@ -96,6 +98,10 @@ export const WeeklyAnalysisChart: React.FC<WeeklyAnalysisChartProps> = ({ points
       <div className="relative z-10 mt-6">
         {loading ? (
           <div className="h-[200px] animate-pulse rounded-2xl bg-slate-800/70" />
+        ) : points.length === 0 ? (
+          <div className="flex h-[200px] items-center justify-center text-sm text-slate-400" role="status">
+            Bu dönem için talep verisi bulunmuyor.
+          </div>
         ) : (
           <div className="relative" onMouseLeave={() => setActive(null)}>
             <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
