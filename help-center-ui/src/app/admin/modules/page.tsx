@@ -30,6 +30,7 @@ export default function ModulesPage() {
   const { userInfo } = useAuth();
   const { canRead, canCreate, canUpdate, canDelete, canExport, canPrint, canManageExperts } = usePermission(userInfo);
   const hasViewPerm = canRead("Modules");
+  const hasExpertPerm = canManageExperts("Modules");
 
   const [modules, setModules] = useState<Module[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,10 +109,11 @@ export default function ModulesPage() {
   }, [pageIndex, pageSize, searchQuery]);
 
   useEffect(() => {
+    if (!hasViewPerm) return;
     let isMounted = true;
     Promise.allSettled([
       ModuleService.getPaginated({ pageNumber: 1, pageSize: 10, onlyActive: false }),
-      ModuleService.getAvailableExperts()
+      hasExpertPerm ? ModuleService.getAvailableExperts() : Promise.resolve([])
     ]).then(([modRes, userRes]) => {
       if (!isMounted) return;
       if (modRes.status === "fulfilled") {
@@ -128,7 +130,7 @@ export default function ModulesPage() {
       setInitialLoading(false);
     });
     return () => { isMounted = false; };
-  }, []);
+  }, [hasViewPerm, hasExpertPerm]);
 
   const handlePageChange = (newPage: number) => {
     setPageIndex(newPage - 1);
@@ -216,6 +218,7 @@ export default function ModulesPage() {
   };
 
   const openExpertModal = useCallback(async (mod: Module) => {
+    if (!hasExpertPerm) return;
     setSelectedModuleId(mod.id);
     setExpertLoading(true);
     setIsExpertModalOpen(true);
@@ -232,7 +235,7 @@ export default function ModulesPage() {
     } finally {
         setExpertLoading(false);
     }
-  }, []);
+  }, [hasExpertPerm]);
 
   const handleAssignExpert = async (userId: number) => {
     if (!selectedModuleId) return;
@@ -328,7 +331,7 @@ export default function ModulesPage() {
         const mod = row.original;
         return (
           <div className="flex items-center gap-2">
-            {(canManageExperts("Modules") || canUpdate("Modules")) && (
+            {canManageExperts("Modules") && (
               <button
                 onClick={() => openExpertModal(mod)}
                 className="p-1.5 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"

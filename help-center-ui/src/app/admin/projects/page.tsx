@@ -29,8 +29,10 @@ import type { ExportColumn } from "@/utils/csvExport";
 export default function ProjectsPage() {
   usePageTitle("Projects");
   const { userInfo } = useAuth();
-  const { canRead, canCreate, canUpdate, canDelete, canExport, canPrint, canManageMembers } = usePermission(userInfo);
+  const { canRead, canCreate, canUpdate, canDelete, canExport, canPrint, canManageMembers, canManageModules } = usePermission(userInfo);
   const hasViewPerm = canRead("Projects");
+  const hasMemberPerm = canManageMembers("Projects");
+  const hasModulePerm = canManageModules("Projects");
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,11 +124,12 @@ export default function ProjectsPage() {
   }, [pageIndex, pageSize, searchQuery]);
 
   useEffect(() => {
+    if (!hasViewPerm) return;
     let isMounted = true;
     Promise.allSettled([
       ProjectService.getPaginated({ pageNumber: 1, pageSize: 10 }),
-      ProjectService.getAvailableUsers(),
-      ProjectService.getAvailableModules()
+      hasMemberPerm ? ProjectService.getAvailableUsers() : Promise.resolve([]),
+      hasModulePerm ? ProjectService.getAvailableModules() : Promise.resolve([])
     ]).then(([projRes, userRes, modRes]) => {
       if (!isMounted) return;
       if (projRes.status === "fulfilled") {
@@ -145,7 +148,7 @@ export default function ProjectsPage() {
       setInitialLoading(false);
     });
     return () => { isMounted = false; };
-  }, []);
+  }, [hasViewPerm, hasMemberPerm, hasModulePerm]);
 
   const handlePageChange = (newPage: number) => {
     setPageIndex(newPage - 1);
@@ -236,6 +239,7 @@ export default function ProjectsPage() {
   };
 
   const openUserModal = useCallback(async (project: Project) => {
+    if (!hasMemberPerm) return;
     setSelectedProjectId(project.id);
     setUserLoading(true);
     setIsUserModalOpen(true);
@@ -252,7 +256,7 @@ export default function ProjectsPage() {
     } finally {
         setUserLoading(false);
     }
-  }, []);
+  }, [hasMemberPerm]);
 
   const handleAssignUser = async (userId: number) => {
     if (!selectedProjectId) return;
@@ -345,7 +349,7 @@ export default function ProjectsPage() {
         const proj = row.original;
         return (
           <div className="flex items-center gap-2">
-            {(canManageMembers("Projects") || canUpdate("Projects")) && (
+            {canManageMembers("Projects") && (
               <button
                 onClick={() => openUserModal(proj)}
                 className="p-1.5 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
