@@ -22,6 +22,7 @@ namespace HelpCenter.Persistence.ServiceRegistration
             services.AddScoped<IAuditLogWriter, HelpCenter.Persistence.Services.AuditLogWriter>();
             services.AddScoped<IStatisticsReadRepository, HelpCenter.Persistence.Repositories.StatisticsReadRepository>();
             services.AddScoped<IRoleQueryRepository, HelpCenter.Persistence.Repositories.RoleQueryRepository>();
+            services.AddScoped<IModuleUsageReadRepository, HelpCenter.Persistence.Repositories.ModuleUsageReadRepository>();
             services.AddScoped<IConversationReadService, HelpCenter.Persistence.Services.ConversationReadService>();
             services.AddScoped<IRequestCsvExportService, HelpCenter.Persistence.Services.RequestCsvExportService>();
             services.AddScoped<IRolePermissionSyncService, HelpCenter.Persistence.Services.RolePermissionSyncService>();

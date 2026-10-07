@@ -13,12 +13,14 @@ public class GetModulesQueryHandler : IRequestHandler<GetModulesQuery, Paginated
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<GetModulesQueryHandler> _logger;
+    private readonly IModuleUsageReadRepository _usage;
 
-    public GetModulesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GetModulesQueryHandler> logger)
+    public GetModulesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GetModulesQueryHandler> logger, IModuleUsageReadRepository usage)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _usage = usage;
     }
 
     public async Task<PaginatedResponse<ModuleDto>> Handle(GetModulesQuery request, CancellationToken cancellationToken)
@@ -39,21 +41,14 @@ public class GetModulesQueryHandler : IRequestHandler<GetModulesQuery, Paginated
 
         var dtoItems = _mapper.Map<List<ModuleDto>>(paginatedEntities.Items);
 
-        var guides = await _unitOfWork.Repository<Guide>().FindAsync(
-            x => !request.OnlyActive || x.IsActive,
+        var usage = await _usage.CountAsync(
+            dtoItems.Select(module => new ModuleUsageLookup(module.Id, module.Name)).ToArray(),
+            request.OnlyActive,
             cancellationToken);
-
-        var customerRequests = await _unitOfWork.Repository<CustomerRequest>().GetAllAsync(
-            cancellationToken);
-
-        var guideList = guides.ToList();
-        var requestList = customerRequests.ToList();
 
         foreach (var dto in dtoItems)
         {
-            var guideCount = guideList.Count(r => r.Module == dto.Name);
-            var requestCount = requestList.Count(r => r.ModuleId == dto.Id);
-            dto.UsageCount = guideCount + requestCount;
+            dto.UsageCount = usage.GetValueOrDefault(dto.Id);
         }
 
         _logger.LogInformation("{Count} adet modül başarıyla listelendi.", dtoItems.Count);
