@@ -85,12 +85,15 @@ export default function AdminLayout({
             setShowPasswordChange(true);
           }
 
-          try {
-            const dynamicItems = await AuthService.getMenuItems();
-            if (isMounted) setMenuItems(dynamicItems);
-          } catch (e) {
-            console.error("Failed to fetch menu items:", e);
-          }
+          // Navigation is supplementary: let verified content mount immediately.
+          // Keep the cleanup guard because this request can outlive the layout.
+          void AuthService.getMenuItems()
+            .then((dynamicItems) => {
+              if (isMounted) setMenuItems(dynamicItems);
+            })
+            .catch((error: unknown) => {
+              if (isMounted) console.error("Failed to fetch menu items:", error);
+            });
         } else {
           router.push("/admin/login");
         }
