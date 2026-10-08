@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type {
   ColumnDef,
   SortingState} from "@tanstack/react-table";
@@ -95,10 +95,37 @@ export function DataTable<TData extends object>({
   const [mobileViewMode, setMobileViewMode] = useState<"cards" | "table">("cards");
 
   const globalFilter = searchValue !== undefined ? searchValue : internalGlobalFilter;
+  const [searchDraft, setSearchDraft] = useState(globalFilter);
+  const [previousFilter, setPreviousFilter] = useState(globalFilter);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchCallback = useRef(onSearchChange);
+  const hasSearchCallback = Boolean(onSearchChange);
+
+  // Keep externally reset search values in sync with the input.
+  if (previousFilter !== globalFilter) {
+    setPreviousFilter(globalFilter);
+    setSearchDraft(globalFilter);
+  }
+
+  useEffect(() => {
+    searchCallback.current = onSearchChange;
+  }, [onSearchChange]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimer.current !== null) clearTimeout(searchTimer.current);
+    };
+  }, [searchValue, hasSearchCallback]);
 
   const handleFilterChange = (value: string) => {
     if (onSearchChange) {
-      onSearchChange(value);
+      setSearchDraft(value);
+      if (searchTimer.current !== null) clearTimeout(searchTimer.current);
+      searchTimer.current = setTimeout(() => {
+        searchTimer.current = null;
+        if (searchValue === undefined) setInternalGlobalFilter(value);
+        searchCallback.current?.(value);
+      }, 300);
     } else {
       setInternalGlobalFilter(value);
       if (!manualPagination && table.setPageIndex) {
@@ -194,7 +221,7 @@ export function DataTable<TData extends object>({
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400" />
             <input
               type="text"
-              value={globalFilter ?? ""}
+              value={(onSearchChange ? searchDraft : globalFilter) ?? ""}
               onChange={(e) => handleFilterChange(e.target.value)}
               placeholder={searchPlaceholder}
               className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-800/70 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-slate-100 placeholder-slate-400 transition-all font-medium"
