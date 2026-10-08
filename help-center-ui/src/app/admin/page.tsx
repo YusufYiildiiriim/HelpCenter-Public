@@ -13,7 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/lib/permissions";
 import type { AdminStatistics, AdminReports } from "@/services/admin/AdminStatisticsService";
 import { AdminStatisticsService as StatisticsService } from "@/services/admin/AdminStatisticsService";
-import { apiMetrics } from "@/lib/axios";
 import { usePageTitle } from "@/lib/usePageTitle";
 import { useDashboardWidgets } from "@/lib/useDashboardWidgets";
 import { cn } from "@/lib/utils";
@@ -62,7 +61,6 @@ export default function AdminDashboard() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [reportsLoading, setReportsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [metrics, setMetrics] = useState(apiMetrics);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("All");
 
   const loadData = useCallback(async (isActive: () => boolean = () => true) => {
@@ -82,7 +80,6 @@ export default function AdminDashboard() {
     try {
       setRefreshing(true);
       await loadData();
-      setMetrics({ ...apiMetrics });
     } finally {
       setRefreshing(false);
     }
@@ -90,14 +87,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let isMounted = true;
-    loadData(() => isMounted).then(() => {
-      if (isMounted) setMetrics({ ...apiMetrics });
-    });
+    void loadData(() => isMounted);
 
-    const interval = setInterval(() => setMetrics({ ...apiMetrics }), 3000);
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
   }, [loadData]);
 
@@ -259,7 +252,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <SystemHealthCard metrics={metrics} />
+              <SystemHealthCard />
             </motion.div>
           )}
 

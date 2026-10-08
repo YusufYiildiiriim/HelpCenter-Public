@@ -1,21 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, ShieldCheck, AlertCircle, CheckCircle2, Timer, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { apiMetrics } from "@/lib/axios";
 
-interface SystemHealthCardProps {
-  metrics: {
-    averageDuration: number;
-    lastDuration: number;
-    slowRequests: { url: string; duration: number; time: Date }[];
-  };
-}
+export const SystemHealthCard: React.FC = () => {
+  const [metrics, setMetrics] = useState(() => ({
+    averageDuration: apiMetrics.averageDuration,
+    lastDuration: apiMetrics.lastDuration,
+    slowCount: apiMetrics.slowRequests.length,
+  }));
 
-export const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ metrics }) => {
-  const slowCount = metrics.slowRequests.length;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = {
+        averageDuration: apiMetrics.averageDuration,
+        lastDuration: apiMetrics.lastDuration,
+        slowCount: apiMetrics.slowRequests.length,
+      };
+      setMetrics((previous) =>
+        previous.averageDuration === next.averageDuration &&
+        previous.lastDuration === next.lastDuration &&
+        previous.slowCount === next.slowCount ? previous : next
+      );
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const slowCount = metrics.slowCount;
 
   let statusText = "Stabil";
   let statusDesc = "Her şey yolunda";
