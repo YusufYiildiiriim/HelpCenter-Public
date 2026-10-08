@@ -97,7 +97,7 @@ const MiniRing: React.FC<{ percent: number; loading: boolean }> = ({ percent, lo
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: circumference - (percent / 100) * circumference }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         />
       </svg>
       {loading ? (
@@ -115,8 +115,7 @@ const StatTile: React.FC<{
   item: TileConfig;
   value: number;
   loading: boolean;
-  index: number;
-}> = ({ item, value, loading, index }) => {
+}> = ({ item, value, loading }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState({ x: 50, y: 50, opacity: 0 });
 
@@ -132,16 +131,16 @@ const StatTile: React.FC<{
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15 + index * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       className="h-full"
     >
       <Card
         ref={ref}
         onMouseMove={handleMove}
         onMouseLeave={() => setSpot((s) => ({ ...s, opacity: 0 }))}
-        className="group relative h-full overflow-hidden rounded-2xl border-slate-800 bg-slate-900/90 p-4 shadow-xl shadow-slate-950/30 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700 hover:shadow-[0_8px_24px_-8px_rgba(15,23,42,0.6)]"
+        className="group relative h-full min-h-[188px] overflow-hidden rounded-2xl border-slate-800 bg-slate-900/90 p-4 shadow-xl shadow-slate-950/30 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700 hover:shadow-[0_8px_24px_-8px_rgba(15,23,42,0.6)]"
       >
         {/* Spotlight */}
         <div
@@ -180,7 +179,7 @@ const StatTile: React.FC<{
           ) : (
             <AnimatedCounter
               value={value || 0}
-              delay={0.25 + index * 0.07}
+              duration={0.3}
               className="mt-0.5 block font-mono text-2xl font-bold tabular-nums tracking-tight text-white"
             />
           )}
@@ -213,17 +212,39 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading, 
     stats?.completedRequests !== null &&
     stats?.completedRequests !== undefined;
 
+  if (loading && stats === null) {
+    // Reserve anonymous slots until the server supplies field visibility and values.
+    const pendingKeys = ["totalRequests", ...tiles.map((item) => item.key)]
+      .filter((key) => !canWidget || canWidget(key));
+    return (
+      <div
+        role="status"
+        aria-label="İstatistikler yükleniyor"
+        aria-busy="true"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+      >
+        {pendingKeys.map((key) => (
+          <Card key={key} aria-hidden="true" className="min-h-[188px] rounded-2xl border-slate-800 bg-slate-900/90 p-4 shadow-xl shadow-slate-950/30">
+            <div className="h-8 w-8 rounded-lg bg-slate-800 animate-pulse" />
+            <div className="mt-3.5 h-3 w-20 rounded bg-slate-800 animate-pulse" />
+            <div className="mt-2.5 h-8 w-24 rounded bg-slate-800 animate-pulse" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {/* Featured: Toplam Talep (Only rendered if server allowed totalRequests) */}
       {showTotalRequests && (
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
           className="h-full"
         >
-          <Card className="group relative h-full overflow-hidden rounded-2xl border-indigo-500/30 bg-slate-900/90 p-4 shadow-xl shadow-indigo-950/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-8px_rgba(79,70,229,0.4)]">
+          <Card className="group relative h-full min-h-[188px] overflow-hidden rounded-2xl border-indigo-500/30 bg-slate-900/90 p-4 shadow-xl shadow-indigo-950/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-8px_rgba(79,70,229,0.4)]">
             {/* Top accent line */}
             <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
             <div className="pointer-events-none absolute -top-10 -right-10 h-24 w-24 rounded-full bg-indigo-600/20 blur-2xl" />
@@ -254,6 +275,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading, 
                 ) : (
                   <AnimatedCounter
                     value={total}
+                    duration={0.3}
                     className="font-mono text-2xl font-bold tabular-nums tracking-tight text-white"
                   />
                 )}
@@ -275,8 +297,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading, 
         </motion.div>
       )}
 
-      {availableTiles.map((item, i) => (
-        <StatTile key={item.key} item={item} value={stats?.[item.key] ?? 0} loading={loading} index={i} />
+      {availableTiles.map((item) => (
+        <StatTile key={item.key} item={item} value={stats?.[item.key] ?? 0} loading={loading} />
       ))}
     </div>
   );
