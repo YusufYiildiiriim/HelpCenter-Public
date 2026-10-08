@@ -51,6 +51,7 @@ public static class WebApiServicesRegistration
                 policy.WithOrigins(allowedOrigins)
                       .AllowAnyHeader()
                       .AllowAnyMethod()
+                      .WithExposedHeaders("Retry-After")
                       .AllowCredentials();
             });
         });

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AdminLayout from '@/app/admin/layout';
 import { AuthService } from '@/services/common/AuthService';
@@ -53,7 +53,36 @@ describe('AdminLayout menu loading', () => {
     vi.mocked(AuthService.verify).mockReturnValue(verification.promise);
     vi.mocked(AuthService.getMenuItems).mockReturnValue(menuRequest.promise);
   });
-  afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+  afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
+
+  it('waits after 429 without redirecting or exposing content, then allows a manual retry', async () => {
+    vi.useFakeTimers();
+    render(<AdminLayout><ProtectedContent /></AdminLayout>);
+    const error = Object.assign(new Error('rate limited'), {
+      isAxiosError: true, response: { status: 429, headers: { 'retry-after': '2' } },
+    });
+    await act(async () => verification.reject(error));
+    expect(push).not.toHaveBeenCalled();
+    expect(mounted).not.toHaveBeenCalled();
+    expect(AuthService.getMenuItems).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Yeniden dene' })).toBeDisabled();
+    expect(screen.getByRole('status')).toHaveTextContent('2 saniye');
+    await act(async () => vi.advanceTimersByTime(2000));
+    expect(AuthService.verify).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Yeniden dene' })).toBeEnabled();
+    vi.mocked(AuthService.verify).mockResolvedValueOnce(user);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Yeniden dene' })));
+    expect(AuthService.verify).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('Protected dashboard')).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('ignores a verification error received after unmount', async () => {
+    const view = render(<AdminLayout><ProtectedContent /></AdminLayout>);
+    view.unmount();
+    await act(async () => verification.reject(new Error('late error')));
+    expect(push).not.toHaveBeenCalled();
+  });
 
   it('mounts authorized content with permissions before the menu resolves', async () => {
     render(<AdminLayout><ProtectedContent /></AdminLayout>);

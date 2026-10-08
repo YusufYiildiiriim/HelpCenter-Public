@@ -46,6 +46,21 @@ export function getApiErrorStatus(error: unknown): number | null {
   return error.response?.status ?? null;
 }
 
+/** Retry-After accepts delay seconds or an HTTP date. Missing/invalid values wait one minute. */
+export function getApiRetryAfterSeconds(error: unknown, now = Date.now()): number {
+  if (!axios.isAxiosError(error)) return 60;
+  const value: unknown = error.response?.headers?.["retry-after"];
+  if (typeof value !== "string" && typeof value !== "number") return 60;
+  const raw = String(value).trim();
+  if (!raw) return 60;
+  if (/^\d+$/.test(raw)) {
+    const seconds = Number(raw);
+    return Number.isFinite(seconds) ? seconds : 60;
+  }
+  const deadline = Date.parse(raw);
+  return Number.isFinite(deadline) ? Math.max(0, Math.ceil((deadline - now) / 1000)) : 60;
+}
+
 export function isNetworkError(error: unknown): boolean {
   if (!axios.isAxiosError(error)) return false;
   // In cases like timeout / DNS / CORS / connection refused, axios does not produce a response.

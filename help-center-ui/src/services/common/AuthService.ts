@@ -45,6 +45,8 @@ export type UserPermissions = {
   modules: ResourcePermission[];
 };
 
+let pendingVerification: { token: string | null; promise: Promise<VerifyResponse> } | null = null;
+
 function storeLoginAccessToken(response: LoginResponse): void {
   const token = response.accessToken ?? response.token;
   if (!token) throw new Error("Login response did not contain an access token.");
@@ -85,9 +87,18 @@ export const AuthService = {
    * Verifies token validity and role from the backend.
    * If JWT is invalid or 5 minutes have elapsed, returns 401 and axios interceptor clears the session.
    */
-  verify: async (): Promise<VerifyResponse> => {
-    const response = await api.get("/api/auth/verify");
-    return response.data;
+  verify: (): Promise<VerifyResponse> => {
+    const token = getAccessToken();
+    if (pendingVerification?.token === token) return pendingVerification.promise;
+
+    // Share only an in-flight request for the same session; never cache permissions.
+    const promise = api.get<VerifyResponse>("/api/auth/verify")
+      .then((response) => response.data)
+      .finally(() => {
+        if (pendingVerification?.promise === promise) pendingVerification = null;
+      });
+    pendingVerification = { token, promise };
+    return promise;
   },
 
   getMenuItems: async (): Promise<MenuItemDto[]> => {

@@ -26,6 +26,7 @@ import { OrganizationProvider } from "@/context/OrganizationContext";
 import { AdminOrganizationService } from "@/services/admin/AdminOrganizationService";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import { getApiErrorStatus, getApiRetryAfterSeconds } from "@/lib/api/errors";
 
 // Modular Components
 import { Sidebar } from "./layout-components/Sidebar";
@@ -57,6 +58,9 @@ export default function AdminLayout({
 
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
+  const [retryDeadline, setRetryDeadline] = useState<number | null>(null);
+  const [retrySeconds, setRetrySeconds] = useState(0);
   const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
   const [userInfo, setUserInfo] = useState<VerifyResponse | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemDto[]>([]);
@@ -98,6 +102,13 @@ export default function AdminLayout({
           router.push("/admin/login");
         }
       } catch (error) {
+        if (!isMounted) return;
+        if (getApiErrorStatus(error) === 429) {
+          const seconds = getApiRetryAfterSeconds(error);
+          setRetrySeconds(seconds);
+          setRetryDeadline(Date.now() + seconds * 1000);
+          return;
+        }
         console.error("Auth verification failed:", error);
         router.push("/admin/login");
       } finally {
@@ -112,7 +123,14 @@ export default function AdminLayout({
     return () => {
       isMounted = false;
     };
-  }, [isLoginPage, router]);
+  }, [isLoginPage, router, verificationAttempt]);
+
+  useEffect(() => {
+    if (retryDeadline === null || isLoginPage) return;
+    const update = () => setRetrySeconds(Math.max(0, Math.ceil((retryDeadline - Date.now()) / 1000)));
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [retryDeadline, isLoginPage]);
 
   useEffect(() => {
     if (!isLoginPage && isAuthorized) {
@@ -165,6 +183,28 @@ export default function AdminLayout({
           <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse" />
         </div>
         <p className="text-slate-500 font-black tracking-[0.3em] uppercase text-[10px] animate-pulse">Sistem Yetkilendiriliyor...</p>
+      </div>
+    );
+  }
+
+  if (retryDeadline !== null) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="max-w-md text-center space-y-5 text-slate-200">
+          <h1 className="text-xl font-semibold">Kısa bir süre bekleyin</h1>
+          <p>İstek sınırına ulaşıldığı için oturumunuz şu anda doğrulanamıyor.</p>
+          <p role="status">{retrySeconds > 0 ? `${retrySeconds} saniye sonra yeniden deneyebilirsiniz.` : "Şimdi yeniden deneyebilirsiniz."}</p>
+          <button type="button" disabled={retrySeconds > 0}
+            onClick={() => {
+              if (Date.now() < retryDeadline) return;
+              setRetryDeadline(null);
+              setIsVerifying(true);
+              setVerificationAttempt((attempt) => attempt + 1);
+            }}
+            className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+            Yeniden dene
+          </button>
+        </div>
       </div>
     );
   }
