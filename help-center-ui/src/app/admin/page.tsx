@@ -59,30 +59,29 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStatistics | null>(null);
   const [reports, setReports] = useState<AdminReports | null>(null);
   const { can: canWidget } = useDashboardWidgets(stats?.allowedFields);
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [reportsLoading, setReportsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [metrics, setMetrics] = useState(apiMetrics);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("All");
 
-  const loadData = useCallback(async () => {
-    const [statsRes, reportsRes] = await Promise.allSettled([
-      StatisticsService.getStatistics(),
-      StatisticsService.getReports(),
+  const loadData = useCallback(async (isActive: () => boolean = () => true) => {
+    await Promise.allSettled([
+      StatisticsService.getStatistics()
+        .then((data) => { if (isActive()) setStats(data); })
+        .catch((error: unknown) => console.error("Error fetching statistics:", error))
+        .finally(() => { if (isActive()) setStatsLoading(false); }),
+      StatisticsService.getReports()
+        .then((data) => { if (isActive()) setReports(data); })
+        .catch((error: unknown) => console.error("Error fetching reports:", error))
+        .finally(() => { if (isActive()) setReportsLoading(false); }),
     ]);
-    if (statsRes.status === "rejected") console.error("Error fetching statistics:", statsRes.reason);
-    if (reportsRes.status === "rejected") console.error("Error fetching reports:", reportsRes.reason);
-    return {
-      statsData: statsRes.status === "fulfilled" ? statsRes.value : null,
-      reportsData: reportsRes.status === "fulfilled" ? reportsRes.value : null,
-    };
   }, []);
 
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      const { statsData, reportsData } = await loadData();
-      if (statsData) setStats(statsData);
-      if (reportsData) setReports(reportsData);
+      await loadData();
       setMetrics({ ...apiMetrics });
     } finally {
       setRefreshing(false);
@@ -91,16 +90,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let isMounted = true;
-    loadData()
-      .then(({ statsData, reportsData }) => {
-        if (!isMounted) return;
-        if (statsData) setStats(statsData);
-        if (reportsData) setReports(reportsData);
-        setMetrics({ ...apiMetrics });
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+    loadData(() => isMounted).then(() => {
+      if (isMounted) setMetrics({ ...apiMetrics });
+    });
 
     const interval = setInterval(() => setMetrics({ ...apiMetrics }), 3000);
     return () => {
@@ -178,12 +170,12 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.55 }}
         >
-          <TicketFlow flow={reports?.dashboard?.ticketFlow} loading={loading} />
+          <TicketFlow flow={reports?.dashboard?.ticketFlow} loading={reportsLoading} />
         </motion.div>
       )}
 
       {/* Top 5 Metric Cards */}
-      <DashboardStats stats={stats} loading={loading} canWidget={canWidget} />
+      <DashboardStats stats={stats} loading={statsLoading} canWidget={canWidget} />
 
       {/* Main Grid Section */}
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
@@ -196,7 +188,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <WeeklyAnalysisChart points={reports?.dashboard?.weeklyOpened} loading={loading} />
+              <WeeklyAnalysisChart points={reports?.dashboard?.weeklyOpened} loading={reportsLoading} />
             </motion.div>
           )}
 
@@ -256,7 +248,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <PriorityDonutChart priorities={reports?.dashboard?.priorityDistribution} loading={loading} />
+              <PriorityDonutChart priorities={reports?.dashboard?.priorityDistribution} loading={reportsLoading} />
             </motion.div>
           )}
 
@@ -288,14 +280,14 @@ export default function AdminDashboard() {
       {(canWidget("avgResolutionMinutes") || canWidget("reopenRate") || canWidget("dailyTrend")) && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {canWidget("avgResolutionMinutes") && (
-            <AvgResolutionCard minutes={reports?.avgResolutionMinutes ?? 0} loading={loading} />
+            <AvgResolutionCard minutes={reports?.avgResolutionMinutes ?? 0} loading={reportsLoading} />
           )}
           {canWidget("reopenRate") && (
-            <ReopenRateCard stats={reports?.reopenStats} loading={loading} />
+            <ReopenRateCard stats={reports?.reopenStats} loading={reportsLoading} />
           )}
           {canWidget("dailyTrend") && (
             <div className="lg:col-span-1">
-              <DailyTrendChart data={reports?.dailyTrend} loading={loading} />
+              <DailyTrendChart data={reports?.dailyTrend} loading={reportsLoading} />
             </div>
           )}
         </div>
@@ -304,19 +296,19 @@ export default function AdminDashboard() {
       {(canWidget("statusDistribution") || canWidget("moduleDistribution") || canWidget("companyTopN")) && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {canWidget("statusDistribution") && (
-            <StatusDistributionCard data={reports?.statusDistribution} loading={loading} />
+            <StatusDistributionCard data={reports?.statusDistribution} loading={reportsLoading} />
           )}
           {canWidget("moduleDistribution") && (
-            <ModuleDistributionCard data={reports?.moduleDistribution} loading={loading} />
+            <ModuleDistributionCard data={reports?.moduleDistribution} loading={reportsLoading} />
           )}
           {canWidget("companyTopN") && (
-            <CompanyTopNCard data={reports?.companyTopN} loading={loading} />
+            <CompanyTopNCard data={reports?.companyTopN} loading={reportsLoading} />
           )}
         </div>
       )}
 
       {canWidget("agentPerformance") && (
-        <AgentPerformanceCard data={reports?.agentPerformance} loading={loading} />
+        <AgentPerformanceCard data={reports?.agentPerformance} loading={reportsLoading} />
       )}
     </div>
   );
