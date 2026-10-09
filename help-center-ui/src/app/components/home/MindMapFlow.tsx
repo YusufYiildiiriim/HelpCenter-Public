@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import React, { memo, useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ZoomIn,
@@ -77,6 +77,143 @@ interface Connection {
   d: string;
 }
 
+interface MindMapLayout {
+  placedNodes: PlacedNode[];
+  connections: Connection[];
+  totalWidth: number;
+  totalHeight: number;
+}
+
+// Pan/zoom changes only the parent transform. Keep the expensive animated graph
+// out of those renders; layout and guide actions still invalidate it normally.
+const MindMapGraph = memo(function MindMapGraph({ layout, selectedModule, onSelectGuide, toggleNode }: {
+  layout: MindMapLayout;
+  selectedModule: string;
+  onSelectGuide: (guide: Guide) => void;
+  toggleNode: (publicId: string) => void;
+}) {
+  return (
+    <>
+      {/* SVG Connecting Curves Between Items */}
+      <svg
+        className="absolute inset-0 pointer-events-none"
+        width={layout.totalWidth}
+        height={layout.totalHeight}
+        style={{ overflow: "visible" }}
+      >
+        <defs>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#818cf8" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.85" />
+          </linearGradient>
+        </defs>
+
+        <AnimatePresence initial={false}>
+          {layout.connections.map((conn) => (
+            <motion.path
+              key={conn.id}
+              d={conn.d}
+              fill="none"
+              stroke="url(#lineGrad)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              initial={{ opacity: 0, pathLength: 0 }}
+              animate={{ opacity: 1, pathLength: 1 }}
+              exit={{ opacity: 0, pathLength: 0 }}
+              transition={{ duration: 0.28, ease: "easeInOut" }}
+            />
+          ))}
+        </AnimatePresence>
+      </svg>
+
+      {/* GUIDE ITEM NODES */}
+      <AnimatePresence initial={false}>
+        {layout.placedNodes.map((pn) => {
+          return (
+          <motion.div
+            key={pn.guide.publicId}
+            style={{
+              position: "absolute",
+              left: "0px",
+              top: "0px",
+              width: `${pn.width}px`,
+              height: `${pn.height}px`,
+            }}
+            initial={{ opacity: 0, x: pn.x, y: pn.y, scale: 0.96 }}
+            animate={{ opacity: 1, x: pn.x, y: pn.y, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.28, ease: "easeInOut" }}
+            className="flex items-center"
+          >
+            <div className="relative w-full h-full group">
+              <button
+                type="button"
+                onClick={() => onSelectGuide(pn.guide)}
+                className={cn(
+                  "h-full text-left bg-[#182038] hover:bg-[#1f2a4a] active:bg-[#222e54] active:scale-[0.98] border border-slate-700/80 hover:border-purple-400 px-3.5 flex items-center justify-between shadow-lg hover:shadow-purple-900/20 transition cursor-pointer touch-manipulation",
+                  pn.hasChildren ? "absolute left-0 w-4/5 rounded-l-2xl" : "w-full rounded-2xl"
+                )}
+              >
+                <div className="flex items-center gap-2.5 min-w-0 pr-3">
+                  <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold text-[11px] shrink-0">
+                    {pn.stepNumber}
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-semibold text-slate-100 group-hover:text-purple-200 truncate">
+                      {pn.guide.title}
+                    </span>
+                    {!selectedModule && pn.guide.module && (
+                      <span className="text-[10px] text-slate-400 truncate">
+                        {pn.guide.module}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {!pn.hasChildren && (
+                  <div
+                    className="w-5 h-5 rounded-full bg-[#141a2e] border border-slate-600 text-slate-400 group-hover:text-purple-300 group-hover:border-purple-400 flex items-center justify-center text-[10px] font-bold shrink-0 transition"
+                    title="Rehberi Aç"
+                  >
+                    &gt;
+                  </div>
+                )}
+              </button>
+
+              {/* The right fifth of a branch is a deliberately large toggle target. */}
+              {pn.hasChildren && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleNode(pn.guide.publicId);
+                  }}
+                  aria-label={pn.isExpanded ? `${pn.guide.title} alt adımlarını daralt` : `${pn.guide.title} alt adımlarını göster`}
+                  aria-expanded={pn.isExpanded}
+                  className="absolute right-0 top-0 h-full w-1/5 min-w-[48px] rounded-r-2xl bg-[#141a2e] border border-l-0 border-slate-700/80 text-slate-300 hover:text-white hover:bg-[#1f2a4a] hover:border-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#141a2e] flex items-center justify-center text-xs font-bold shadow-lg cursor-pointer transition z-10 touch-manipulation active:scale-[0.98]"
+                  title={pn.isExpanded ? "Alt adımları daralt" : "Alt adımları göster"}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "w-6 h-6 rounded-full border border-slate-600 flex items-center justify-center transition-transform duration-300",
+                      pn.isExpanded && "rotate-180"
+                    )}
+                  >
+                    &gt;
+                  </span>
+                </button>
+              )}
+            </div>
+          </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </>
+  );
+});
+
 export const MindMapFlow: React.FC<MindMapFlowProps> = ({
   guides = [],
   selectedModule = "",
@@ -144,12 +281,12 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
   // Expanded states for item nodes
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
 
-  const toggleNode = (guidePublicId: string) => {
+  const toggleNode = useCallback((guidePublicId: string) => {
     setExpandedNodes((prev) => ({
       ...prev,
       [guidePublicId]: prev[guidePublicId] === false ? true : false,
     }));
-  };
+  }, []);
 
   const handleExpandAll = () => {
     const updated: Record<string, boolean> = {};
@@ -175,7 +312,8 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
 
   // Mirrors of pan/zoom for the native (non-React) event listeners below, which
   // must read the latest value without re-subscribing on every pan/zoom change.
-  // Kept in sync via an effect — never written during render.
+  // Event handlers update these immediately, so several native events in one
+  // React batch don't reuse stale coordinates. The effect also handles prop resets.
   const panRef = useRef(pan);
   const zoomRef = useRef(zoom);
   useEffect(() => {
@@ -183,12 +321,17 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
     zoomRef.current = zoom;
   }, [pan, zoom]);
 
+  const updateView = useCallback((view: MindMapView) => {
+    panRef.current = view.pan;
+    zoomRef.current = view.zoom;
+    setPan(view.pan);
+    setZoom(view.zoom);
+  }, []);
+
   // Reset view to center with responsive initial zoom (wired to the toolbar button)
   const handleResetView = useCallback(() => {
-    const view = getInitialMindMapView();
-    setZoom(view.zoom);
-    setPan(view.pan);
-  }, []);
+    updateView(getInitialMindMapView());
+  }, [updateView]);
 
   // Reset the view whenever the active module filter changes. Adjusted directly
   // during render (comparing against the previous prop value) instead of in an
@@ -231,11 +374,8 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
       }
 
       // If has visible expanded children: layout children first
-      const childYs: number[] = [];
-      node.children.forEach((child) => {
-        const childLayout = layoutSubtree(child);
-        childYs.push(childLayout.y);
-      });
+      const childLayouts = node.children.map((child) => layoutSubtree(child));
+      const childYs = childLayouts.map((child) => child.y);
 
       const nodeY = (childYs[0] + childYs[childYs.length - 1]) / 2;
       placedNodes.push({
@@ -254,20 +394,15 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
       const startX = nodeX + GUIDE_WIDTH;
       const startY = nodeY + NODE_HEIGHT / 2;
 
-      node.children.forEach((child) => {
-        const childPlaced = placedNodes.find(
-          (p) => p.guide.publicId === child.guide.publicId
-        );
-        if (childPlaced) {
-          const endX = childPlaced.x;
-          const endY = childPlaced.y + NODE_HEIGHT / 2;
-          const midX = (startX + endX) / 2;
-          const d = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
-          connections.push({
-            id: `${node.guide.publicId}->${child.guide.publicId}`,
-            d,
-          });
-        }
+      node.children.forEach((child, index) => {
+        const endX = 40 + child.depth * (GUIDE_WIDTH + COLUMN_GAP);
+        const endY = childLayouts[index].y + NODE_HEIGHT / 2;
+        const midX = (startX + endX) / 2;
+        const d = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+        connections.push({
+          id: `${node.guide.publicId}->${child.guide.publicId}`,
+          d,
+        });
       });
 
       return { y: nodeY, height: currentY - childYs[0] };
@@ -298,10 +433,10 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    setPan({
+    updateView({ pan: {
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
-    });
+    }, zoom: zoomRef.current });
   };
 
   const handleMouseUp = () => {
@@ -331,8 +466,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
           const nextPanX = focalX - (focalX - prevPan.x) * (nextZoom / prevZoom);
           const nextPanY = focalY - (focalY - prevPan.y) * (nextZoom / prevZoom);
 
-          setZoom(nextZoom);
-          setPan({ x: nextPanX, y: nextPanY });
+          updateView({ zoom: nextZoom, pan: { x: nextPanX, y: nextPanY } });
         }
       }
     };
@@ -379,10 +513,10 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
     const handleNativeTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1 && singleTouchStart) {
         const touch = e.touches[0];
-        setPan({
+        updateView({ pan: {
           x: touch.clientX - singleTouchStart.x,
           y: touch.clientY - singleTouchStart.y,
-        });
+        }, zoom: zoomRef.current });
       } else if (e.touches.length === 2 && initialPinchDist && initialPinchDist > 0) {
         e.preventDefault();
         const t1 = e.touches[0];
@@ -399,8 +533,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
         const nextPanX = focalX - (focalX - prevPan.x) * (nextZoom / prevZoom);
         const nextPanY = focalY - (focalY - prevPan.y) * (nextZoom / prevZoom);
 
-        setZoom(nextZoom);
-        setPan({ x: nextPanX, y: nextPanY });
+        updateView({ zoom: nextZoom, pan: { x: nextPanX, y: nextPanY } });
       }
     };
 
@@ -423,7 +556,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
       el.removeEventListener("touchend", handleNativeTouchEnd);
       el.removeEventListener("touchcancel", handleNativeTouchEnd);
     };
-  }, [viewMode]);
+  }, [viewMode, updateView]);
 
   return (
     <div className="relative w-full flex flex-col rounded-2xl overflow-hidden bg-obsidian-950/80 border border-slate-800/80 shadow-2xl">
@@ -494,7 +627,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
 
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.min(z + 0.15, 2.0))}
+                onClick={() => updateView({ pan: panRef.current, zoom: Math.min(zoomRef.current + 0.15, 2.0) })}
                 className="p-1.5 text-slate-400 hover:text-white bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700/60 rounded-lg transition"
                 title="Yakınlaştır"
               >
@@ -507,7 +640,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
 
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.max(z - 0.15, 0.4))}
+                onClick={() => updateView({ pan: panRef.current, zoom: Math.max(zoomRef.current - 0.15, 0.4) })}
                 className="p-1.5 text-slate-400 hover:text-white bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700/60 rounded-lg transition"
                 title="Uzaklaştır"
               >
@@ -561,122 +694,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
               transition: isDragging ? "none" : "transform 0.1s ease-out",
             }}
           >
-            {/* SVG Connecting Curves Between Items */}
-            <svg
-              className="absolute inset-0 pointer-events-none"
-              width={layout.totalWidth}
-              height={layout.totalHeight}
-              style={{ overflow: "visible" }}
-            >
-              <defs>
-                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#818cf8" stopOpacity="0.85" />
-                  <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.85" />
-                </linearGradient>
-              </defs>
-
-              <AnimatePresence initial={false}>
-                {layout.connections.map((conn) => (
-                  <motion.path
-                    key={conn.id}
-                    d={conn.d}
-                    fill="none"
-                    stroke="url(#lineGrad)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    initial={{ opacity: 0, pathLength: 0 }}
-                    animate={{ opacity: 1, pathLength: 1 }}
-                    exit={{ opacity: 0, pathLength: 0 }}
-                    transition={{ duration: 0.28, ease: "easeInOut" }}
-                  />
-                ))}
-              </AnimatePresence>
-            </svg>
-
-            {/* GUIDE ITEM NODES */}
-            <AnimatePresence initial={false}>
-              {layout.placedNodes.map((pn) => {
-                return (
-                <motion.div
-                  key={pn.guide.publicId}
-                  style={{
-                    position: "absolute",
-                    left: "0px",
-                    top: "0px",
-                    width: `${pn.width}px`,
-                    height: `${pn.height}px`,
-                  }}
-                  initial={{ opacity: 0, x: pn.x, y: pn.y, scale: 0.96 }}
-                  animate={{ opacity: 1, x: pn.x, y: pn.y, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.28, ease: "easeInOut" }}
-                  className="flex items-center"
-                >
-                  <div className="relative w-full h-full group">
-                    <button
-                      type="button"
-                      onClick={() => onSelectGuide(pn.guide)}
-                      className={cn(
-                        "h-full text-left bg-[#182038] hover:bg-[#1f2a4a] active:bg-[#222e54] active:scale-[0.98] border border-slate-700/80 hover:border-purple-400 px-3.5 flex items-center justify-between shadow-lg hover:shadow-purple-900/20 transition cursor-pointer touch-manipulation",
-                        pn.hasChildren ? "absolute left-0 w-4/5 rounded-l-2xl" : "w-full rounded-2xl"
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0 pr-3">
-                        <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold text-[11px] shrink-0">
-                          {pn.stepNumber}
-                        </div>
-
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-semibold text-slate-100 group-hover:text-purple-200 truncate">
-                            {pn.guide.title}
-                          </span>
-                          {!selectedModule && pn.guide.module && (
-                            <span className="text-[10px] text-slate-400 truncate">
-                              {pn.guide.module}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {!pn.hasChildren && (
-                        <div
-                          className="w-5 h-5 rounded-full bg-[#141a2e] border border-slate-600 text-slate-400 group-hover:text-purple-300 group-hover:border-purple-400 flex items-center justify-center text-[10px] font-bold shrink-0 transition"
-                          title="Rehberi Aç"
-                        >
-                          &gt;
-                        </div>
-                      )}
-                    </button>
-
-                    {/* The right fifth of a branch is a deliberately large toggle target. */}
-                    {pn.hasChildren && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleNode(pn.guide.publicId);
-                        }}
-                        aria-label={pn.isExpanded ? `${pn.guide.title} alt adımlarını daralt` : `${pn.guide.title} alt adımlarını göster`}
-                        aria-expanded={pn.isExpanded}
-                        className="absolute right-0 top-0 h-full w-1/5 min-w-[48px] rounded-r-2xl bg-[#141a2e] border border-l-0 border-slate-700/80 text-slate-300 hover:text-white hover:bg-[#1f2a4a] hover:border-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#141a2e] flex items-center justify-center text-xs font-bold shadow-lg cursor-pointer transition z-10 touch-manipulation active:scale-[0.98]"
-                        title={pn.isExpanded ? "Alt adımları daralt" : "Alt adımları göster"}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "w-6 h-6 rounded-full border border-slate-600 flex items-center justify-center transition-transform duration-300",
-                            pn.isExpanded && "rotate-180"
-                          )}
-                        >
-                          &gt;
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-                );
-              })}
-            </AnimatePresence>
+            <MindMapGraph layout={layout} selectedModule={selectedModule} onSelectGuide={onSelectGuide} toggleNode={toggleNode} />
           </div>
         </div>
       )}
