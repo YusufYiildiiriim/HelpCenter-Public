@@ -288,6 +288,22 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
     }));
   }, []);
 
+  const listRows = useMemo(() => {
+    const rows: { node: TreeNode; path: number[] }[] = [];
+    const stack = treeRoots.slice().reverse().map((node) => ({ node, path: [node.stepNumber] }));
+    while (stack.length > 0) {
+      const row = stack.pop()!;
+      rows.push(row);
+      if (expandedNodes[row.node.guide.publicId] !== false) {
+        for (let i = row.node.children.length - 1; i >= 0; i--) {
+          const child = row.node.children[i];
+          stack.push({ node: child, path: [...row.path.slice(-2), child.stepNumber] });
+        }
+      }
+    }
+    return rows;
+  }, [treeRoots, expandedNodes]);
+
   const handleExpandAll = () => {
     const updated: Record<string, boolean> = {};
     activeGuides.forEach((g) => {
@@ -699,86 +715,52 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
         </div>
       )}
 
-      {/* 2. MOBILE-FIRST ACCORDION LIST FLOW */}
+      {/* List rows preserve every expanded step without nesting the layout indefinitely. */}
       {viewMode === "list" && (
-        <div className="p-4 space-y-3 max-h-[580px] overflow-y-auto hide-scrollbar">
-          {treeRoots.length > 0 ? (
-            treeRoots.map((root) => {
-              return (
-                <div
-                  key={root.guide.publicId}
-                  className="bg-obsidian-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2 shadow-lg"
-                >
-                  {/* Root Guide Item */}
-                  <button
-                    type="button"
-                    onClick={() => onSelectGuide(root.guide)}
-                    className="w-full text-left flex items-center justify-between p-3 rounded-xl bg-obsidian-850 hover:bg-obsidian-800/80 active:bg-[#202947] active:scale-[0.98] border border-slate-800 hover:border-purple-500/40 transition cursor-pointer group touch-manipulation"
-                  >
-                    <div className="flex items-center space-x-3 min-w-0">
-                      <div className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold text-xs shrink-0">
-                        {root.stepNumber}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-semibold text-slate-100 group-hover:text-purple-300 truncate">
-                          {root.guide.title}
+        <div className="p-3 sm:p-4 max-h-[580px] overflow-y-auto custom-scrollbar">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-[11px] text-slate-400">{listRows.length} / {activeGuides.length} adım</span>
+            <div className="flex gap-1.5">
+              <button type="button" onClick={handleExpandAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">Tümünü aç</button>
+              <button type="button" onClick={handleCollapseAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">Tümünü kapat</button>
+            </div>
+          </div>
+          {listRows.length > 0 ? (
+            <ol aria-label="Sıralı rehber adımları" className="space-y-2">
+              {listRows.map(({ node, path }) => {
+                const isExpanded = expandedNodes[node.guide.publicId] !== false;
+                return (
+                  <li key={node.guide.publicId} style={{ marginLeft: Math.min(node.depth, 2) * 12 }}
+                    className={cn("relative", node.depth > 0 && "before:absolute before:-left-2 before:top-0 before:bottom-0 before:w-px before:bg-purple-500/25")}>
+                    <div className="flex items-stretch rounded-xl border border-slate-700/70 bg-obsidian-900/90 shadow-sm overflow-hidden">
+                      <button type="button" onClick={() => onSelectGuide(node.guide)}
+                        aria-label={"Adım " + node.stepNumber + ": " + node.guide.title + " rehberini aç"}
+                        className="flex min-w-0 flex-1 items-center gap-2.5 p-3 text-left hover:bg-obsidian-800 active:bg-[#202947] transition touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400">
+                        <span aria-hidden="true" className="min-w-7 h-7 px-1 rounded-lg bg-purple-500/15 border border-purple-500/25 text-purple-300 text-xs font-bold flex items-center justify-center shrink-0">{node.stepNumber}</span>
+                        <span className="min-w-0 flex-1">
+                          {node.depth > 0 && <span aria-label="Adım yolu" className="block text-[10px] text-purple-300/70 mb-0.5 truncate">{node.depth > 2 ? "… → " : ""}{path.join(" → ")}</span>}
+                          <span className="block text-xs font-semibold text-slate-100 break-words line-clamp-2">{node.guide.title}</span>
+                          {!selectedModule && node.guide.module && <span className="block text-[10px] text-slate-400 mt-1 break-words">{node.guide.module}</span>}
+                          {!!node.guide.documents?.length && <span className="flex items-center gap-1 text-[10px] text-slate-400 mt-1"><FileText size={11} />{node.guide.documents.length} belge</span>}
                         </span>
-                        {!selectedModule && root.guide.module && (
-                          <span className="text-[10px] text-slate-400">
-                            {root.guide.module}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2 shrink-0">
-                      {root.guide.documents && root.guide.documents.length > 0 && (
-                        <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                          <FileText size={11} className="text-purple-400" />
-                          {root.guide.documents.length}
-                        </span>
-                      )}
-                      <div className="text-xs font-semibold text-purple-400 group-hover:text-purple-300 flex items-center gap-0.5">
-                        <span>İncele</span>
-                        <ChevronRight size={13} />
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Connected Child Items (Follow-up Steps) */}
-                  {root.children.length > 0 && (
-                    <div className="pl-6 border-l-2 border-purple-500/20 space-y-2 mt-2">
-                      {root.children.map((child) => (
-                        <button
-                          type="button"
-                          key={child.guide.publicId}
-                          onClick={() => onSelectGuide(child.guide)}
-                          className="w-full text-left flex items-center justify-between p-2.5 rounded-xl bg-obsidian-850/70 hover:bg-obsidian-800/80 active:bg-[#202947] active:scale-[0.98] border border-slate-800/80 hover:border-purple-500/40 transition cursor-pointer group touch-manipulation"
-                        >
-                          <div className="flex items-center space-x-2.5 min-w-0">
-                            <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold text-[10px] shrink-0">
-                              {child.stepNumber}
-                            </div>
-                            <span className="text-xs font-medium text-slate-300 group-hover:text-purple-200 truncate">
-                              {child.guide.title}
-                            </span>
-                          </div>
-
-                          <ChevronRight
-                            size={13}
-                            className="text-slate-500 group-hover:text-purple-400 shrink-0"
-                          />
+                        <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-slate-500" />
+                      </button>
+                      {node.children.length > 0 && (
+                        <button type="button" onClick={() => toggleNode(node.guide.publicId)}
+                          aria-label={node.guide.title + " alt adımlarını " + (isExpanded ? "daralt" : "göster")}
+                          aria-expanded={isExpanded}
+                          className="w-12 min-h-12 shrink-0 border-l border-slate-700/70 bg-purple-500/5 text-purple-300 hover:bg-purple-500/15 transition touch-manipulation flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400">
+                          <ChevronRight size={16} aria-hidden="true" className={cn("transition-transform", isExpanded && "rotate-90")} />
+                          <span aria-hidden="true" className="text-[10px]">{node.children.length}</span>
                         </button>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })
+                  </li>
+                );
+              })}
+            </ol>
           ) : (
-            <p className="text-xs text-slate-500 py-6 text-center">
-              Bu filtreye uygun kılavuz akışı bulunamadı.
-            </p>
+            <p className="text-xs text-slate-500 py-6 text-center">Bu filtreye uygun kılavuz akışı bulunamadı.</p>
           )}
         </div>
       )}

@@ -107,4 +107,37 @@ describe('MindMap interaction performance and graph invalidation', () => {
     fireEvent.click(screen.getByText('Ağaç Bağlantıları'));
     expect(screen.getByText('Updated')).toBeInTheDocument();
   });
+
+  it('shows deep list steps with bounded indentation and opens the selected descendant', () => {
+    const chain = Array.from({ length: 8 }, (_, i) => ({
+      ...guides[i], previousGuidePublicId: i ? guides[i - 1].publicId : null,
+    }));
+    const select = vi.fn();
+    render(<MindMapFlow guides={chain} onSelectGuide={select} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sıralı Akış' }));
+    const last = screen.getByRole('button', { name: 'Adım 8: Guide 7 rehberini aç' });
+    expect(last.closest('li')).toHaveStyle({ marginLeft: '24px' });
+    expect(screen.getByText('… → 6 → 7 → 8')).toBeInTheDocument();
+    fireEvent.click(last);
+    expect(select).toHaveBeenCalledWith(chain[7]);
+  });
+
+  it('collapses only a list branch, preserves sibling steps and shares expansion with the tree', () => {
+    const branch = [guides[0], guides[1], { ...guides[2], previousGuidePublicId: guides[1].publicId }, guides[3]];
+    const select = vi.fn();
+    render(<MindMapFlow guides={branch} onSelectGuide={select} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sıralı Akış' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Guide 1 alt adımlarını daralt' }));
+    expect(select).not.toHaveBeenCalled();
+    expect(screen.queryByText('Guide 2')).not.toBeInTheDocument();
+    expect(screen.getByText('Guide 3')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Ağaç Bağlantıları' }));
+    expect(screen.queryByText('Guide 2')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Sıralı Akış' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tümünü aç' }));
+    expect(screen.getByText('Guide 2')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Tümünü kapat' }));
+    expect(screen.queryByText('Guide 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Guide 0')).toBeInTheDocument();
+  });
 });
