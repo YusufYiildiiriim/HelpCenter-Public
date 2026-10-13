@@ -1,4 +1,5 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 import { getRequestPriorityLabel } from "@/lib/request-priority";
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
@@ -241,7 +242,7 @@ export default function AdminRequestsPage() {
         { header: "Oluşturulma", key: (r) => formatDate(r.createdAt) },
     ], []);
 
-    if (!hasViewPerm) return <div className="p-8 text-center font-bold text-slate-500">Bu sayfayı görüntüleme yetkiniz yok.</div>;
+    if (!hasViewPerm) return <ForbiddenState variant="page" />;
 
     return (
         <div className="pt-3 md:pt-4 lg:pt-6 space-y-6 md:space-y-8 pb-12">

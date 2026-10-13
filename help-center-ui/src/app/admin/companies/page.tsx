@@ -1,4 +1,5 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -487,7 +488,7 @@ export default function CompaniesPage() {
     { header: "Tür", key: (c) => (c.isDemoActive ? "Demo" : "Aktif") },
   ], []);
 
-  if (!hasViewPerm) return <div className="p-8 text-center font-bold text-slate-500">Bu sayfayı görüntüleme yetkiniz yok.</div>;
+  if (!hasViewPerm) return <ForbiddenState variant="page" />;
 
   return (
     <div className="max-w-400 mx-auto px-4 md:px-8 py-8 space-y-8 animate-in fade-in duration-700">

@@ -1,4 +1,5 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { ShieldCheck } from "lucide-react";
@@ -121,14 +122,8 @@ export default function RolesPage() {
     const pendingDeleteRole = pendingDeleteId !== null ? roles.find(r => r.id === pendingDeleteId) : null;
 
     if (!hasViewPerm) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 p-8 text-center bg-slate-900 rounded-3xl border border-slate-800 shadow-sm">
-                <ShieldCheck size={32} className="text-rose-400" />
-                <h2 className="text-lg font-black text-white">Erişim Yetkisi Sınırlı</h2>
-                <p className="text-xs text-slate-400">Rol ve Yetki Yönetimi sayfasını görüntüleme yetkiniz bulunmamaktadır.</p>
-            </div>
-        );
-    }
+    return <ForbiddenState variant="page" />;
+  }
 
     return (
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6 md:px-8 py-4 sm:py-8 space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-3 duration-500">

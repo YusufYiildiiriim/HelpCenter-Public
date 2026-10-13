@@ -1,11 +1,11 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Clock,
-  ShieldCheck,
   RefreshCw,
   Filter,
 } from "lucide-react";
@@ -100,17 +100,7 @@ export default function AdminDashboard() {
     : recentRequests.filter((request) => request.status === selectedStatusFilter);
 
   if (!hasViewPerm) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8 text-center bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl">
-        <div className="w-16 h-16 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shadow-inner">
-          <ShieldCheck size={32} />
-        </div>
-        <h2 className="text-xl font-black tracking-tight text-white">Erişim Yetkisi Sınırlı</h2>
-        <p className="text-sm text-slate-400 max-w-md">
-          Dashboard istatistiklerini görüntülemek için gerekli `Dashboard` okuma iznine sahip değilsiniz. Lütfen yöneticinizle iletişime geçin.
-        </p>
-      </div>
-    );
+    return <ForbiddenState variant="page" />;
   }
 
   return (

@@ -34,6 +34,12 @@ describe('Admin lookup authorization', () => {
    expect(mock.history.get.some(r => r.url?.endsWith('/get-all'))).toBe(true);
    for (const url of lookups) expect(mock.history.get.some(r => r.url === url)).toBe(false);
   });
+  it(`${resource}: missing read permission uses the shared forbidden state without fetching data`, () => {
+   renderPage([]);
+   expect(screen.getByRole('alert')).toHaveTextContent('Erişim Yetkiniz Yok');
+   expect(screen.getByRole('alert')).toHaveClass('py-32');
+   expect(mock.history.get).toHaveLength(0);
+  });
   it(`${resource}: requests permitted management lookups`, async () => {
    renderPage(['Read', ...management]);
    await waitFor(() => expect(screen.queryByText(loading)).not.toBeInTheDocument());

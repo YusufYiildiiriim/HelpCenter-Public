@@ -1,4 +1,5 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { FileText, Pencil, Trash2 } from "lucide-react";
@@ -339,7 +340,7 @@ export default function GuidePage() {
     { header: "Durum", key: (g) => (g.isActive ? "Aktif" : "Pasif") },
   ], []);
 
-  if (!hasViewPerm) return <div className="p-8 text-center font-bold text-slate-500">Bu sayfayı görüntüleme yetkiniz yok.</div>;
+  if (!hasViewPerm) return <ForbiddenState variant="page" />;
 
   return (
     <div className="max-w-400 mx-auto px-3 sm:px-6 md:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

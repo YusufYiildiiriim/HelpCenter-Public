@@ -1,4 +1,5 @@
 "use client";
+import { ForbiddenState } from "@/components/common/ForbiddenState";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
@@ -14,7 +15,6 @@ import {
   Upload,
   Save,
   Loader2,
-  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/lib/permissions";
@@ -140,15 +140,7 @@ export default function OrganizationSettingsPage() {
   };
 
   if (!perm.canRead("OrganizationSettings")) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8 text-center bg-slate-900/90 rounded-3xl border border-slate-800 shadow-xl">
-        <div className="w-16 h-16 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shadow-inner">
-          <ShieldCheck size={32} />
-        </div>
-        <h2 className="text-xl font-black tracking-tight text-white">Erişim Yetkisi Sınırlı</h2>
-        <p className="text-sm text-slate-400 max-w-md">Bu sayfayı görüntüleme yetkiniz bulunmamaktadır.</p>
-      </div>
-    );
+    return <ForbiddenState variant="page" />;
   }
 
   const canUpdate = perm.canUpdate("OrganizationSettings");
