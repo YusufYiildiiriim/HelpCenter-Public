@@ -181,6 +181,40 @@ public class AuthHandlerTests : HandlerTestBase
         result.CompanyPublicId.Should().Be(customer.Company.PublicId);
     }
 
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public async Task CustomerLogin_should_use_identical_failure_for_unknown_or_wrong_password_accounts(bool exists, bool active)
+    {
+        if (exists) CreateTestCustomer("failed@test.com", "failed", "hashed_pwd", isActive: active);
+        _passwordService.VerifyPassword("wrong", "hashed_pwd").Returns(false);
+        var handler = new CustomerLoginQueryHandler(
+            Uow, _tokenService, _passwordService, Mapper, NullLogger<CustomerLoginQueryHandler>.Instance);
+
+        Func<Task> act = async () => await handler.Handle(
+            new CustomerLoginQuery { EmailOrUsername = "failed@test.com", Password = "wrong" }, CancellationToken.None);
+
+        var failure = (await act.Should().ThrowAsync<InvalidCredentialsException>()).Which;
+        failure.StatusCode.Should().Be(401);
+        failure.Code.Should().Be("InvalidCredentials");
+        failure.Message.Should().Be("Hatalı kullanıcı adı/e-posta veya şifre.");
+        _tokenService.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CustomerLogin_should_keep_inactive_account_rejection_after_valid_password()
+    {
+        CreateTestCustomer("inactive@test.com", "inactive", "hashed_pwd", isActive: false);
+        _passwordService.VerifyPassword("correct", "hashed_pwd").Returns(true);
+        var handler = new CustomerLoginQueryHandler(
+            Uow, _tokenService, _passwordService, Mapper, NullLogger<CustomerLoginQueryHandler>.Instance);
+        Func<Task> act = async () => await handler.Handle(
+            new CustomerLoginQuery { EmailOrUsername = "inactive@test.com", Password = "correct" }, CancellationToken.None);
+        await act.Should().ThrowAsync<CustomerInactiveException>();
+        _tokenService.ReceivedCalls().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ChangePassword_should_update_user_password()
     {

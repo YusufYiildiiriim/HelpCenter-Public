@@ -37,8 +37,8 @@ public class CustomerLoginQueryHandler : IRequestHandler<CustomerLoginQuery, Cus
             cancellationToken, x => x.Account, x => x.Company)).FirstOrDefault();
 
         CustomerLoginRules.CustomerShouldExist(customer);
-        CustomerLoginRules.CustomerShouldBeActive(customer!);
         CustomerLoginRules.PasswordShouldMatch(_passwordService.VerifyPassword(request.Password, customer!.Account.Password));
+        CustomerLoginRules.CustomerShouldBeActive(customer!);
 
         var tokens = await _tokenService.IssueCustomerTokensAsync(
             customer.Id,

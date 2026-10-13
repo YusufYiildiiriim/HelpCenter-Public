@@ -15,7 +15,7 @@ public static class CustomerLoginRules
     {
         if (customer == null)
         {
-            throw new CustomerNotFoundException();
+            throw new InvalidCredentialsException();
         }
     }
 
