@@ -37,17 +37,6 @@ public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, RoleD
 
         var role = Role.Create(request.Name, request.Description);
 
-        // Baseline seed: Dashboard.Read
-        role.RolePermissions.Add(new RolePermission
-        {
-            Role = role,
-            ResourceKey = "Dashboard",
-            Actions = new List<RolePermissionAction>
-            {
-                new RolePermissionAction { Action = "Read" }
-            }
-        });
-
         await _unitOfWork.Repository<Role>().AddAsync(role, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 

@@ -27,7 +27,7 @@ public class CreateRoleCommandHandlerTests : HandlerTestBase
     }
 
     [Fact]
-    public async Task Should_create_role_with_default_permissions()
+    public async Task Should_create_role_without_implicit_permissions()
     {
         var mapper = CreateMapper();
         var rules = new CreateRoleRules(Uow);
@@ -40,6 +40,9 @@ public class CreateRoleCommandHandlerTests : HandlerTestBase
         result.Name.Should().Be("Support");
         var roles = Db.Roles.ToList();
         roles.Should().ContainSingle(r => r.Name == "Support");
+        var createdRole = roles.Single(r => r.Name == "Support");
+        createdRole.RolePermissions.Should().BeEmpty();
+        Db.RolePermissions.Should().BeEmpty();
     }
 
     [Fact]
