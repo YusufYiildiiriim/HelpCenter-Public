@@ -3,6 +3,7 @@ import { ArrowUpRight, Building2, CalendarDays, FileText, MessageSquare, Search,
 import type { AdminRequest } from "@/services/admin/AdminRequestService";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getRequestPriorityLabel } from "@/lib/request-priority";
 
 interface RequestCardProps {
   request: AdminRequest;
@@ -41,7 +42,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
               request.priorityName === "Medium" ? "border-blue-200 bg-blue-50 text-blue-600" :
               "border-slate-200 bg-slate-50 text-slate-500"
             )}>
-              {request.priorityName}
+              {getRequestPriorityLabel(request.priorityName)}
             </span>
             <span className={cn(
               "rounded-md border px-2.5 py-1 text-[10px] font-black uppercase leading-none tracking-wider",

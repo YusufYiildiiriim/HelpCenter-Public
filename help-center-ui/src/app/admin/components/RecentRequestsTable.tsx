@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { DashboardRecentRequest } from "@/services/admin/AdminStatisticsService";
 import { cn } from "@/lib/utils";
+import { getRequestPriorityLabel } from "@/lib/request-priority";
 
 interface RecentRequestsTableProps {
   requests: DashboardRecentRequest[];
@@ -128,7 +129,7 @@ export const RecentRequestsTable: React.FC<RecentRequestsTableProps> = ({
                     <Badge variant={statusVariant(req.status)} className="px-1.5 py-0.5 text-[9px]">
                       {req.status}
                     </Badge>
-                    <span className={cn("h-1.5 w-1.5 rounded-full", priorityDot(req.priorityName))} title={req.priorityName} />
+                    <span className={cn("h-1.5 w-1.5 rounded-full", priorityDot(req.priorityName))} title={getRequestPriorityLabel(req.priorityName)} />
                   </div>
                   <p className="mt-1 truncate text-sm font-bold text-slate-100 transition-colors group-hover:text-indigo-300">
                     {req.title}

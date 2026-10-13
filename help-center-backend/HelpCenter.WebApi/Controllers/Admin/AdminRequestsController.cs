@@ -54,7 +54,7 @@ public class AdminRequestsController : ControllerBase
             var values = new[]
             {
                 row.TicketId, row.Title, StripHtml(row.Description), row.CompanyName, row.CustomerName,
-                row.ModuleName, row.PriorityName, row.Status, row.AssignedUserName,
+                row.ModuleName, PriorityLabel(row.PriorityName), row.Status, row.AssignedUserName,
                 row.MessageCount.ToString(), row.CreatedAt.ToString("yyyy-MM-dd HH:mm")
             };
             await Response.WriteAsync(string.Join(',', values.Select(CsvCell)) + "\r\n", cancellationToken);
@@ -62,6 +62,15 @@ public class AdminRequestsController : ControllerBase
     }
 
     private static string StripHtml(string value) => Regex.Replace(value ?? string.Empty, "<[^>]*>", string.Empty);
+
+    private static string PriorityLabel(string priority) => priority switch
+    {
+        "Low" => "Düşük",
+        "Medium" => "Orta",
+        "High" => "Yüksek",
+        "Critical" => "Kritik",
+        _ => priority
+    };
 
     private static string CsvCell(string value)
     {

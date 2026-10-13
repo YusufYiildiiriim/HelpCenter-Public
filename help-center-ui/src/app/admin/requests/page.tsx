@@ -1,4 +1,5 @@
 "use client";
+import { getRequestPriorityLabel } from "@/lib/request-priority";
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -201,7 +202,7 @@ export default function AdminRequestsPage() {
             header: "Öncelik",
             cell: (info) => (
                 <span className={`inline-flex rounded-md border px-2.5 py-1 text-[10px] font-black uppercase leading-none tracking-wider ${priorityBadgeClass(info.getValue() as string)}`}>
-                    {info.getValue() as string}
+                    {getRequestPriorityLabel(info.getValue() as string)}
                 </span>
             ),
         },
@@ -233,7 +234,7 @@ export default function AdminRequestsPage() {
         { header: "Firma", key: (r) => r.companyName || "-" },
         { header: "Müşteri", key: (r) => r.customerName || "-" },
         { header: "Modül", key: (r) => r.moduleName || "-" },
-        { header: "Öncelik", key: "priorityName" },
+        { header: "Öncelik", key: (r) => getRequestPriorityLabel(r.priorityName) },
         { header: "Durum", key: "status" },
         { header: "Atanan Uzman", key: (r) => r.assignedUserName || "-" },
         { header: "Mesaj Sayısı", key: "messageCount" },
