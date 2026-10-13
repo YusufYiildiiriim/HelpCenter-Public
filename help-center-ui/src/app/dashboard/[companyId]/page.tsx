@@ -63,7 +63,10 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
     const [timeLeft, setTimeLeft] = useState(180);
 
     const isMountedRef = useRef(true);
-    useEffect(() => () => { isMountedRef.current = false; }, []);
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => { isMountedRef.current = false; };
+    }, []);
 
     const fetchRequests = useCallback(async () => {
         try {
