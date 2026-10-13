@@ -22,7 +22,16 @@ namespace HelpCenter.Domain.Entities
         // Generates a unique-safe username from first+last name
         public static string GenerateUsername(string firstName, string lastName)
         {
-            var normalized = $"{firstName.Trim().ToLowerInvariant()}.{lastName.Trim().ToLowerInvariant()}";
+            var normalized = $"{firstName.Trim()}.{lastName.Trim()}"
+                .Normalize(System.Text.NormalizationForm.FormC)
+                .Replace('İ', 'I')
+                .ToLowerInvariant()
+                .Replace('ı', 'i')
+                .Replace('ü', 'u')
+                .Replace('ö', 'o')
+                .Replace('ş', 's')
+                .Replace('ç', 'c')
+                .Replace('ğ', 'g');
             normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"[^a-z0-9.]", "");
             return normalized;
         }

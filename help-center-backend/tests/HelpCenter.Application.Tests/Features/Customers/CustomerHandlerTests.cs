@@ -75,6 +75,34 @@ public class CustomerHandlerTests : HandlerTestBase
         await _auditLog.Received(1).WriteAsync("CustomerCreated", "Customer", null, Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateCustomer_should_preserve_collision_checks_after_Turkish_transliteration(bool explicitUsername)
+    {
+        var existing = SeedCustomer("existing@test.com", "ahmet.yilmaz");
+        _passwordService.HashPassword("Pass123!").Returns("pwd_hash");
+        var handler = new CreateCustomerCommandHandler(Uow, _passwordService, _auditLog);
+        var command = new CreateCustomerCommand
+        {
+            CompanyId = existing.CompanyId, FirstName = "Ahmet", LastName = "Yılmaz",
+            Email = "new@test.com", Password = "Pass123!",
+            Username = explicitUsername ? "ahmet.yılmaz" : null
+        };
+        if (explicitUsername)
+        {
+            Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
+            await act.Should().ThrowAsync<UsernameAlreadyExistsException>();
+            Db.Accounts.Count(a => a.Email == "new@test.com").Should().Be(0);
+        }
+        else
+        {
+            (await handler.Handle(command, CancellationToken.None)).Should().BeTrue();
+            Db.Accounts.Single(a => a.Email == "new@test.com").Username.Should().Be("ahmet.yilmaz1");
+        }
+        Db.Accounts.Single(a => a.Email == "existing@test.com").Username.Should().Be("ahmet.yilmaz");
+    }
+
     [Fact]
     public async Task CreateCustomer_should_return_false_when_email_already_exists()
     {

@@ -17,7 +17,17 @@ public class AccountTests
     public void GenerateUsername_should_strip_special_characters_and_whitespace()
     {
         var username = Account.GenerateUsername("  Ahmet!@#  ", " Yılmaz$$ ");
-        username.Should().Be("ahmet.ylmaz");
+        username.Should().Be("ahmet.yilmaz");
+    }
+
+    [Theory]
+    [InlineData("Müşteri", "Yılmaz", "musteri.yilmaz")]
+    [InlineData("İĞÜŞÖÇ", "ığüşöç", "igusoc.igusoc")]
+    [InlineData("Gu\u0308ls\u0327en", "C\u0327ag\u0306rı", "gulsen.cagri")]
+    [InlineData(" QA Müşteri! ", " Test$ ", "qamusteri.test")]
+    public void GenerateUsername_should_transliterate_Turkish_characters(string first, string last, string expected)
+    {
+        Account.GenerateUsername(first, last).Should().Be(expected);
     }
 
     [Fact]
