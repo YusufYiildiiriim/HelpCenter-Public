@@ -85,7 +85,7 @@ docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d db
 Use it for local .NET commands; Next.js configuration automatically loads public values from the
 repository-root `.env`; Docker Compose reads the same file through `--env-file .env`.
 
-Default seeded admin account: `admin@helpcenter.com` / `Admin123!`. Its password is public; rotate it (or remove the seed) before any real deployment. See [SECURITY.md](SECURITY.md).
+Default seeded admin account: `admin@helpcenter.com` / `123456`. Its password is public; rotate it (or remove the seed) before any real deployment. See [SECURITY.md](SECURITY.md).
 
 ### Windows (PowerShell)
 

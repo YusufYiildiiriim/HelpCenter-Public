@@ -78,7 +78,7 @@ olarak export eder. Yerelde .NET repository kökündeki `.env` dosyasını kendi
 okumadığı için bu wrapper kullanılmalıdır. Next.js public değerleri otomatik alır; Docker Compose aynı dosyayı `--env-file .env` ile okur.
 
 API varsayılan olarak `http://localhost:5005`, istemci `http://localhost:3000` adresindedir. Seed
-edilen varsayılan yönetici `admin@helpcenter.com` / `Admin123!` bilgisidir. Parolası publictir;
+edilen varsayılan yönetici `admin@helpcenter.com` / `123456` bilgisidir. Parolası publictir;
 gerçek bir dağıtımdan önce parolayı değiştirin veya seed'i kaldırın. Ayrıntı için [güvenlik politikasına](SECURITY.tr.md)
 bakın. Swagger yalnız Production dışındaki
 ortamlarda `/swagger` yolundadır.
