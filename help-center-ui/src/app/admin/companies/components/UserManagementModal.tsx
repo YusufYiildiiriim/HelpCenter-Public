@@ -52,6 +52,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
             <button
               type="button"
               onClick={onAddUserClick}
+              disabled={!selectedCompany.isDemoActive}
               className={cn(
                 "flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all sm:px-5 sm:py-2.5 sm:text-sm",
                 selectedCompany.isDemoActive
@@ -79,7 +80,11 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 <Users size={24} className="text-slate-400" />
               </div>
               <h3 className="text-center text-base font-black text-slate-100 sm:text-lg">Henüz kullanıcı tanımlanmamış</h3>
-              <p className="mt-1 max-w-xs text-center text-xs font-medium text-slate-400">Bu firma için sistem erişimi olan çalışanları yukarıdaki butonu kullanarak ekleyebilirsiniz.</p>
+              <p className="mt-1 max-w-xs text-center text-xs font-medium text-slate-400">
+                {selectedCompany.isDemoActive
+                  ? "Bu firma için sistem erişimi olan çalışanları yukarıdaki butonu kullanarak ekleyebilirsiniz."
+                  : "Manuel kullanıcı ekleme yalnızca demo statüsündeki firmalar için kullanılabilir."}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
