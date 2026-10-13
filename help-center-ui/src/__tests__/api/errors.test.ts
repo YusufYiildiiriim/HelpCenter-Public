@@ -46,6 +46,19 @@ function makeBackendEnvelope(overrides: {
 }
 
 describe('getApiErrorMessage', () => {
+  it('invalid credentials uses a local login message without exposing backend details', () => {
+    const error = makeAxiosError({
+      status: 401,
+      data: makeBackendEnvelope({ code: 'InvalidCredentials', message: 'internal database details' }),
+    });
+    expect(getApiErrorMessage(error)).toBe('Hatalı kullanıcı adı/e-posta veya şifre.');
+  });
+
+  it('an ordinary unauthorized response keeps the session-expired message', () => {
+    const error = makeAxiosError({ status: 401, data: makeBackendEnvelope({ code: 'Unauthorized' }) });
+    expect(getApiErrorMessage(error)).toBe('Oturumunuz geçersiz veya sona ermiş. Lütfen tekrar giriş yapın.');
+  });
+
   it('400 response içindeki backend mesajını değil güvenli yerel metni döner', () => {
     const error = makeAxiosError({
       status: 400,

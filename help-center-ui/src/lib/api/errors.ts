@@ -71,6 +71,9 @@ export function getApiErrorMessage(error: unknown): string {
   if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
 
   const status = getApiErrorStatus(error);
+  if (status === 401 && getApiErrorCode(error) === "InvalidCredentials") {
+    return "Hatalı kullanıcı adı/e-posta veya şifre.";
+  }
   if (status && STATUS_MESSAGES[status]) return STATUS_MESSAGES[status];
 
   // Never render server-provided messages or Error.message. They can contain exception,
