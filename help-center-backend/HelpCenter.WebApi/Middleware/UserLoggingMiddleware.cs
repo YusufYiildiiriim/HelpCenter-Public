@@ -1,4 +1,6 @@
 using Serilog.Context;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace HelpCenter.WebApi.Middleware;
 
@@ -13,17 +15,25 @@ public class UserLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-        var userAgent = context.Request.Headers["User-Agent"].ToString();
-        var userName = context.User?.Identity?.IsAuthenticated == true
-            ? context.User.Identity.Name
-            : $"Anonymous ({clientIp})";
-
-        using (LogContext.PushProperty("UserName", userName))
-        using (LogContext.PushProperty("ClientIp", clientIp))
-        using (LogContext.PushProperty("UserAgent", userAgent))
+        // This scope surrounds the exception handler. Resolve identity at log time because
+        // authentication and forwarded headers execute later in the request pipeline.
+        using (LogContext.Push(new RequestIdentityEnricher(context)))
         {
             await _next(context);
+        }
+    }
+
+    private sealed class RequestIdentityEnricher(HttpContext context) : ILogEventEnricher
+    {
+        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+            var userName = context.User?.Identity?.IsAuthenticated == true
+                ? context.User.Identity.Name
+                : $"Anonymous ({clientIp})";
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UserName", userName));
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("ClientIp", clientIp));
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UserAgent", context.Request.Headers["User-Agent"].ToString()));
         }
     }
 }

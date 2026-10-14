@@ -60,7 +60,6 @@ app.UseWebApiConfiguration();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
-app.UseMiddleware<HelpCenter.WebApi.Middleware.UserLoggingMiddleware>();
 
 app.MapHub<RequestHub>("/requestHub");
 app.MapControllers();

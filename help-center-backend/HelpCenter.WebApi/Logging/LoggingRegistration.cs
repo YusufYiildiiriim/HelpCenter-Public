@@ -20,6 +20,9 @@ public static class LoggingRegistration
 
     public static IApplicationBuilder UseCustomLogging(this IApplicationBuilder app)
     {
+        // Keep identity enrichment alive while the outer request logger and exception handler log.
+        // Program must register this before UseExceptionHandler; authentication still runs later.
+        app.UseMiddleware<Middleware.UserLoggingMiddleware>();
         app.UseSerilogRequestLogging(options =>
         {
             options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
