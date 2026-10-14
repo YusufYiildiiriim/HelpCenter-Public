@@ -1,6 +1,7 @@
 import api from "@/lib/axios";
 
 export interface CustomerFaq {
+  publicId: string;
   title: string;
   description: string;
 }

@@ -2,6 +2,7 @@ namespace HelpCenter.Application.Features.Faqs.Queries.GetPublicFaqs;
 
 public class PublicFaqDto
 {
+    public Guid PublicId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int? ProjectId { get; set; }

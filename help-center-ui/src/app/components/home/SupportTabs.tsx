@@ -247,7 +247,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
 
                     return (
                       <article
-                        key={idx}
+                        key={faq.publicId}
                         onClick={() => onSelectFaq(faq)}
                         role="button"
                         tabIndex={0}

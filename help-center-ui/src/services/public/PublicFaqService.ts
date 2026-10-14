@@ -1,6 +1,7 @@
 import api from "@/lib/axios";
 
 export interface PublicFaq {
+  publicId: string;
   title: string;
   description: string;
   projectId?: number | null;
