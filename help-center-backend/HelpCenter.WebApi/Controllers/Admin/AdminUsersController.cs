@@ -46,7 +46,7 @@ public class AdminUsersController : ControllerBase
     [EnableRateLimiting("admin-write")]
     public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserCommand command)
     {
-        if (id != command.Id) return BadRequest("ID uyuşmazlığı.");
+        command.Id = id;
         var response = await _mediator.Send(command);
         return Ok(response);
     }
