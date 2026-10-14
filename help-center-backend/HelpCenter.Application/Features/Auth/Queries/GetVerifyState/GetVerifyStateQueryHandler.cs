@@ -8,6 +8,8 @@ namespace HelpCenter.Application.Features.Auth.Queries.GetVerifyState;
 
 public class GetVerifyStateQueryHandler : IRequestHandler<GetVerifyStateQuery, GetVerifyStateResponse>
 {
+    private static readonly EventId PermissionsReadFailed = new(1001, "VerifyPermissionsReadFailed");
+    private static readonly EventId PasswordStateReadFailed = new(1002, "VerifyPasswordStateReadFailed");
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserPermissionsReader _permissionsReader;
     private readonly ILogger<GetVerifyStateQueryHandler> _logger;
@@ -36,7 +38,7 @@ public class GetVerifyStateQueryHandler : IRequestHandler<GetVerifyStateQuery, G
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Verify state: kullanıcı izinleri okunamadı. UserId: {UserId}", request.UserId);
+            _logger.LogError(PermissionsReadFailed, ex, "Verify state: kullanıcı izinleri okunamadı. UserId: {UserId}", request.UserId);
         }
 
         try
@@ -60,7 +62,7 @@ public class GetVerifyStateQueryHandler : IRequestHandler<GetVerifyStateQuery, G
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Verify state: şifre değişim durumu okunamadı. UserId: {UserId}", request.UserId);
+            _logger.LogError(PasswordStateReadFailed, ex, "Verify state: şifre değişim durumu okunamadı. UserId: {UserId}", request.UserId);
         }
 
         return result;
