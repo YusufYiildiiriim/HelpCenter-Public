@@ -33,11 +33,6 @@ public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, bool>
 
         // Check if any user is assigned to this role
         var isAssigned = await userRoleRepo.AnyAsync(x => x.RoleId == request.Id, cancellationToken: cancellationToken);
-        if (isAssigned)
-        {
-            _logger.LogError("Rol silinemedi: Kullanıcılara atanmış. Rol: {RoleName}", role!.Name);
-        }
-
         DeleteRoleRules.RoleShouldNotBeAssignedToUsers(isAssigned);
 
         // Soft delete

@@ -31,11 +31,6 @@ public class GetCustomerRequestByIdQueryHandler : IRequestHandler<GetCustomerReq
             cancellationToken: cancellationToken,
             x => x.Module!, x => x.Status, x => x.RequestSubject!);
 
-        if (entity == null)
-        {
-            _logger.LogWarning("Talep bulunamadı veya yetkisiz erişim. PublicId: {PublicId}, Müşteri ID: {CustomerId}", request.PublicId, request.CustomerId);
-        }
-
         GetCustomerRequestByIdRules.RequestShouldExistForCustomer(entity);
 
         var dto = _mapper.Map<CustomerRequestDto>(entity);
