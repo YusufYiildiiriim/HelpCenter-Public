@@ -1,24 +1,18 @@
 using HelpCenter.Application.Common.Models;
-using HelpCenter.Application.Interfaces;
-using HelpCenter.Domain.Entities;
+using HelpCenter.Application.Common.Lookups;
 using MediatR;
 
 namespace HelpCenter.Application.Features.Projects.Queries.GetAvailableUsersForProject;
 
 public class GetAvailableUsersForProjectQueryHandler : IRequestHandler<GetAvailableUsersForProjectQuery, List<LookupItem>>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly UserLookupReader _reader;
 
-    public GetAvailableUsersForProjectQueryHandler(IUnitOfWork unitOfWork)
+    public GetAvailableUsersForProjectQueryHandler(UserLookupReader reader)
     {
-        _unitOfWork = unitOfWork;
+        _reader = reader;
     }
 
-    public async Task<List<LookupItem>> Handle(GetAvailableUsersForProjectQuery request, CancellationToken cancellationToken)
-    {
-        return await _unitOfWork.Repository<User>().SelectAsync(
-            u => u.IsActive,
-            u => new LookupItem(u.Id, u.Account.FirstName + " " + u.Account.LastName),
-            cancellationToken: cancellationToken);
-    }
+    public Task<List<LookupItem>> Handle(GetAvailableUsersForProjectQuery request, CancellationToken cancellationToken) =>
+        _reader.ReadActiveAsync(cancellationToken);
 }

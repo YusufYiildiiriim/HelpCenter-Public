@@ -30,6 +30,7 @@ public static class AddApplicationService
         ServiceCollection.AddAutoMapper(cfg => { }, ApplicationAssembly);
 
         ServiceCollection.AddScoped<Features.Roles.Queries.GetUserPermissions.UserPermissionsReader>();
+        ServiceCollection.AddScoped<Common.Lookups.UserLookupReader>();
 
         // Feature- and slice-level rule classes (those ending in *Rules, living in the
         // corresponding Features subfolders) are scanned by convention instead of registering
