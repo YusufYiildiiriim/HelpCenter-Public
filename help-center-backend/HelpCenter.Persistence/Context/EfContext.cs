@@ -92,10 +92,9 @@ public class EfContext : DbContext
                 // PublicId Configuration — a real/randomly generated, stored external identity
                 // for each entity, replacing the XOR/HMAC scheme that "obfuscated" the int Id
                 // reversibly with a fixed salt embedded in HashService's source code.
-                // Same pattern as RowVersion: a ValueGenerator assigns a client-side Guid to
-                // entities added via SaveChanges (including InMemory/SQLite tests); SQL
-                // Server also has a NEWID() default — for both new rows and existing rows
-                // that the ADD COLUMN migration will backfill.
+                // Runtime entities create their identity in BaseEntity. Keep the value generator
+                // as a fallback for explicitly empty IDs, and the database default for HasData
+                // rows or SQL inserts that omit PublicId. Existing non-empty values are preserved.
                 var publicIdProperty = modelBuilder.Entity(entityType.ClrType)
                     .Property(nameof(BaseEntity.PublicId))
                     .ValueGeneratedOnAdd()

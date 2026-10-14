@@ -16,6 +16,9 @@ public static class ModelBuilderSeedExtensions
     /// </summary>
     public static void SeedSystemDefaults(this ModelBuilder modelBuilder)
     {
+        // HasData rows explicitly keep PublicId = Guid.Empty so existing model snapshots remain
+        // deterministic and database defaults generate seed identities. Runtime entities generate
+        // their PublicId at construction; do not let that random initializer enter model seed data.
         modelBuilder.SeedRoles();
         modelBuilder.SeedPermissions();
         modelBuilder.SeedStatuses();

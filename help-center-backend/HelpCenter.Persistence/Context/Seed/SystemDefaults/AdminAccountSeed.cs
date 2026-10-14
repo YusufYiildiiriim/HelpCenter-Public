@@ -13,7 +13,7 @@ public static class AdminAccountSeed
         modelBuilder.Entity<Account>().HasData(
             new Account
             {
-                Id = 1,
+                PublicId = Guid.Empty, Id = 1,
                 Email = "admin@helpcenter.com",
                 Username = "admin.user",
                 FirstName = "Admin",
@@ -27,12 +27,12 @@ public static class AdminAccountSeed
 
         // 2. Admin User
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, AccountId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+            new User { PublicId = Guid.Empty, Id = 1, AccountId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
         );
 
         // 3. Admin UserRole Mapping (User 1 -> Role 1 / Admin)
         modelBuilder.Entity<UserRole>().HasData(
-            new UserRole { Id = 1, UserId = 1, RoleId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+            new UserRole { PublicId = Guid.Empty, Id = 1, UserId = 1, RoleId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
         );
     }
 }

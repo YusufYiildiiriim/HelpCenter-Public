@@ -5,7 +5,7 @@ namespace HelpCenter.Domain.Entities;
 public abstract class BaseEntity : IAuditable, ISoftDelete
 {
     public int Id { get; set; }
-    public Guid PublicId { get; set; }
+    public Guid PublicId { get; set; } = Guid.NewGuid();
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
