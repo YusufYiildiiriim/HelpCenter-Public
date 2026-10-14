@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using HelpCenter.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ namespace HelpCenter.WebApi.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
-            var userIdStr = context.User.FindFirst("UserId")?.Value;
+            var userIdStr = context.User.FindFirst(AppClaimTypes.UserId)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
             {
                 return;

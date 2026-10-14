@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using HelpCenter.Application.Features.Modules.Queries;
 using HelpCenter.Application.Features.Modules.Queries.GetCustomerModules;
 using MediatR;
@@ -21,8 +22,8 @@ public class CustomerModulesController : ControllerBase
     [HttpGet("get-all-modules")]
     public async Task<IActionResult> GetAll()
     {
-        var userIdStr = User.FindFirst("UserId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        var companyIdStr = User.FindFirst("CompanyId")?.Value;
+        var userIdStr = User.FindFirst(AppClaimTypes.UserId)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var companyIdStr = User.FindFirst(AppClaimTypes.CompanyId)?.Value;
 
         int.TryParse(userIdStr, out int customerId);
         int.TryParse(companyIdStr, out int companyId);

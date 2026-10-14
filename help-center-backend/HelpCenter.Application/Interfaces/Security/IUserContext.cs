@@ -8,6 +8,8 @@ namespace HelpCenter.Application.Interfaces;
 public interface IUserContext
 {
     int UserId { get; }
+    /// <summary>Internal company ID from a customer token; null if missing or invalid. Not a PublicId.</summary>
+    int? CompanyId { get; }
     IReadOnlyList<int> RoleIds { get; }
     bool IsAuthenticated { get; }
 

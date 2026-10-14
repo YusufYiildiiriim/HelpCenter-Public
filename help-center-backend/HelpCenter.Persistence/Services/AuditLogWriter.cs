@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using System.Text.Json;
 using HelpCenter.Application.Interfaces;
@@ -51,9 +52,9 @@ public class AuditLogWriter : IAuditLogWriter
         var http = _httpAccessor.HttpContext;
         var user = http?.User;
 
-        var actorId = TryParseInt(user?.FindFirst("UserId")?.Value);
+        var actorId = TryParseInt(user?.FindFirst(AppClaimTypes.UserId)?.Value);
         var actorEmail = user?.FindFirst(ClaimTypes.Email)?.Value
-                         ?? user?.FindFirst("Email")?.Value;
+                         ?? user?.FindFirst(AppClaimTypes.Email)?.Value;
 
         var entry = new AuditLog
         {

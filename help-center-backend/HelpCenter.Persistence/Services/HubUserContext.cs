@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using HelpCenter.Application.Interfaces;
 
@@ -22,11 +23,13 @@ public class HubUserContext : IUserContext
 
     public bool IsAuthenticated => _user?.Identity?.IsAuthenticated == true;
 
+    public int? CompanyId => int.TryParse(_user?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id > 0 ? id : null;
+
     public int UserId
     {
         get
         {
-            var claim = _user?.FindFirst("UserId")?.Value ?? _user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var claim = _user?.FindFirst(AppClaimTypes.UserId)?.Value ?? _user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.TryParse(claim, out var id) ? id : 0;
         }
     }
@@ -37,7 +40,7 @@ public class HubUserContext : IUserContext
         {
             if (_user == null) return Array.Empty<int>();
 
-            return _user.FindAll("RoleId")
+            return _user.FindAll(AppClaimTypes.RoleId)
                 .Select(c => int.TryParse(c.Value, out var id) ? id : 0)
                 .Where(id => id > 0)
                 .ToArray();
@@ -59,5 +62,5 @@ public class HubUserContext : IUserContext
 
     public bool IsCustomer =>
         string.Equals(Role, "Customer", StringComparison.OrdinalIgnoreCase)
-        || _user?.HasClaim(c => c.Type == "CompanyId") == true;
+        || _user?.HasClaim(c => c.Type == AppClaimTypes.CompanyId) == true;
 }

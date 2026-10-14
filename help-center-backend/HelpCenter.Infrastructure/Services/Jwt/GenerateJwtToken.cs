@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -28,12 +29,12 @@ public class GenerateJwtToken : IGenerateJwtToken
 
         if (!string.IsNullOrEmpty(companyId))
         {
-            claims.Add(new Claim("CompanyId", companyId));
+            claims.Add(new Claim(AppClaimTypes.CompanyId, companyId));
         }
 
         if (!string.IsNullOrEmpty(userId))
         {
-            claims.Add(new Claim("UserId", userId));
+            claims.Add(new Claim(AppClaimTypes.UserId, userId));
             claims.Add(new Claim(ClaimTypes.NameIdentifier, userId));
         }
 

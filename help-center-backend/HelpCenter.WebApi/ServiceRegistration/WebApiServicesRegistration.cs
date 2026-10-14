@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Globalization;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -229,7 +230,7 @@ public static class WebApiServicesRegistration
     /// </summary>
     private static string GetPartitionKey(HttpContext context)
     {
-        var userId = context.User?.FindFirst("UserId")?.Value;
+        var userId = context.User?.FindFirst(AppClaimTypes.UserId)?.Value;
         if (!string.IsNullOrWhiteSpace(userId))
             return $"user_{userId}";
 

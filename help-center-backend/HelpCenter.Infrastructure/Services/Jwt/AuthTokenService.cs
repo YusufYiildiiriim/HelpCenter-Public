@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -178,12 +179,12 @@ public class AuthTokenService : IAuthTokenService
             new(JwtRegisteredClaimNames.Sub, email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
             new(ClaimTypes.Role, role),
-            new("UserId", principalId.ToString()),
+            new(AppClaimTypes.UserId, principalId.ToString()),
             new(ClaimTypes.NameIdentifier, principalId.ToString())
         };
 
         if (!string.IsNullOrEmpty(companyId))
-            claims.Add(new Claim("CompanyId", companyId));
+            claims.Add(new Claim(AppClaimTypes.CompanyId, companyId));
 
         var token = new JwtSecurityToken(
             issuer: jwt["Issuer"],

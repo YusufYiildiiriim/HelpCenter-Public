@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using HelpCenter.Application.Features.Customers.Commands;
 using HelpCenter.Application.Features.Customers.Commands.UpdateProfile;
@@ -29,7 +30,7 @@ public class CustomerProfileController : ControllerBase
             if (int.TryParse(idClaim, out int id)) return id;
 
             // Fallback to UserId claim if NameIdentifier is not an int (e.g. for admins)
-            var userIdClaim = User.FindFirstValue("UserId");
+            var userIdClaim = User.FindFirstValue(AppClaimTypes.UserId);
             if (int.TryParse(userIdClaim, out int userId)) return userId;
 
             return 0;

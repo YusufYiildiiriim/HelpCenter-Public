@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using HelpCenter.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,13 @@ public class HttpBasedUserContext : IUserContext
 
     public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
 
+    public int? CompanyId => int.TryParse(User?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id > 0 ? id : null;
+
     public int UserId
     {
         get
         {
-            var claim = User?.FindFirst("UserId")?.Value ?? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var claim = User?.FindFirst(AppClaimTypes.UserId)?.Value ?? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.TryParse(claim, out var id) ? id : 0;
         }
     }
@@ -33,7 +36,7 @@ public class HttpBasedUserContext : IUserContext
             var user = User;
             if (user == null) return Array.Empty<int>();
 
-            return user.FindAll("RoleId")
+            return user.FindAll(AppClaimTypes.RoleId)
                 .Select(c => int.TryParse(c.Value, out var id) ? id : 0)
                 .Where(id => id > 0)
                 .ToArray();
@@ -55,5 +58,5 @@ public class HttpBasedUserContext : IUserContext
 
     public bool IsCustomer =>
         string.Equals(Role, "Customer", StringComparison.OrdinalIgnoreCase)
-        || User?.HasClaim(c => c.Type == "CompanyId") == true;
+        || User?.HasClaim(c => c.Type == AppClaimTypes.CompanyId) == true;
 }

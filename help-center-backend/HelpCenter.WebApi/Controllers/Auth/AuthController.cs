@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Security;
 using System.Security.Claims;
 using HelpCenter.Application.Features.Auth.Commands;
 using HelpCenter.Application.Features.Auth.Commands.ChangePassword;
@@ -122,8 +123,8 @@ public class AuthController : ControllerBase
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
         var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                     ?? User.FindFirst("sub")?.Value;
-        var companyId = User.FindFirst("CompanyId")?.Value;
-        var userIdStr = User.FindFirst("UserId")?.Value;
+        var companyId = User.FindFirst(AppClaimTypes.CompanyId)?.Value;
+        var userIdStr = User.FindFirst(AppClaimTypes.UserId)?.Value;
 
         object? permissions = null;
         bool isPasswordChangeRequired = false;
