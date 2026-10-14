@@ -36,7 +36,7 @@ const user: VerifyResponse = {
   isPasswordChangeRequired: false,
   permissions: { modules: [{ resourceKey: 'Dashboard', actions: ['Read'] }] },
 };
-const menu = [{ id: 1, label: 'Server menu', route: '/admin', icon: 'BarChart3', resourceKey: 'Dashboard' }] as MenuItemDto[];
+const menu = [{ label: 'Server menu', route: '/admin', icon: 'BarChart3', resourceKey: 'Dashboard', order: 1 }] satisfies MenuItemDto[];
 function ProtectedContent() {
   const { userInfo, permissions } = useAuth();
   useEffect(() => { mounted(userInfo, permissions); }, [userInfo, permissions]);

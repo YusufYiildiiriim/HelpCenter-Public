@@ -54,14 +54,12 @@ function storeLoginAccessToken(response: LoginResponse): void {
 }
 
 export interface MenuItemDto {
-  id: number;
   label: string;
   icon: string;
   route: string;
   resourceKey: string;
   order: number;
   groupTitle?: string;
-  parentId?: number;
 }
 
 export const AuthService = {

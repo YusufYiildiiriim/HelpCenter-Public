@@ -45,14 +45,12 @@ public class GetMenuItemsQueryHandler : IRequestHandler<GetMenuItemsQuery, List<
             .OrderBy(m => m.Order)
             .Select(m => new MenuItemDto
             {
-                Id = m.Id,
                 Label = m.Label,
                 Icon = m.Icon,
                 Route = m.Route,
                 ResourceKey = m.ResourceKey,
                 Order = m.Order,
-                GroupTitle = m.GroupTitle,
-                ParentId = m.ParentId
+                GroupTitle = m.GroupTitle
             })
             .ToList();
 
