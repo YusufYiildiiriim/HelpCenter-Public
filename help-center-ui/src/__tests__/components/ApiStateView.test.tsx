@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { ApiStateView } from '@/components/common/ApiStateView';
 
 /**
@@ -10,13 +10,17 @@ import { ApiStateView } from '@/components/common/ApiStateView';
  */
 describe('ApiStateView', () => {
   it('isLoading=true iken diğer tüm bayraklar dolu olsa bile spinner gösterir', () => {
+    vi.useFakeTimers();
     render(
       <ApiStateView isLoading={true} isForbidden={true} error="bir hata" onRetry={vi.fn()}>
         <div>İçerik</div>
       </ApiStateView>
     );
 
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(200));
     expect(screen.getByRole('status')).toBeInTheDocument();
+    vi.useRealTimers();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.queryByText('İçerik')).not.toBeInTheDocument();
   });
@@ -92,4 +96,18 @@ describe('ApiStateView', () => {
 
     expect(screen.getByRole('button', { name: /tekrar dene/i })).toBeInTheDocument();
   });
+});
+
+
+it.each(['success', 'error', 'forbidden'])('settles a fast request to %s without waiting for the spinner', (result) => {
+  vi.useFakeTimers();
+  const view = render(<ApiStateView isLoading><div>Haz?r</div></ApiStateView>);
+  act(() => vi.advanceTimersByTime(50));
+  view.rerender(<ApiStateView isLoading={false} isForbidden={result === 'forbidden'} error={result === 'error' ? 'failure' : null}><div>Haz?r</div></ApiStateView>);
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  if (result === 'success') expect(screen.getByText('Haz?r')).toBeInTheDocument();
+  else expect(screen.getByRole('alert')).toBeInTheDocument();
+  act(() => vi.advanceTimersByTime(500));
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  vi.useRealTimers();
 });
