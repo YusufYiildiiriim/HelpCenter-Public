@@ -4,6 +4,7 @@ using AutoMapper.QueryableExtensions;
 using HelpCenter.Application.Common.Models;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Persistence.Context;
+using HelpCenter.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelpCenter.Persistence.Repositories
@@ -255,7 +256,7 @@ namespace HelpCenter.Persistence.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            var ordered = query.OrderBy(x => EF.Property<int>(x, "Id"));
+            var ordered = OrderByPrimaryKey(query);
             var items = unlimited
                 ? await ordered.ToListAsync(cancellationToken)
                 : await ordered.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
@@ -292,7 +293,7 @@ namespace HelpCenter.Persistence.Repositories
 
             var totalCount = await projected.CountAsync(cancellationToken);
 
-            var orderedProjected = query.OrderBy(x => EF.Property<int>(x, "Id")).Select(selector);
+            var orderedProjected = OrderByPrimaryKey(query).Select(selector);
             var items = unlimited
                 ? await orderedProjected.ToListAsync(cancellationToken)
                 : await orderedProjected.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
@@ -330,7 +331,7 @@ namespace HelpCenter.Persistence.Repositories
 
             var ordered = orderByDescendingKey != null
                 ? query.OrderByDescending(orderByDescendingKey)
-                : query.OrderBy(x => EF.Property<int>(x, "Id"));
+                : OrderByPrimaryKey(query);
             var orderedProjected = ordered.ProjectTo<TResult>(mapperConfiguration);
             var items = unlimited
                 ? await orderedProjected.ToListAsync(cancellationToken)
@@ -358,25 +359,35 @@ namespace HelpCenter.Persistence.Repositories
             return entities.Count;
         }
 
+        // Stages tracked changes. SaveAsync persists them and enforces original concurrency tokens.
         public async Task<int> SoftDeleteRangeAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            if (_efContext.Database.IsRelational())
-            {
-                return await _efContext.Set<T>().Where(predicate).ExecuteUpdateAsync(s => s.SetProperty(x => EF.Property<bool>(x, "IsDeleted"), true), cancellationToken);
-            }
+            if (!typeof(ISoftDelete).IsAssignableFrom(typeof(T)))
+                throw new NotSupportedException($"{typeof(T).Name} does not support soft deletion.");
 
             var entities = await _efContext.Set<T>().Where(predicate).ToListAsync(cancellationToken);
             foreach (var entity in entities)
-            {
-                var entry = _efContext.Entry(entity);
-                if (entry.Metadata.FindProperty("IsDeleted") != null)
-                {
-                    entry.Property("IsDeleted").CurrentValue = true;
-                }
-            }
+                ((ISoftDelete)entity).IsDeleted = true;
             return entities.Count;
         }
 
+        private IOrderedQueryable<T> OrderByPrimaryKey(IQueryable<T> query)
+        {
+            var key = _efContext.Model.FindEntityType(typeof(T))?.FindPrimaryKey()
+                ?? throw new NotSupportedException($"{typeof(T).Name} has no primary key for pagination.");
+            IOrderedQueryable<T>? ordered = null;
+            foreach (var property in key.Properties)
+            {
+                var parameter = Expression.Parameter(typeof(T), "entity");
+                var access = Expression.Call(typeof(EF), nameof(EF.Property), new[] { property.ClrType },
+                    parameter, Expression.Constant(property.Name));
+                var selector = Expression.Lambda(access, parameter);
+                var call = Expression.Call(typeof(Queryable), ordered == null ? nameof(Queryable.OrderBy) : nameof(Queryable.ThenBy),
+                    new[] { typeof(T), property.ClrType }, (ordered ?? query).Expression, Expression.Quote(selector));
+                ordered = (IOrderedQueryable<T>)query.Provider.CreateQuery<T>(call);
+            }
+            return ordered!;
+        }
         public IQueryable<T> Query()
         {
             return _efContext.Set<T>().AsNoTracking();

@@ -120,6 +120,7 @@ public interface IGenericRepository<T> where T : class
     // stored procedures, dedicated read repositories implemented in Persistence are used
     // (see IStatisticsReadRepository).
     Task<int> ExecuteDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
+    /// <summary>Stages soft deletion for ISoftDelete entities; requires SaveAsync. Original concurrency tokens are checked on save.</summary>
     Task<int> SoftDeleteRangeAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     IQueryable<T> Query();
 }
