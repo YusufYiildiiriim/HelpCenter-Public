@@ -153,6 +153,7 @@ export default function GuidePage() {
       title: newGuide.title,
       description: newGuide.description,
       module: moduleObj.name,
+      moduleId: moduleObj.id,
       previousGuideId: newGuide.previousGuideId,
       youtubeUrl: newGuide.youtubeUrl,
       isActive: newGuide.isActive,

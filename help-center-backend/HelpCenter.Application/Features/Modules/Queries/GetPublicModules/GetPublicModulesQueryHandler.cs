@@ -29,6 +29,7 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
             {
                 var projectId = request.ProjectId;
                 List<int> projectModuleIds = new();
+                List<int?> guideModuleIds = new();
                 List<string> guideModuleNames = new();
 
                 if (projectId.HasValue && projectId.Value > 0)
@@ -38,8 +39,11 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
                         pm => pm.ModuleId,
                         cancellationToken: ct);
 
+                    guideModuleIds = await _unitOfWork.Repository<Guide>().SelectAsync(
+                        g => g.IsActive && g.IsPublic && g.ProjectId == projectId.Value && g.ModuleId.HasValue,
+                        g => g.ModuleId, cancellationToken: ct, distinct: true);
                     guideModuleNames = await _unitOfWork.Repository<Guide>().SelectAsync(
-                        g => g.IsActive && g.IsPublic && g.ProjectId == projectId.Value,
+                        g => g.IsActive && g.IsPublic && g.ProjectId == projectId.Value && !g.ModuleId.HasValue,
                         g => g.Module,
                         cancellationToken: ct,
                         distinct: true);
@@ -49,7 +53,7 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
                     m.IsActive &&
                     (!projectId.HasValue || projectId.Value <= 0 ||
                      projectModuleIds.Contains(m.Id) ||
-                     guideModuleNames.Contains(m.Name));
+                     guideModuleIds.Contains(m.Id) || guideModuleNames.Contains(m.Name));
 
                 var modules = await _unitOfWork.Repository<Module>().FindAsync(predicate, ct);
                 return _mapper.Map<List<PublicModuleDto>>(modules);

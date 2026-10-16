@@ -46,6 +46,10 @@ public class UpdateGuideCommandHandler : IRequestHandler<UpdateGuideCommand, boo
             request.IsPublic
         );
 
+        var module = await HelpCenter.Application.Features.Guides.GuideModuleResolver.ResolveAsync(_unitOfWork, request.ModuleId, request.Module, cancellationToken);
+        entity!.ModuleId = module.Id;
+        entity.Module = module.Name;
+
         if (request.Files != null && request.Files.Count > 0)
         {
             entity.ClearDocuments();

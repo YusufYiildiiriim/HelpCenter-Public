@@ -22,7 +22,7 @@ public class GetCustomerGuidesQueryHandler : IRequestHandler<GetCustomerGuidesQu
         var guides = (await _unitOfWork.Repository<Guide>().FindAsync(
             g => g.IsActive,
             cancellationToken,
-            g => g.Documents!
+            g => g.Documents!, g => g.ModuleEntity!
         )).ToList();
 
         var dtos = _mapper.Map<List<PublicGuideDto>>(guides);

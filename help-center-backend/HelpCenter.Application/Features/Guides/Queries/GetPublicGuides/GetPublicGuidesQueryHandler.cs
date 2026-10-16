@@ -49,11 +49,12 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
         CancellationToken ct)
     {
         var projectId = request.ProjectId;
+        List<int> projectModuleIds = new();
         List<string> projectModuleNames = new();
 
         if (projectId.HasValue && projectId.Value > 0)
         {
-            var projectModuleIds = await _unitOfWork.Repository<ProjectModule>().SelectAsync(
+            projectModuleIds = await _unitOfWork.Repository<ProjectModule>().SelectAsync(
                 pm => pm.ProjectId == projectId.Value,
                 pm => pm.ModuleId,
                 cancellationToken: ct);
@@ -68,8 +69,8 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
             g.IsActive && g.IsPublic &&
             (!projectId.HasValue || projectId.Value <= 0 ||
              g.ProjectId == projectId.Value ||
-             (!g.ProjectId.HasValue && projectModuleNames.Contains(g.Module))) &&
-            (string.IsNullOrWhiteSpace(request.Module) || g.Module == request.Module) &&
+             (!g.ProjectId.HasValue && (g.ModuleId.HasValue ? projectModuleIds.Contains(g.ModuleId.Value) : projectModuleNames.Contains(g.Module)))) &&
+            (string.IsNullOrWhiteSpace(request.Module) || (g.ModuleEntity != null ? g.ModuleEntity.Name : g.Module) == request.Module) &&
             (string.IsNullOrWhiteSpace(search) || g.Title.ToLower().Contains(search) || g.Description.ToLower().Contains(search));
 
         var paginated = await _unitOfWork.Repository<Guide>().GetPaginatedAsync(
@@ -77,7 +78,7 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
             pagination.PageNumber,
             pagination.PageSize,
             cancellationToken: ct,
-            g => g.Documents!);
+            g => g.Documents!, g => g.ModuleEntity!);
 
         var guides = paginated.Items;
         var dtos = _mapper.Map<List<PublicGuideDto>>(guides);

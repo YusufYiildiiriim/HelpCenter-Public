@@ -19,8 +19,12 @@ public sealed class ModuleUsageReadRepository(EfContext context) : IModuleUsageR
 
         // The former in-memory comparison was ordinal. Binary grouping and byte length
         // keep case variants and trailing spaces separate under a case-insensitive database.
+        var linkedCounts = await context.Guides.Where(g => g.ModuleId.HasValue && ids.Contains(g.ModuleId.Value) && (!onlyActive || g.IsActive))
+            .GroupBy(g => g.ModuleId!.Value).Select(g => new { Id = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.Id, g => g.Count, cancellationToken);
+
         var guideGroups = await context.Guides
-            .Where(guide => names.Contains(guide.Module) && (!onlyActive || guide.IsActive))
+            .Where(guide => !guide.ModuleId.HasValue && names.Contains(guide.Module) && (!onlyActive || guide.IsActive))
             .GroupBy(guide => new
             {
                 Name = EF.Functions.Collate(guide.Module, "Latin1_General_100_BIN2"),
@@ -40,6 +44,6 @@ public sealed class ModuleUsageReadRepository(EfContext context) : IModuleUsageR
 
         return modules.ToDictionary(
             module => module.Id,
-            module => guideCounts.GetValueOrDefault(module.Name) + requestCounts.GetValueOrDefault(module.Id));
+            module => linkedCounts.GetValueOrDefault(module.Id) + guideCounts.GetValueOrDefault(module.Name) + requestCounts.GetValueOrDefault(module.Id));
     }
 }

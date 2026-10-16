@@ -14,6 +14,7 @@ public class CreateGuideCommand : IRequest<bool>
         get => _previousGuideId;
         set => _previousGuideId = (value == 0 ? null : value);
     }
+    public int? ModuleId { get; set; }
     public string Module { get; set; } = string.Empty;
     public string? YoutubeUrl { get; set; }
     public bool IsActive { get; set; } = true;

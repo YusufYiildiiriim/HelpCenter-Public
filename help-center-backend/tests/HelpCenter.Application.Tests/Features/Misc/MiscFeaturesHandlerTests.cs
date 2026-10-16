@@ -59,6 +59,8 @@ public class MiscFeaturesHandlerTests : HandlerTestBase
     [Fact]
     public async Task CreateGuide_should_create_guide_and_invalidate_cache()
     {
+        Db.Modules.Add(new Module { Name = "General" });
+        Db.SaveChanges();
         var handler = new CreateGuideCommandHandler(Uow, Mapper, _fileService, _cacheService, new CreateGuideRules(Uow));
         var command = new CreateGuideCommand
         {

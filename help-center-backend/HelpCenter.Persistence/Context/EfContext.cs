@@ -145,6 +145,8 @@ public class EfContext : DbContext
             b.Ignore(u => u.FullName);
         });
 
+        modelBuilder.Entity<Guide>().HasOne(g => g.ModuleEntity).WithMany().HasForeignKey(g => g.ModuleId).OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<FAQ>(b =>
         {
             b.HasOne(f => f.Project)

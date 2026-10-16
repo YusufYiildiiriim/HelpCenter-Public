@@ -12,9 +12,11 @@ public class GuideProfile : AutoMapper.Profile
     public GuideProfile()
     {
         CreateMap<Guide, GuideDto>()
+            .ForMember(dest => dest.Module, opt => opt.MapFrom(src => src.ModuleEntity != null ? src.ModuleEntity.Name : src.Module))
             .ForMember(dest => dest.DocumentCount, opt => opt.MapFrom(src => src.Documents != null ? src.Documents.Count : 0));
         CreateMap<Document, GuideDocumentDto>();
-        CreateMap<Guide, PublicGuideDto>();
+        CreateMap<Guide, PublicGuideDto>()
+            .ForMember(dest => dest.Module, opt => opt.MapFrom(src => src.ModuleEntity != null ? src.ModuleEntity.Name : src.Module));
         CreateMap<Document, PublicGuideDocumentDto>();
         CreateMap<CreateGuideCommand, Guide>();
         CreateMap<UpdateGuideCommand, Guide>()

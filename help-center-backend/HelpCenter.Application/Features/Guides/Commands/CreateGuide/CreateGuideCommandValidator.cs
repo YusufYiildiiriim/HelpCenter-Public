@@ -8,6 +8,6 @@ public class CreateGuideCommandValidator : AbstractValidator<CreateGuideCommand>
     {
         RuleFor(x => x.Title).NotEmpty().WithMessage("Başlık alanı boş olamaz.");
         RuleFor(x => x.Description).NotEmpty().WithMessage("Açıklama alanı boş olamaz.");
-        RuleFor(x => x.Module).NotEmpty().WithMessage("Modül (Kategori) seçimi zorunludur.");
+        RuleFor(x => x.Module).NotEmpty().When(x => !x.ModuleId.HasValue).WithMessage("Modül (Kategori) seçimi zorunludur.");
     }
 }

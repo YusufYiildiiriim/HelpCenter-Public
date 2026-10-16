@@ -10,6 +10,10 @@ namespace HelpCenter.Domain.Entities
         public virtual Guide? PreviousRequest { get; set; }
         public virtual Guide? NextRequest { get; set; }
 
+        public int? ModuleId { get; set; }
+        public virtual Module? ModuleEntity { get; set; }
+
+        // Retained for rollback and compatibility with the existing name-based API.
         public string Module { get; set; } = string.Empty;
         public string? YoutubeUrl { get; set; }
         public bool IsPublic { get; set; } = false;

@@ -20,6 +20,7 @@ export interface Guide {
 }
 
 export interface CreateGuideRequest {
+  moduleId?: number;
   title: string;
   description: string;
   module: string;

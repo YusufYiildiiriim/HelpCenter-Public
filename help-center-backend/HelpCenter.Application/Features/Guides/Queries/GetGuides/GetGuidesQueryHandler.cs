@@ -24,14 +24,14 @@ public class GetGuidesQueryHandler : IRequestHandler<GetGuidesQuery, PaginatedRe
 
         Expression<Func<Guide, bool>> predicate = g =>
             (string.IsNullOrWhiteSpace(search) || g.Title.ToLower().Contains(search) || g.Description.ToLower().Contains(search)) &&
-            (string.IsNullOrWhiteSpace(request.Module) || request.Module == "All" || g.Module == request.Module);
+            (string.IsNullOrWhiteSpace(request.Module) || request.Module == "All" || (g.ModuleEntity != null ? g.ModuleEntity.Name : g.Module) == request.Module);
 
         var paginatedEntities = await _unitOfWork.Repository<Guide>().GetPaginatedAsync(
             predicate,
             request.PageNumber,
             request.PageSize,
             cancellationToken: cancellationToken,
-            g => g.Documents!);
+            g => g.Documents!, g => g.ModuleEntity!);
 
         var dtoItems = _mapper.Map<List<GuideDto>>(paginatedEntities.Items);
 

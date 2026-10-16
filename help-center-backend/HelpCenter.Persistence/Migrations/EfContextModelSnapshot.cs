@@ -1060,6 +1060,9 @@ namespace HelpCenter.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ModuleId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("PreviousGuideId")
                         .HasColumnType("int");
 
@@ -1088,6 +1091,8 @@ namespace HelpCenter.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ModuleId");
 
                     b.HasIndex("PreviousGuideId")
                         .IsUnique()
@@ -3117,6 +3122,11 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Guide", b =>
                 {
+                    b.HasOne("HelpCenter.Domain.Entities.Module", "ModuleEntity")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("HelpCenter.Domain.Entities.Guide", "PreviousRequest")
                         .WithOne("NextRequest")
                         .HasForeignKey("HelpCenter.Domain.Entities.Guide", "PreviousGuideId")
@@ -3125,6 +3135,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.HasOne("HelpCenter.Domain.Entities.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId");
+
+                    b.Navigation("ModuleEntity");
 
                     b.Navigation("PreviousRequest");
 
