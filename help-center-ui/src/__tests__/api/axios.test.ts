@@ -66,7 +66,7 @@ describe('axios instance', () => {
       await api.get('/api/ping');
     });
 
-    it('removes Content-Type for FormData bodies', () => {
+    it('removes Content-Type for FormData bodies', async () => {
       const interceptor = getRequestInterceptor();
       const formData = new FormData();
       formData.append('file', 'dummy-content');
@@ -75,7 +75,7 @@ describe('axios instance', () => {
         data: formData,
       } as InternalAxiosRequestConfig;
 
-      const result = interceptor(config) as InternalAxiosRequestConfig;
+      const result = await interceptor(config);
       expect(result.headers['Content-Type']).toBeUndefined();
     });
 
@@ -111,6 +111,44 @@ describe('axios instance', () => {
   });
 
   describe('response interceptor - refresh flow', () => {
+    it('restores the session before the first verify request on reload', async () => {
+      const order: string[] = [];
+      mock.onPost('/api/auth/refresh').reply(() => {
+        order.push('refresh');
+        return [200, { accessToken: 'restored-token' }];
+      });
+      mock.onGet('/api/auth/verify').reply((config) => {
+        order.push('verify');
+        expect(config.headers?.Authorization).toBe('Bearer restored-token');
+        return [200, { authenticated: true }];
+      });
+      await api.get('/api/auth/verify');
+      expect(order).toEqual(['refresh', 'verify']);
+      expect(mock.history.get).toHaveLength(1);
+    });
+
+    it('shares bootstrap refresh between concurrent verification requests', async () => {
+      mock.onPost('/api/auth/refresh').reply(200, { accessToken: 'restored-token' });
+      mock.onGet('/api/auth/verify').reply(200, { authenticated: true });
+      await Promise.all([api.get('/api/auth/verify'), api.get('/api/auth/verify')]);
+      expect(mock.history.post).toHaveLength(1);
+    });
+
+    it('does not send verify when the refresh cookie is rejected', async () => {
+      mock.onPost('/api/auth/refresh').reply(401);
+      await expect(api.get('/api/auth/verify')).rejects.toBeTruthy();
+      expect(mock.history.get).toHaveLength(0);
+      expect(getAccessToken()).toBeNull();
+      expect(window.location.href).toBe('/admin/login');
+    });
+
+    it('verifies directly when the in-memory session exists', async () => {
+      setAccessToken('valid-token');
+      mock.onGet('/api/auth/verify').reply(200, { authenticated: true });
+      await api.get('/api/auth/verify');
+      expect(mock.history.post).toHaveLength(0);
+    });
+
     it('refreshes once after a 401 and retries the original request with the new access token', async () => {
       setAccessToken('expired-access-token');
       let secureRequestCount = 0;

@@ -83,7 +83,8 @@ export const AuthService = {
 
   /**
    * Verifies token validity and role from the backend.
-   * If JWT is invalid or 5 minutes have elapsed, returns 401 and axios interceptor clears the session.
+   * Restores the cookie-backed session on reload before verification. A rejected
+   * access token is refreshed once; failed refresh clears the session and redirects.
    */
   verify: (): Promise<VerifyResponse> => {
     const token = getAccessToken();

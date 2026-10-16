@@ -92,9 +92,14 @@ async function refreshAccessToken(): Promise<string> {
 
 // Request Interceptor: start timing and attach the in-memory access token.
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     config.metadata = { startTime: new Date() };
-    const token = getAccessToken();
+    // Reload clears the in-memory token. Restore the cookie-backed session before
+    // verification instead of deliberately sending an unauthenticated GET first.
+    let token = getAccessToken();
+    if (!token && config.url?.split('?')[0] === '/api/auth/verify' && !config.skipAuthRefresh) {
+      token = await refreshAccessToken();
+    }
       
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;

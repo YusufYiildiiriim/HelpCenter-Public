@@ -11,6 +11,7 @@ async function mockDashboard(page: Page, total: number | null = 3, statisticsGat
     const path = new URL(route.request().url()).pathname;
     let body: unknown;
     switch (path) {
+      case "/api/auth/refresh": body = { accessToken: "e2e-fixture-token" }; break;
       case "/api/auth/verify":
         body = {
           authenticated: true, role: "Admin", username: "fixture", userId: 1,
