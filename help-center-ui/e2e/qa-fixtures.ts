@@ -6,7 +6,7 @@ export async function fixture(page: Page, allowed = true) {
     let body: unknown = [];
     if (url.pathname.endsWith("/refresh")) body = { accessToken: "fixture-access" };
     else if (url.pathname.endsWith("/verify")) body = { authenticated: true, role: "Admin", username: "qa", userId: 1,
-      isPasswordChangeRequired: false, permissions: { modules: allowed ? ["Statuses", "AuditLogs"].map(resourceKey => ({ resourceKey, actions: ["Read", "Export", "Print"] })) : [] } };
+      isPasswordChangeRequired: false, permissions: { modules: allowed ? ["Statuses", "AuditLogs", "Companies", "Projects", "Users", "FAQ", "Guide", "Roles", "Modules", "Subjects", "OrganizationSettings", "Requests", "AssignedRequests"].map(resourceKey => ({ resourceKey, actions: ["Read", "Export", "Print"] })) : [] } };
     else if (url.pathname.includes("organization")) body = { organizationName: "HelpCenter" };
     else if (url.pathname.includes("statuses/get-all")) {
       const all = Array.from({ length: 80 }, (_, i) => ({ id: i + 1, name: `Türkçe Durum ${i + 1}`, description: `İşlem açıklaması: ğüşöçİ ${i + 1}`, isActive: true }));

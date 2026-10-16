@@ -19,7 +19,7 @@ function scenario() {
     for (const peer of peers) peer.send(JSON.stringify({ type: 1, target: "RequestStatusChanged",
       arguments: [{ requestPublicId: id, statusId: 3, status: "Tamamlandı" }] }) + "\u001e");
   };
-  async function setup(page: Page, customer: boolean) {
+  async function setup(page: Page, customer: boolean, expert = false) {
     await page.context().addCookies([{ name: "refresh_token", value: "fixture", url: "http://127.0.0.1:3001" }]);
     await page.routeWebSocket(/\/requestHub(?:\?|$)/, peer => {
       peers.add(peer);
@@ -43,11 +43,11 @@ function scenario() {
       const path = new URL(route.request().url()).pathname;
       let body: unknown = [];
       if (path === "/api/auth/refresh") body = { accessToken: "fixture-token" };
-      else if (path === "/api/auth/verify") body = { authenticated: true, role: customer ? "Customer" : "Admin", userId: customer ? 7 : 1,
+      else if (path === "/api/auth/verify") body = { authenticated: true, role: customer ? "Customer" : expert ? "Expert" : "Admin", userId: customer ? 7 : 1,
         username: "fixture", companyId, isPasswordChangeRequired: false,
-        permissions: { modules: [{ resourceKey: "Requests", actions: ["Read", "Update"] }] } };
+        permissions: { modules: [{ resourceKey: expert ? "AssignedRequests" : "Requests", actions: ["Read", "Update"] }] } };
       else if (path.includes("organization")) body = { organizationName: "Fixture" };
-      else if (path.includes("get-by-id")) { detailsRead++; body = ticket(); }
+      else if (path.includes("get-by-id") || path === `/api/admin/requests/assigned/${requestId}`) { detailsRead++; body = ticket(); }
       else if (path.endsWith("/messages")) body = customer ? [] : { messages: [], hasMore: false, totalCount: 0 };
       else if (path.endsWith("/mark-read")) body = true;
       else if (path === "/api/customer/requests/close") {
@@ -105,4 +105,25 @@ test("a missed close event is recovered from the send rejection with a clear loc
   await expect(page.getByText("Bu talep kapatılmış. Yeni mesaj gönderilemez.").first()).toBeVisible();
   await expect(page.getByText("Bu talep sonuçlandırıldığı için yeni mesaj gönderilemez.")).toBeVisible();
   await expect(page.getByText("Untrusted server text")).toHaveCount(0);
+});
+
+test("320px expert chat reads assigned endpoints without general request permission", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  const paths: string[] = [];
+  page.on("request", request => paths.push(new URL(request.url()).pathname));
+  await scenario().setup(page, false, true);
+  await page.goto(`/admin/requests/${requestId}`);
+  await expect(page.getByPlaceholder("Bir yanıt yazın...")).toBeVisible();
+  expect(paths).toContain(`/api/admin/requests/assigned/${requestId}`);
+  expect(paths).not.toContain(`/api/admin/requests/get-by-id/${requestId}`);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("320px customer chat exposes customer controls and stays inside the viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await scenario().setup(page, true);
+  await page.goto(`/dashboard/${companyId}/requests/${requestId}`);
+  await expect(page.getByRole("button", { name: "Talebi Kapat", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Danış", exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
