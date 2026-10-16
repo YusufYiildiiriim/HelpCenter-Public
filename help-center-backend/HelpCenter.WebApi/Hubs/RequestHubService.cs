@@ -23,5 +23,11 @@ namespace HelpCenter.WebApi.Hubs
         {
             await _hubContext.Clients.Group(requestId).SendAsync("MessagesRead", userId, cancellationToken);
         }
+
+        public Task NotifyRequestStatusChanged(string requestId, int statusId, string status, CancellationToken cancellationToken)
+        {
+            return _hubContext.Clients.Group(requestId).SendAsync("RequestStatusChanged",
+                new { RequestPublicId = requestId, StatusId = statusId, Status = status }, cancellationToken);
+        }
     }
 }

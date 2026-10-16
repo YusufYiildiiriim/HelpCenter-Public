@@ -1,16 +1,22 @@
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
+using HelpCenter.Domain.Constants;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace HelpCenter.Application.Features.Requests.Commands.CloseRequest;
 
 public class CloseRequestCommandHandler : IRequestHandler<CloseRequestCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRequestHubService _hubService;
+    private readonly ILogger<CloseRequestCommandHandler> _logger;
 
-    public CloseRequestCommandHandler(IUnitOfWork unitOfWork)
+    public CloseRequestCommandHandler(IUnitOfWork unitOfWork, IRequestHubService hubService, ILogger<CloseRequestCommandHandler> logger)
     {
         _unitOfWork = unitOfWork;
+        _hubService = hubService;
+        _logger = logger;
     }
 
     public async Task<bool> Handle(CloseRequestCommand request, CancellationToken cancellationToken)
@@ -20,6 +26,13 @@ public class CloseRequestCommandHandler : IRequestHandler<CloseRequestCommand, b
 
         CloseRequestRules.RequestShouldExist(customerRequest);
         CloseRequestRules.RequestShouldBelongToCustomer(customerRequest!, request.CustomerId);
+
+        // A retried close must not add another evaluation or history entry.
+        if (customerRequest!.StatusId == RequestStatusConstants.Completed)
+        {
+            await NotifyClosedAsync(customerRequest, cancellationToken);
+            return true;
+        }
 
         var oldStatus = await _unitOfWork.Repository<CustomerRequestStatus>().GetAsync(customerRequest!.StatusId, cancellationToken);
 
@@ -40,6 +53,22 @@ public class CloseRequestCommandHandler : IRequestHandler<CloseRequestCommand, b
         await _unitOfWork.Repository<CustomerRequestEvaluation>().AddAsync(evaluation, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
+        await NotifyClosedAsync(customerRequest, cancellationToken);
+
         return true;
+    }
+
+    private async Task NotifyClosedAsync(CustomerRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _hubService.NotifyRequestStatusChanged(request.PublicId.ToString(), request.StatusId, "Tamamlandı", cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            // The close is already committed. Do not misreport a failed close or
+            // cause duplicate evaluations when a transient hub failure is retried.
+            _logger.LogWarning(exception, "Closed request {RequestPublicId}, but its status notification failed.", request.PublicId);
+        }
     }
 }

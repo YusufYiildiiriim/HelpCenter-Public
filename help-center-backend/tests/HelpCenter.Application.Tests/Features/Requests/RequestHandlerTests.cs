@@ -260,7 +260,7 @@ public class RequestHandlerTests : HandlerTestBase
         var customer = SeedCustomer();
         var req = SeedRequest(customer);
 
-        var handler = new CloseRequestCommandHandler(Uow);
+        var handler = new CloseRequestCommandHandler(Uow, _hubService, NullLogger<CloseRequestCommandHandler>.Instance);
         var command = new CloseRequestCommand
         {
             CustomerId = customer.Id,

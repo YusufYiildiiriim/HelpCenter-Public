@@ -104,7 +104,7 @@ public class CustomerIsolationAndSecurityTests : HandlerTestBase
     public async Task Customer_cannot_close_another_customers_ticket()
     {
         // Ahmet (Customer 1 / Acme) tries to close Request 2 (Mehmet / Beta)
-        var handler = new CloseRequestCommandHandler(Uow);
+        var handler = new CloseRequestCommandHandler(Uow, _hubService, NullLogger<CloseRequestCommandHandler>.Instance);
         var command = new CloseRequestCommand
         {
             CustomerId = 1, // Ahmet (Acme)

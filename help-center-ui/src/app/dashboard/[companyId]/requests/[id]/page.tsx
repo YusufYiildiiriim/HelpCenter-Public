@@ -89,6 +89,10 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     });
                 }
             });
+            signalRService.onRequestStatusChanged(change => {
+                if (change.requestPublicId !== requestId) return;
+                setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
+            });
         };
 
         setupSignalR();
@@ -96,6 +100,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
         return () => {
             signalRService.leaveRequest(requestId);
             signalRService.offReceiveMessage();
+            signalRService.offRequestStatusChanged();
         };
     }, [requestId]);
 

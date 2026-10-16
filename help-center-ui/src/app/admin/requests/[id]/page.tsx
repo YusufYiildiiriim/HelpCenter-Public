@@ -12,7 +12,7 @@ import { AdminRequestService } from "@/services/admin/AdminRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { toast } from "sonner";
 import { ApiStateView } from "@/components/common/ApiStateView";
-import { getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
+import { getApiErrorCode, getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
 
 // Modular Components
 import { ChatHeader } from "./components/ChatHeader";
@@ -200,6 +200,11 @@ export default function AdminTicketChatPage() {
                     setMessages(prev => prev.map(m => m.isAgent ? { ...m, isRead: true } : m));
                 }
             });
+            signalRService.onRequestStatusChanged(change => {
+                if (change.requestPublicId !== requestId) return;
+                setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
+                if (change.statusId === 3) setIsConsultModalOpen(false);
+            });
         };
 
         setupSignalR();
@@ -208,6 +213,7 @@ export default function AdminTicketChatPage() {
             signalRService.leaveRequest(requestId);
             signalRService.offReceiveMessage();
             signalRService.offMessagesRead();
+            signalRService.offRequestStatusChanged();
             router.refresh();
         };
     }, [requestId, scrollToBottom, router, canReadAllRequests]);
@@ -240,7 +246,7 @@ export default function AdminTicketChatPage() {
                 files: selectedFiles,
             });
             if (messageType === 0) {
-                setTicket(prev => prev ? { ...prev, statusId: 2, status: "Cevaplandı" } : prev);
+                setTicket(prev => prev && prev.statusId !== 3 ? { ...prev, statusId: 2, status: "Cevaplandı" } : prev);
             }
             setNewMessage("");
             setSelectedFiles([]);
@@ -248,7 +254,11 @@ export default function AdminTicketChatPage() {
             if (messageType === 1) setMessageType(0);
         } catch (err) {
             console.error("Error sending message:", err);
-            toast.error("Mesaj gönderilirken bir hata oluştu.");
+            if (getApiErrorCode(err) === "RequestCompleted") {
+                setTicket(prev => prev ? { ...prev, statusId: 3, status: "Tamamlandı" } : prev);
+                setIsConsultModalOpen(false);
+                toast.error("Bu talep kapatılmış. Yeni mesaj gönderilemez.");
+            } else toast.error(getApiErrorMessage(err));
         } finally {
             setSending(false);
         }
@@ -360,7 +370,7 @@ export default function AdminTicketChatPage() {
             </div>
 
             {/* Input Area */}
-            {ticket?.status !== "Tamamlandı" ? (
+            {ticket?.statusId !== 3 && ticket?.status !== "Tamamlandı" ? (
                 <ChatInput
                     messageType={messageType}
                     setMessageType={setMessageType}

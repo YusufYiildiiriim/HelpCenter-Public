@@ -4,6 +4,12 @@ import { apiBaseUrl } from "@/lib/env";
 
 const BASE_URL = apiBaseUrl;
 
+export interface RequestStatusChanged {
+  requestPublicId: string;
+  statusId: number;
+  status: string;
+}
+
 class SignalRService {
   private hubConnection: signalR.HubConnection | null = null;
   private isConnecting: boolean = false;
@@ -115,6 +121,14 @@ class SignalRService {
 
   public offMessagesRead(): void {
     this.hubConnection?.off("MessagesRead");
+  }
+
+  public onRequestStatusChanged(callback: (status: RequestStatusChanged) => void): void {
+    this.hubConnection?.on("RequestStatusChanged", callback);
+  }
+
+  public offRequestStatusChanged(): void {
+    this.hubConnection?.off("RequestStatusChanged");
   }
 }
 
