@@ -77,6 +77,18 @@ describe('AdminLayout menu loading', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  it.each([500, 503])('keeps the session and offers retry after verification status %s', async status => {
+    render(<AdminLayout><ProtectedContent /></AdminLayout>);
+    const error = Object.assign(new Error('temporary'), { isAxiosError: true, response: { status } });
+    await act(async () => verification.reject(error));
+    expect(push).not.toHaveBeenCalled();
+    expect(mounted).not.toHaveBeenCalled();
+    vi.mocked(AuthService.verify).mockResolvedValueOnce(user);
+    await act(async () => fireEvent.click(screen.getByRole('button')));
+    expect(screen.getByText('Protected dashboard')).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it('ignores a verification error received after unmount', async () => {
     const view = render(<AdminLayout><ProtectedContent /></AdminLayout>);
     view.unmount();
@@ -121,7 +133,7 @@ describe('AdminLayout menu loading', () => {
   it('keeps protected content hidden if verification fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<AdminLayout><ProtectedContent /></AdminLayout>);
-    await act(async () => verification.reject(new Error('unauthorized')));
+    await act(async () => verification.reject(Object.assign(new Error('unauthorized'), { isAxiosError: true, response: { status: 401 } })));
     expect(mounted).not.toHaveBeenCalled();
     expect(AuthService.getMenuItems).not.toHaveBeenCalled();
     expect(push).toHaveBeenCalledWith('/admin/login');

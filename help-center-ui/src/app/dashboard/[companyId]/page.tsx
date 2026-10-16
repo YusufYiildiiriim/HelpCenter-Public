@@ -134,7 +134,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
 
         // Inactivity Logic
         const resetTimer = () => setTimeLeft(180);
-        const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
+        const events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart"];
         events.forEach(event => window.addEventListener(event, resetTimer));
 
         const interval = setInterval(() => {

@@ -27,6 +27,7 @@ import { AdminOrganizationService } from "@/services/admin/AdminOrganizationServ
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import { getApiErrorStatus, getApiRetryAfterSeconds } from "@/lib/api/errors";
+import { ErrorState } from "@/components/common/ErrorState";
 
 // Modular Components
 import { Sidebar } from "./layout-components/Sidebar";
@@ -59,6 +60,7 @@ export default function AdminLayout({
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationAttempt, setVerificationAttempt] = useState(0);
+  const [verificationFailed, setVerificationFailed] = useState(false);
   const [retryDeadline, setRetryDeadline] = useState<number | null>(null);
   const [retrySeconds, setRetrySeconds] = useState(0);
   const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
@@ -110,7 +112,8 @@ export default function AdminLayout({
           return;
         }
         console.error("Auth verification failed:", error);
-        router.push("/admin/login");
+        if ([401, 403].includes(getApiErrorStatus(error) ?? 0)) router.push("/admin/login");
+        else setVerificationFailed(true);
       } finally {
         if (isMounted) {
           setIsVerifying(false);
@@ -185,6 +188,14 @@ export default function AdminLayout({
         <p className="text-slate-500 font-black tracking-[0.3em] uppercase text-[10px] animate-pulse">Sistem Yetkilendiriliyor...</p>
       </div>
     );
+  }
+
+  if (verificationFailed) {
+    return <ErrorState variant="page" message="Oturum doğrulanamadı. Bağlantınızı kontrol edip yeniden deneyin." onRetry={() => {
+      setVerificationFailed(false);
+      setIsVerifying(true);
+      setVerificationAttempt(attempt => attempt + 1);
+    }} />;
   }
 
   if (retryDeadline !== null) {
