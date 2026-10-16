@@ -17,6 +17,7 @@ bağlamını korumak için tabloda `Superseded/Removed` durumunda bırakılmış
 
 | Kayıt | Türkçe karşılığı | Durum |
 |---|---|---|
+| [010](010-internal-keys-and-public-identities.tr.md) | İç sayısal anahtarları ve dış UUID kimliklerini koruma | Proposed |
 | [001](001-pragmatic-clean-architecture.tr.md) | Pragmatik Clean Architecture ve Application'ın EF Core LINQ uzantıları | Kabul edildi |
 | [002](002-hierarchical-rbac.tr.md) | Boolean izin kolonları yerine hiyerarşik action-list RBAC | Kabul edildi |
 | [003](003-row-level-restrictions-asynclocal.tr.md) | EF Core global filter + AsyncLocal ile satır seviyesi kısıtlama | Yerine yenisi geldi / kaldırıldı |

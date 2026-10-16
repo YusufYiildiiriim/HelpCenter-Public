@@ -8,6 +8,7 @@ Short, dated documents capturing the *why* behind architectural choices — so a
 
 | # | Title | Status |
 |---|---|---|
+| [010](010-internal-keys-and-public-identities.md) | Retain internal numeric keys and public UUID identities | Proposed |
 | [001](001-pragmatic-clean-architecture.md) | Pragmatic Clean Architecture — Application may reference EF Core LINQ extensions | Accepted |
 | [002](002-hierarchical-rbac.md) | Hierarchical action-list RBAC over boolean permission columns | Accepted |
 | [003](003-row-level-restrictions-asynclocal.md) | Row-level restrictions via EF Core global filters + AsyncLocal ambient | Superseded/Removed (2026-09-06) |
