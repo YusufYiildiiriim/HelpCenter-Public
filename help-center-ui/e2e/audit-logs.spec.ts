@@ -20,3 +20,14 @@ test("audit page without permission shows forbidden and makes no audit request",
   await expect(page.getByRole("alert").filter({ hasText: "Erişim Yetkiniz Yok" })).toBeVisible();
   expect(auditReads).toBe(0);
 });
+
+for (const [timezoneId, expected] of [["Europe/Istanbul", "15:00:00"], ["UTC", "12:00:00"], ["America/New_York", "08:00:00"]]) {
+  test.describe(timezoneId, () => {
+    test.use({ timezoneId });
+    test("renders the UTC instant in the browser timezone", async ({ page }) => {
+      await fixture(page);
+      await page.goto("/admin/settings/audit-logs");
+      await expect(page.getByText(`16.10.2026 ${expected}`, { exact: true }).filter({ visible: true }).first()).toBeVisible();
+    });
+  });
+}

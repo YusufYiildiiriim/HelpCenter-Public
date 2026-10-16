@@ -114,7 +114,7 @@ test("320px expert chat reads assigned endpoints without general request permiss
   await scenario().setup(page, false, true);
   await page.goto(`/admin/requests/${requestId}`);
   await expect(page.getByPlaceholder("Bir yanıt yazın...")).toBeVisible();
-  expect(paths).toContain(`/api/admin/requests/assigned/${requestId}`);
+  await expect.poll(() => paths).toContain(`/api/admin/requests/assigned/${requestId}`);
   expect(paths).not.toContain(`/api/admin/requests/get-by-id/${requestId}`);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
