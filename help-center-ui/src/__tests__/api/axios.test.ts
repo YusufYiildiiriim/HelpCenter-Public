@@ -191,6 +191,37 @@ describe('axios instance', () => {
       expect(refreshCount).toBe(1);
     });
 
+    it.each([429, 500, 503])('keeps the session on transient refresh failure %s', async (status) => {
+      setAccessToken('expired-access-token');
+      mock.onGet('/api/secure').reply(401);
+      mock.onPost('/api/auth/refresh').reply(status);
+      await expect(api.get('/api/secure')).rejects.toBeTruthy();
+      expect(getAccessToken()).toBe('expired-access-token');
+      expect(window.location.href).toBe('');
+    });
+
+    it('retries a delayed stale-token 401 without rotating the current token again', async () => {
+      setAccessToken('old-token');
+      let release!: () => void;
+      const delayed = new Promise<void>((resolve) => { release = resolve; });
+      let first = true;
+      mock.onGet('/api/late').reply(async () => {
+        if (first) {
+          first = false;
+          await delayed;
+          return [401];
+        }
+        return [200, { success: true }];
+      });
+      const request = api.get('/api/late');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      setAccessToken('new-token');
+      release();
+      await expect(request).resolves.toMatchObject({ status: 200 });
+      expect(mock.history.post).toHaveLength(0);
+      expect(getAccessToken()).toBe('new-token');
+    });
+
     it('clears in-memory state and redirects when refresh fails', async () => {
       setAccessToken('expired-access-token');
       mock.onGet('/api/secure').reply(401);

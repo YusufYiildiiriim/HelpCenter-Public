@@ -158,13 +158,21 @@ api.interceptors.response.use(
     if (shouldRefresh) {
       config._retry = true;
       try {
-        const token = await refreshAccessToken();
+        // A delayed 401 may belong to a token already replaced by another request.
+        const currentToken = getAccessToken();
+        const token = currentToken && config.headers?.Authorization !== `Bearer ${currentToken}`
+          ? currentToken
+          : await refreshAccessToken();
         config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;
         return api(config);
-      } catch {
-        clearAccessToken();
-        redirectToLogin();
+      } catch (refreshError) {
+        // Transient failures do not establish session expiry.
+        if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
+          clearAccessToken();
+          redirectToLogin();
+        }
+        return Promise.reject(refreshError);
       }
     } else if (error.response?.status === 401 && (config?.skipAuthRefresh || isAuthEndpoint(config?.url))) {
       clearAccessToken();
