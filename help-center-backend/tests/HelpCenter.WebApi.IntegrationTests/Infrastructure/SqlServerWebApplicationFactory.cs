@@ -18,6 +18,16 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
         .WithPassword(SqlServerPassword)
         .Build();
 
+    private static int _clientSequence;
+
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        // Each synthetic client represents a distinct source IP; keep the real limiter enabled.
+        var sequence = Interlocked.Increment(ref _clientSequence);
+        client.DefaultRequestHeaders.Add("X-Forwarded-For", $"198.18.{sequence / 250}.{sequence % 250 + 1}");
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("IntegrationTesting");
