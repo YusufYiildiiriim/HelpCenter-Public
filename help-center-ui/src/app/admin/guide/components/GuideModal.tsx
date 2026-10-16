@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo } from "react";
-import { X, Edit3, Plus, ChevronDown } from "lucide-react";
+import { X, Edit3, Plus } from "lucide-react";
 import type { Module } from "@/services/admin/AdminModuleService";
 import type { Guide, GuideDocument } from "@/services/admin/AdminGuideService";
 import { FilePreview } from "./FilePreview";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+import { ModalSelect } from "@/components/common/ModalSelect";
 import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 
@@ -121,23 +122,15 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                   placeholder="Örn: Sisteme nasıl giriş yapılır?"
                 />
 
-                <FormField
-                  as="select"
-                  name="module"
-                  label="Kategori (Modül)"
-                  value={formData.module}
-                  onChange={handleChange}
-                  onBlur={register("module").onBlur}
-                  error={register("module").error}
-                  required
-                  right={<ChevronDown size={16} />}
-                >
-                  <option value="">Modül Seçin</option>
-                  {safeModules.map((m) => (
-                    <option key={m.id} value={m.name}>{m.name}</option>
-                  ))}
-                  {safeModules.length === 0 && <option value="Genel">Genel</option>}
-                </FormField>
+                <ModalSelect
+                    name="module"
+                    label="Kategori (Modül)"
+                    value={formData.module}
+                    options={[{ value: "", label: "Modül Seçin" }, ...safeModules.map(m => ({ value: m.name, label: m.name })), ...(safeModules.length === 0 ? [{ value: "Genel", label: "Genel" }] : [])]}
+                    onValueChange={(value) => setFormData({ ...formData, module: value, previousGuideId: null })}
+                    onBlur={register("module").onBlur}
+                    error={register("module").error}
+                  />
 
                 <FormField
                   name="youtubeUrl"
@@ -148,21 +141,13 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                 />
 
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Önceki Adım (Zincirleme)</label>
                   <div className="relative">
-                    <select
-                      value={formData.previousGuideId || ""}
-                      onChange={(e) => setFormData({ ...formData, previousGuideId: e.target.value ? parseInt(e.target.value) : null })}
-                      className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all appearance-none font-bold text-slate-100 text-sm"
-                    >
-                      <option value="">Bağlantı Yok (İlk Adım)</option>
-                      {safeGuides
-                        .filter(g => g.module === formData.module && g.id !== editingId)
-                        .map((g) => (
-                          <option key={g.id} value={g.id}>{g.title}</option>
-                        ))}
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
+                    <ModalSelect
+                      label="Önceki Adım (Zincirleme)"
+                      value={String(formData.previousGuideId ?? "")}
+                      options={[{ value: "", label: "Bağlantı Yok (İlk Adım)" }, ...safeGuides.filter(g => g.module === formData.module && g.id !== editingId).map(g => ({ value: String(g.id), label: g.title }))]}
+                      onValueChange={(value) => setFormData({ ...formData, previousGuideId: value ? Number(value) : null })}
+                    />
                   </div>
                 </div>
 

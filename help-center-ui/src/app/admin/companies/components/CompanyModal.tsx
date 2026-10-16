@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, Building2, Users, Zap, Loader2, Key, AtSign, FolderKanban, Check, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { X, Building2, Users, Zap, Loader2, Key, AtSign, Check, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
 import type { Module } from "@/services/admin/AdminModuleService";
 import type { Project } from "@/services/admin/AdminProjectService";
 import { cn } from "@/lib/utils";
+import { ModalSelect } from "@/components/common/ModalSelect";
 import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 
@@ -341,30 +342,18 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
               />
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                  <FolderKanban size={12} className="text-indigo-400" />
-                  Proje
-                </label>
-                <select
-                  name="projectId"
-                  value={formData.projectId ?? ""}
-                  onChange={(e) => {
-                    const newProjectId = e.target.value ? Number(e.target.value) : null;
-                    const newProject = projects.find((p) => p.id === newProjectId);
-                    setFormData({
-                      ...formData,
-                      projectId: newProjectId,
-                      moduleIds: (formData.moduleIds || []).filter((id: number) => newProject?.moduleIds.includes(id)),
-                    });
+                <ModalSelect
+                  label="Proje"
+                  value={String(formData.projectId ?? "")}
+                  options={[{ value: "", label: "Proje seçilmedi" }, ...projects.map(project => ({ value: String(project.id), label: project.name }))]}
+                  onValueChange={(value) => {
+                    const newProjectId = value ? Number(value) : null;
+                    const newProject = projects.find(project => project.id === newProjectId);
+                    setFormData({ ...formData, projectId: newProjectId,
+                      moduleIds: (formData.moduleIds || []).filter(id => newProject?.moduleIds.includes(id)) });
                     setModulePickerValue("");
                   }}
-                  className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl text-slate-100 focus:bg-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-sm font-bold"
-                >
-                  <option value="">Proje seçilmedi</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>{project.name}</option>
-                  ))}
-                </select>
+                />
                 <p className="text-[10px] text-slate-500 ml-1">Bu firmanın talepleri, atandığı projede çalışan kullanıcılara görünür olacaktır.</p>
               </div>
 
@@ -380,26 +369,18 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2 rounded-xl border border-slate-700 bg-slate-800/60 p-3">
-                    <select
-                      aria-label="Modül ekle"
+                    <ModalSelect
+                      label="Modül ekle"
                       value={modulePickerValue}
-                      onChange={(event) => {
-                        const moduleId = Number(event.target.value);
+                      disabled={selectableModules.length === 0}
+                      options={[{ value: "", label: selectableModules.length === 0 ? "Tüm modüller eklendi" : "Modül seçip ekleyin..." }, ...selectableModules.map(module => ({ value: String(module.id), label: module.name }))]}
+                      onValueChange={(value) => {
+                        const moduleId = Number(value);
                         if (!moduleId) return;
-
                         toggleModule(moduleId);
                         setModulePickerValue("");
                       }}
-                      className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-slate-100 outline-none transition-colors focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={selectableModules.length === 0}
-                    >
-                      <option value="">
-                        {selectableModules.length === 0 ? "Tüm modüller eklendi" : "Modül seçip ekleyin..."}
-                      </option>
-                      {selectableModules.map((module) => (
-                        <option key={module.id} value={module.id}>{module.name}</option>
-                      ))}
-                    </select>
+                    />
 
                     <p className="px-1 text-[10px] font-medium text-slate-500">
                       Seçim kutusunu açtıktan sonra modül adı yazarak doğrudan bulabilirsiniz.
