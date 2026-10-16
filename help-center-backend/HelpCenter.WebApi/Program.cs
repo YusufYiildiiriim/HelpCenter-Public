@@ -30,6 +30,7 @@ builder.Services.AddControllers(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.Converters.Add(new HelpCenter.WebApi.Serialization.UtcDateTimeConverter());
     });
 
 builder.Services.AddPersistenceServices(builder.Configuration);

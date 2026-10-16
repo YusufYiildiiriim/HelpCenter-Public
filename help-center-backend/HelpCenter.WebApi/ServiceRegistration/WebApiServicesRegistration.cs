@@ -141,7 +141,8 @@ public static class WebApiServicesRegistration
         services.AddScoped<IUserContext, HelpCenter.Persistence.Services.HttpBasedUserContext>();
         services.AddScoped<IRequestHubService, RequestHubService>();
         services.AddScoped<IDataScopeService, DataScopeService>();
-        services.AddSignalR();
+        services.AddSignalR().AddJsonProtocol(options =>
+            options.PayloadSerializerOptions.Converters.Add(new HelpCenter.WebApi.Serialization.UtcDateTimeConverter()));
 
         // RBAC Authorization
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
