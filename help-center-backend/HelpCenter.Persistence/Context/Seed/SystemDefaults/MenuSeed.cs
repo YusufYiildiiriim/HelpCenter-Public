@@ -9,6 +9,7 @@ public static class MenuSeed
     public static void SeedMenus(this ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<MenuItem>().HasData(
+            new MenuItem { PublicId = Guid.Empty, Id = 15, Label = "Denetim Kayıtları", Icon = "ClipboardList", Route = "/admin/settings/audit-logs", ResourceKey = AppResources.AuditLogs, Order = 15, GroupTitle = null, CreatedAt = new DateTime(2026, 10, 16), IsActive = true },
             new MenuItem { PublicId = Guid.Empty, Id = 1, Label = "İstatistikler", Icon = "BarChart3", Route = "/admin", ResourceKey = AppResources.Dashboard, Order = 1, GroupTitle = "Talep Takip", CreatedAt = new DateTime(2026, 8, 1), IsActive = true },
             new MenuItem { PublicId = Guid.Empty, Id = 2, Label = "Talepler", Icon = "ClipboardList", Route = "/admin/requests", ResourceKey = AppResources.Requests, Order = 2, GroupTitle = null, CreatedAt = new DateTime(2026, 8, 1), IsActive = true },
             new MenuItem { PublicId = Guid.Empty, Id = 3, Label = "Bana Atananlar", Icon = "Inbox", Route = "/admin/requests/assigned", ResourceKey = AppResources.AssignedRequests, Order = 3, GroupTitle = null, CreatedAt = new DateTime(2026, 8, 1), IsActive = true },

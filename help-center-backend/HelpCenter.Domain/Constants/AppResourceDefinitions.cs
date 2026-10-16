@@ -40,6 +40,7 @@ public static class AppResourceDefinitions
 
     public static readonly ResourceDefinition[] All =
     {
+        new(AppResources.AuditLogs, "Denetim Kayıtları", new[] { new ActionDefinition(PermissionActions.Read, "Görüntüle") }),
         new(AppResources.Dashboard, "İstatistikler",  StandardCrud),
         new(AppResources.Requests,  "Talepler",       RequestActions),
         new(AppResources.AssignedRequests, "Bana Atanan Talepler", RequestActions),

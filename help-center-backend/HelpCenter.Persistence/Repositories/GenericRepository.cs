@@ -241,7 +241,8 @@ namespace HelpCenter.Persistence.Repositories
             Expression<Func<T, TResult>> selector,
             int pageNumber,
             int pageSize,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            Expression<Func<T, object>>? orderByDescendingKey = null)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 0) pageSize = 10;
@@ -258,7 +259,8 @@ namespace HelpCenter.Persistence.Repositories
 
             var totalCount = await projected.CountAsync(cancellationToken);
 
-            var orderedProjected = OrderByPrimaryKey(query).Select(selector);
+            var ordered = orderByDescendingKey == null ? OrderByPrimaryKey(query) : query.OrderByDescending(orderByDescendingKey);
+            var orderedProjected = ordered.Select(selector);
             var items = unlimited
                 ? await orderedProjected.ToListAsync(cancellationToken)
                 : await orderedProjected.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);

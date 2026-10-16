@@ -1180,6 +1180,20 @@ namespace HelpCenter.Persistence.Migrations
                     b.HasData(
                         new
                         {
+                            Id = 15,
+                            CreatedAt = new DateTime(2026, 10, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Icon = "ClipboardList",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Label = "Denetim Kayıtları",
+                            Order = 15,
+                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
+                            ResourceKey = "AuditLogs",
+                            Route = "/admin/settings/audit-logs",
+                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
+                        },
+                        new
+                        {
                             Id = 1,
                             CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             GroupTitle = "Talep Takip",

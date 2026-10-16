@@ -2,6 +2,7 @@
 
 public static class AppResources
 {
+    public const string AuditLogs = "AuditLogs";
     public const string Dashboard = "Dashboard";
     public const string Requests = "Requests";
     public const string Companies = "Companies";

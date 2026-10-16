@@ -88,7 +88,8 @@ public interface IGenericRepository<T> where T : class
         Expression<Func<T, TResult>> selector,
         int pageNumber,
         int pageSize,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+            Expression<Func<T, object>>? orderByDescendingKey = null);
 
     /// <summary>
     /// Paginated projection using an AutoMapper profile (`ProjectTo`) — see the note above.
