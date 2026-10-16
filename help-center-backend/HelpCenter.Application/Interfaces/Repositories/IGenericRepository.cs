@@ -28,17 +28,6 @@ public interface IGenericRepository<T> where T : class
         CancellationToken cancellationToken = default,
         params Expression<Func<T, object>>[] includes);
 
-    Task<IEnumerable<T>> FindWithIncludesAsync(
-        Expression<Func<T, bool>> predicate,
-        string[] includePaths,
-        CancellationToken cancellationToken = default);
-
-    Task<T?> FirstOrDefaultWithIncludesAsync(
-        Expression<Func<T, bool>> predicate,
-        string[] includePaths,
-        bool asTracking = false,
-        CancellationToken cancellationToken = default);
-
     Task<bool> AnyAsync(
         Expression<Func<T, bool>> predicate,
         CancellationToken cancellationToken = default);

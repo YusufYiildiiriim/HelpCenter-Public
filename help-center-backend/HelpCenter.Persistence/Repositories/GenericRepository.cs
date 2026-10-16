@@ -113,41 +113,6 @@ namespace HelpCenter.Persistence.Repositories
             return await query.FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public async Task<IEnumerable<T>> FindWithIncludesAsync(
-            Expression<Func<T, bool>> predicate,
-            string[] includePaths,
-            CancellationToken cancellationToken = default)
-        {
-            IQueryable<T> query = _efContext.Set<T>().AsNoTracking();
-
-            query = query.Where(predicate);
-
-            foreach (var path in includePaths)
-            {
-                query = query.Include(path);
-            }
-
-            return await query.ToListAsync(cancellationToken);
-        }
-
-        public async Task<T?> FirstOrDefaultWithIncludesAsync(
-            Expression<Func<T, bool>> predicate,
-            string[] includePaths,
-            bool asTracking = false,
-            CancellationToken cancellationToken = default)
-        {
-            IQueryable<T> query = asTracking ? _efContext.Set<T>() : _efContext.Set<T>().AsNoTracking();
-
-            query = query.Where(predicate);
-
-            foreach (var path in includePaths)
-            {
-                query = query.Include(path);
-            }
-
-            return await query.FirstOrDefaultAsync(cancellationToken);
-        }
-
         public async Task<bool> AnyAsync(
             Expression<Func<T, bool>> predicate,
             CancellationToken cancellationToken = default)

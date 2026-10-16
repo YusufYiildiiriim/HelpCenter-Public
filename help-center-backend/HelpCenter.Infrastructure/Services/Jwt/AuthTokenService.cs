@@ -73,12 +73,16 @@ public class AuthTokenService : IAuthTokenService
             throw new UnauthorizedException("Refresh token gerekli.");
 
         var hash = HashToken(rawRefreshToken);
-        var stored = await _unitOfWork.Repository<RefreshToken>().FirstOrDefaultWithIncludesAsync(
+        var stored = await _unitOfWork.Repository<RefreshToken>().FirstOrDefaultAsync(
             t => t.TokenHash == hash,
-            new[] { "User.Account", "Customer.Account", "Customer.Company" },
             asTracking: true,
-            cancellationToken: ct);
-
+            cancellationToken: ct,
+            includes: new System.Linq.Expressions.Expression<Func<RefreshToken, object>>[]
+            {
+                t => t.User!.Account,
+                t => t.Customer!.Account,
+                t => t.Customer!.Company
+            });
         if (stored is null)
             throw new UnauthorizedException("Refresh token geçersiz.");
 
