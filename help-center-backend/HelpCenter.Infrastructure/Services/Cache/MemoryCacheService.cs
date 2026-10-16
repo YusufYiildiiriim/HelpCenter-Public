@@ -34,14 +34,15 @@ public sealed class MemoryCacheService : ICacheService
             return cached;
         }
 
-        var value = await factory(cancellationToken);
-
+        // Bind to the generation BEFORE loading, so a concurrent write cancels stale fills.
         var cts = _prefixTokens.GetOrAdd(prefix, _ => new CancellationTokenSource());
+        var token = cts.Token;
+        var value = await factory(cancellationToken);
         var options = new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = absoluteExpiration ?? TimeSpan.FromMinutes(5)
         };
-        options.AddExpirationToken(new CancellationChangeToken(cts.Token));
+        options.AddExpirationToken(new CancellationChangeToken(token));
 
         _cache.Set(key, value, options);
         return value;
@@ -64,7 +65,7 @@ public sealed class MemoryCacheService : ICacheService
         if (_prefixTokens.TryRemove(prefix, out var cts))
         {
             cts.Cancel();
-            cts.Dispose();
+            // Captured tokens can still be used by an in-flight fill; let GC reclaim the source.
         }
     }
 }

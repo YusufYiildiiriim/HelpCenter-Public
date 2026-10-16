@@ -1,10 +1,11 @@
+using HelpCenter.Application.Common.Caching;
 using HelpCenter.Domain.Enums;
 using MediatR;
 using HelpCenter.Application.Common.Models;
 
 namespace HelpCenter.Application.Features.Requests.Commands.CreateRequest;
 
-public class CreateRequestCommand : IRequest<CreateRequestResponse>
+public class CreateRequestCommand : IRequest<CreateRequestResponse>, IInvalidatesMessageCache
 {
     public string Title { get; set; } = string.Empty;
     public string MessageText { get; set; } = string.Empty;

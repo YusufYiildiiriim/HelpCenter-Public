@@ -1,8 +1,9 @@
+using HelpCenter.Application.Common.Caching;
 using MediatR;
 
 namespace HelpCenter.Application.Features.Requests.Commands.CloseRequest;
 
-public class CloseRequestCommand : IRequest<bool>
+public class CloseRequestCommand : IRequest<bool>, IInvalidatesMessageCache
 {
     public Guid PublicId { get; set; }
     public int CustomerId { get; set; }

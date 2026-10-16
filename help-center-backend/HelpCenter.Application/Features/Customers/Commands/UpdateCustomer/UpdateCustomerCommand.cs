@@ -1,8 +1,9 @@
+using HelpCenter.Application.Common.Caching;
 using MediatR;
 
 namespace HelpCenter.Application.Features.Customers.Commands.UpdateCustomer;
 
-public class UpdateCustomerCommand : IRequest<bool>
+public class UpdateCustomerCommand : IRequest<bool>, IInvalidatesMessageCache
 {
     public Guid PublicId { get; set; }
     public string FirstName { get; set; } = string.Empty;

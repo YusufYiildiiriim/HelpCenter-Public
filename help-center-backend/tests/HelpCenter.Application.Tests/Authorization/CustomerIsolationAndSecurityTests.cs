@@ -224,4 +224,24 @@ public class CustomerIsolationAndSecurityTests : HandlerTestBase
 
         await act.Should().ThrowAsync<ModuleNotAllowedForCompanyException>();
     }
+    [Fact]
+    public async Task Cached_message_window_preserves_order_and_rechecks_assignment()
+    {
+        using var memory = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
+        var cache = new HelpCenter.Infrastructure.Services.Cache.MemoryCacheService(memory);
+        var context = Substitute.For<IUserContext>();
+        context.UserId.Returns(1);
+        var handler = new GetAdminMessagesQueryHandler(Uow, context, cache);
+        var query = new GetAdminMessagesQuery { RequestPublicId = _request1PublicId, PageSize = 10 };
+        var first = await handler.Handle(query, default);
+        var second = await handler.Handle(query, default);
+        second.Messages.Select(m => m.Id).Should().Equal(first.Messages.Select(m => m.Id));
+        second.Messages.Should().Contain(m => m.Type == MessageType.InternalNote);
+        query.OnlyAssignedToCurrentUser = true;
+        context.UserId.Returns(Db.Users.Max(x => x.Id) + 100);
+        await Assert.ThrowsAsync<RequestNotFoundException>(() => handler.Handle(query, default));
+        // Customer handler never consumes staff cache entries or internal notes.
+        var customer = await new GetCustomerMessagesQueryHandler(Uow).Handle(new() { RequestPublicId = _request1PublicId, CustomerId = 1 }, default);
+        customer.Should().NotContain(m => m.Type == MessageType.InternalNote);
+    }
 }

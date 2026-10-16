@@ -86,7 +86,7 @@ public class UpdateOrganizationInfoCommandHandler : IRequestHandler<UpdateOrgani
 
         await _auditLog.WriteDiffAsync("OrganizationInfoUpdated", "OrganizationInfo", org.Id, before, after, cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.OrganizationInfoPrefix);
+        _cache.Invalidate(CacheCategory.Organization);
         return true;
     }
 }

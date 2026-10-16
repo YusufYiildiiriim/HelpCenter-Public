@@ -49,10 +49,10 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
 
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicProjectsPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicGuidesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicFaqsPrefix);
+        _cache.Invalidate(CacheCategory.PublicProjects);
+        _cache.Invalidate(CacheCategory.PublicModules);
+        _cache.Invalidate(CacheCategory.PublicGuides);
+        _cache.Invalidate(CacheCategory.PublicFaqs);
         return true;
     }
 }

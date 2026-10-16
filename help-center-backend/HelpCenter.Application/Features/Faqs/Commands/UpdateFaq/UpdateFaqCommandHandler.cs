@@ -35,7 +35,7 @@ public class UpdateFaqCommandHandler : IRequestHandler<UpdateFaqCommand, bool>
         await _unitOfWork.Repository<FAQ>().UpdateAsync(faq, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicFaqsPrefix);
+        _cache.Invalidate(CacheCategory.PublicFaqs);
         return true;
     }
 }

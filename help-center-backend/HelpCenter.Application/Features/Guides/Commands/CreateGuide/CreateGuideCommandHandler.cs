@@ -52,8 +52,8 @@ public class CreateGuideCommandHandler : IRequestHandler<CreateGuideCommand, boo
         await _unitOfWork.Repository<Guide>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicGuidesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
+        _cache.Invalidate(CacheCategory.PublicGuides);
+        _cache.Invalidate(CacheCategory.PublicModules);
         return true;
     }
 }

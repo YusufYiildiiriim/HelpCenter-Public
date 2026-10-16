@@ -36,7 +36,7 @@ public class CreateFaqCommandHandler : IRequestHandler<CreateFaqCommand, bool>
         await _unitOfWork.Repository<FAQ>().AddAsync(faq, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicFaqsPrefix);
+        _cache.Invalidate(CacheCategory.PublicFaqs);
         return true;
     }
 }

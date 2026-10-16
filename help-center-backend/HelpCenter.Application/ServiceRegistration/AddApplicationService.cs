@@ -25,6 +25,7 @@ public static class AddApplicationService
             // and Validation runs immediately before the handler.
             cfg.AddOpenBehavior(typeof(HelpCenter.Application.Behaviors.LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(HelpCenter.Application.Behaviors.ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(HelpCenter.Application.Behaviors.MessageCacheInvalidationBehavior<,>));
         });
         ServiceCollection.AddValidatorsFromAssembly(ApplicationAssembly, includeInternalTypes: true);
         ServiceCollection.AddAutoMapper(cfg => { }, ApplicationAssembly);

@@ -21,7 +21,7 @@ import { MessageBubble } from "./components/MessageBubble";
 import { ChatInput } from "./components/ChatInput";
 import { ConsultModal } from "./components/ConsultModal";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const SCROLL_THRESHOLD = 80;
 
 export default function AdminTicketChatPage() {

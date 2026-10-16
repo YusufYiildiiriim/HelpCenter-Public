@@ -64,8 +64,8 @@ public class UpdateGuideCommandHandler : IRequestHandler<UpdateGuideCommand, boo
         await guideRepository.UpdateAsync(entity);
         var result = await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicGuidesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
+        _cache.Invalidate(CacheCategory.PublicGuides);
+        _cache.Invalidate(CacheCategory.PublicModules);
         return result > 0;
     }
 }

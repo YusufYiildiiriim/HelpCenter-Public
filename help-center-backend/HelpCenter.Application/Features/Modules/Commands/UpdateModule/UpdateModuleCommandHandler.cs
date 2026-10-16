@@ -47,8 +47,8 @@ public class UpdateModuleCommandHandler : IRequestHandler<UpdateModuleCommand, b
         await _unitOfWork.Repository<Module>().UpdateAsync(module!, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicGuidesPrefix);
+        _cache.Invalidate(CacheCategory.PublicModules);
+        _cache.Invalidate(CacheCategory.PublicGuides);
         return true;
     }
 }

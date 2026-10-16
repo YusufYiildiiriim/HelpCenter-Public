@@ -33,7 +33,7 @@ public class CreateModuleCommandHandler : IRequestHandler<CreateModuleCommand, b
         await _unitOfWork.Repository<Module>().AddAsync(module, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
+        _cache.Invalidate(CacheCategory.PublicModules);
         return true;
     }
 }

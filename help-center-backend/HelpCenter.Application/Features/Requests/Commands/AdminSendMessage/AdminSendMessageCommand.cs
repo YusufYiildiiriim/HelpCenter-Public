@@ -1,10 +1,11 @@
+using HelpCenter.Application.Common.Caching;
 using HelpCenter.Domain.Enums;
 using MediatR;
 using HelpCenter.Application.Common.Models;
 
 namespace HelpCenter.Application.Features.Requests.Commands.AdminSendMessage;
 
-public class AdminSendMessageCommand : IRequest<bool>
+public class AdminSendMessageCommand : IRequest<bool>, IInvalidatesMessageCache
 {
     public Guid RequestPublicId { get; set; }
     public int SenderUserId { get; set; }

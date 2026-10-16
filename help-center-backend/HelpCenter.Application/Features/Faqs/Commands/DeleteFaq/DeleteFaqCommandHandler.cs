@@ -27,7 +27,7 @@ public class DeleteFaqCommandHandler : IRequestHandler<DeleteFaqCommand, bool>
         await repo.UpdateAsync(faq, cancellationToken);
         var affected = await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicFaqsPrefix);
+        _cache.Invalidate(CacheCategory.PublicFaqs);
         return affected > 0;
     }
 }

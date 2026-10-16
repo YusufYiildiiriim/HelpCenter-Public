@@ -74,4 +74,21 @@ public class MemoryCacheServiceTests : IDisposable
         _service.TryGetValue<string>("key_a", out _).Should().BeFalse();
         _service.TryGetValue<string>("key_b", out _).Should().BeFalse();
     }
+    [Fact]
+    public async Task Invalidation_during_fill_does_not_repopulate_a_stale_generation()
+    {
+        var started = new TaskCompletionSource<bool>();
+        var release = new TaskCompletionSource<bool>();
+        var fill = _service.GetOrCreateAsync("racing", "messages", async _ => {
+            started.SetResult(true);
+            await release.Task;
+            return "stale";
+        }, TimeSpan.FromMinutes(1), default);
+        await started.Task;
+        _service.InvalidatePrefix("messages");
+        release.SetResult(true);
+        await fill;
+        Assert.False(_service.TryGetValue<string>("racing", out _));
+        Assert.Equal("fresh", await _service.GetOrCreateAsync("racing", "messages", _ => Task.FromResult("fresh"), TimeSpan.FromMinutes(1), default));
+    }
 }

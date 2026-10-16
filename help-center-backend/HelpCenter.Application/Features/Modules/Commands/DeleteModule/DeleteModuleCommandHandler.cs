@@ -35,8 +35,8 @@ public class DeleteModuleCommandHandler : IRequestHandler<DeleteModuleCommand, b
         await _unitOfWork.Repository<Module>().UpdateAsync(module, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
-        _cache.InvalidatePrefix(CacheKeys.PublicModulesPrefix);
-        _cache.InvalidatePrefix(CacheKeys.PublicGuidesPrefix);
+        _cache.Invalidate(CacheCategory.PublicModules);
+        _cache.Invalidate(CacheCategory.PublicGuides);
 
         _logger.LogInformation("Modül başarıyla silindi (Soft Delete). Modül: {ModuleName}", module.Name);
 

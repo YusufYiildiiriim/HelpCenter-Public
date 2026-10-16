@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Caching;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
 using HelpCenter.Domain.Enums;
@@ -22,11 +23,13 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContext _userContext;
+    private readonly ICacheService? _cache;
 
-    public GetAdminMessagesQueryHandler(IUnitOfWork unitOfWork, IUserContext userContext)
+    public GetAdminMessagesQueryHandler(IUnitOfWork unitOfWork, IUserContext userContext, ICacheService? cache = null)
     {
         _unitOfWork = unitOfWork;
         _userContext = userContext;
+        _cache = cache;
     }
 
     public async Task<AdminMessagesResponse> Handle(GetAdminMessagesQuery request, CancellationToken cancellationToken)
@@ -64,7 +67,7 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
         // the old code fetched all matching messages into memory and applied Take there (see
         // Threads.md, "GetAdminMessagesQueryHandler — Cursor Pagination Correct, Take In Memory",
         // also fixed by this refactor).
-        var messages = await _unitOfWork.Repository<CustomerRequestMessage>().SelectTopDescendingAsync(
+        Task<List<AdminMessageDto>> LoadMessages(CancellationToken token) => _unitOfWork.Repository<CustomerRequestMessage>().SelectTopDescendingAsync(
             x => x.ConversationId == ticket.ConversationId &&
                  (!request.BeforeId.HasValue || x.Id < request.BeforeId.Value),
             x => x.CreatedAt,
@@ -87,7 +90,15 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
                     Path = d.Path
                 }).ToList()
             },
-            cancellationToken);
+            token);
+
+        // Only the initial bounded window is cached; ownership/assignment is checked above on every read.
+        var useCache = _cache != null && !request.BeforeId.HasValue && request.PageSize is 5 or 10;
+        var key = $"messages:staff:{request.RequestPublicId}:{_userContext.UserId}:{request.OnlyAssignedToCurrentUser}:{request.PageSize}";
+        var loaded = useCache
+            ? await _cache!.GetOrCreateAsync(key, CacheCategory.Messages.Prefix(), LoadMessages, TimeSpan.FromSeconds(30), cancellationToken)
+            : await LoadMessages(cancellationToken);
+        var messages = loaded.ToList(); // Sorting/trimming must not mutate the cached collection.
 
         var hasMore = messages.Count > request.PageSize;
         if (hasMore) messages = messages.Take(request.PageSize).ToList();
