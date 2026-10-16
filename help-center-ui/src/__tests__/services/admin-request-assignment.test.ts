@@ -14,6 +14,18 @@ describe("assigned request service", () => {
     mock.restore();
   });
 
+  it.each([false, true])("uses the matching mark-read route (assigned=%s)", async assigned => {
+    const path = assigned ? "assigned/request-1" : "request-1";
+    mock.onPost(`/api/admin/requests/${path}/mark-read`).reply(200, true);
+    await expect(AdminRequestService.markAsRead("request-1", assigned)).resolves.toBeUndefined();
+    expect(mock.history.post).toHaveLength(1);
+  });
+
+  it("propagates mark-read rejection to the caller", async () => {
+    mock.onPost("/api/admin/requests/request-1/mark-read").reply(404, { code: "RequestNotFound" });
+    await expect(AdminRequestService.markAsRead("request-1")).rejects.toMatchObject({ response: { status: 404 } });
+  });
+
   it("uses the server-scoped assigned route for request detail", async () => {
     mock.onGet("/api/admin/requests/assigned/request-1").reply(200, { publicId: "request-1" });
 

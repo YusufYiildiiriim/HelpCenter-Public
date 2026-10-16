@@ -84,7 +84,9 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
 
                 // If agent sent a message, mark it as read immediately
                 if (newMsg.isAgent) {
-                    CustomerRequestService.markAsRead(requestId).catch(console.error);
+                    CustomerRequestService.markAsRead(requestId).catch(err => {
+                        toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+                    });
                 }
             });
         };
@@ -108,6 +110,9 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                 setTicket(ticketData);
                 setMessages(messagesData || []);
                 setLoading(false);
+                CustomerRequestService.markAsRead(requestId).catch(err => {
+                    toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+                });
             }
         }).catch((err: unknown) => {
             console.error("Error loading ticket detail:", err);

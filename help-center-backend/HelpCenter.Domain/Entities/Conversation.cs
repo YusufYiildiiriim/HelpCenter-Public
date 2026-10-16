@@ -38,7 +38,7 @@ namespace HelpCenter.Domain.Entities
                     !m.IsDeleted &&
                     (readerIsAgent
                         ? m.SenderParticipant.Type == ParticipantType.Customer
-                        : m.SenderParticipant.Type != ParticipantType.Customer))
+                        : m.SenderParticipant.Type != ParticipantType.Customer && m.Type == MessageType.Public))
                 .ToList();
 
             foreach (var message in unread)

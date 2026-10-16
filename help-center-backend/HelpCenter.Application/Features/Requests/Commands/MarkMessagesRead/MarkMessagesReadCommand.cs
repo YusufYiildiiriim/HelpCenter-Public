@@ -6,4 +6,5 @@ public class MarkMessagesReadCommand : IRequest<bool>
 {
     public Guid RequestPublicId { get; set; }
     public bool IsAgent { get; set; }
+    public bool OnlyAssignedToCurrentUser { get; set; }
 }

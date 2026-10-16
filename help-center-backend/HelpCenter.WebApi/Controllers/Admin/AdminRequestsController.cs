@@ -159,4 +159,16 @@ public class AdminRequestsController : ControllerBase
         var response = await _mediator.Send(new MarkMessagesReadCommand { RequestPublicId = requestPublicId, IsAgent = true });
         return Ok(response);
     }
+
+    [HttpPost("assigned/{requestPublicId}/mark-read")]
+    [HasPermission(AppResources.AssignedRequests, PermissionActions.Read)]
+    [EnableRateLimiting("admin-write")]
+    public async Task<IActionResult> MarkAssignedAsRead(Guid requestPublicId)
+    {
+        var response = await _mediator.Send(new MarkMessagesReadCommand
+        {
+            RequestPublicId = requestPublicId, IsAgent = true, OnlyAssignedToCurrentUser = true
+        });
+        return Ok(response);
+    }
 }

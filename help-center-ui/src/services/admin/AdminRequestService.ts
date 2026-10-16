@@ -155,8 +155,9 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  markAsRead: async (requestPublicId: string): Promise<void> => {
-    await api.post(`/api/admin/requests/${requestPublicId}/mark-read`);
+  markAsRead: async (requestPublicId: string, assignedOnly = false): Promise<void> => {
+    const path = assignedOnly ? `assigned/${requestPublicId}` : requestPublicId;
+    await api.post(`/api/admin/requests/${path}/mark-read`);
   },
 
   getAssigned: async (params: { status?: string; priority?: number; pageNumber?: number; pageSize?: number }): Promise<PaginatedAdminRequests> => {

@@ -12,7 +12,7 @@ import { AdminRequestService } from "@/services/admin/AdminRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { toast } from "sonner";
 import { ApiStateView } from "@/components/common/ApiStateView";
-import { isForbiddenError } from "@/lib/api/errors";
+import { getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
 
 // Modular Components
 import { ChatHeader } from "./components/ChatHeader";
@@ -82,7 +82,9 @@ export default function AdminTicketChatPage() {
             setTicket(ticketData);
             setFetchError(null);
             setIsForbidden(false);
-            AdminRequestService.markAsRead(requestId).catch(() => { });
+            AdminRequestService.markAsRead(requestId, !canReadAllRequests).catch(err => {
+                toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+            });
             isInitialLoadRef.current = true;
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -185,7 +187,9 @@ export default function AdminTicketChatPage() {
                 }
 
                 if (!newMsg.isAgent) {
-                    AdminRequestService.markAsRead(requestId).catch(() => { });
+                    AdminRequestService.markAsRead(requestId, !canReadAllRequests).catch(err => {
+                        toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+                    });
                 }
 
                 setTimeout(() => scrollToBottom("smooth"), 100);
@@ -206,7 +210,7 @@ export default function AdminTicketChatPage() {
             signalRService.offMessagesRead();
             router.refresh();
         };
-    }, [requestId, scrollToBottom, router]);
+    }, [requestId, scrollToBottom, router, canReadAllRequests]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
