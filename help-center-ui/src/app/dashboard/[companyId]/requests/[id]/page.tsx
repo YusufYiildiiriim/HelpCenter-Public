@@ -1,4 +1,5 @@
 "use client";
+import { requestStatusLabels } from "@/lib/requestStatus";
 
 import React, { useEffect, useState, useRef, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
@@ -69,12 +70,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                 });
 
                 if (newMsg.statusId !== undefined) {
-                    const statusMap: Record<number, string> = {
-                        1: "Cevap Bekliyor",
-                        2: "Cevaplandı",
-                        3: "Tamamlandı",
-                        4: "Teknik İncelemede",
-                    };
+                    const statusMap = requestStatusLabels;
                     setTicket((prev: CustomerRequest | null) => (prev ? {
                         ...prev,
                         statusId: newMsg.statusId!,

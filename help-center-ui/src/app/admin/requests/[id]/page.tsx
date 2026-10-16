@@ -1,4 +1,5 @@
 "use client";
+import { RequestStatus, requestStatusLabels } from "@/lib/requestStatus";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Loader2, MessageSquare } from "lucide-react";
@@ -179,10 +180,7 @@ export default function AdminTicketChatPage() {
                 });
 
                 if (newMsg.statusId !== undefined) {
-                    const statusMap: Record<number, string> = {
-                        1: "Cevap Bekliyor", 2: "Cevaplandı",
-                        3: "Tamamlandı", 4: "Teknik İncelemede",
-                    };
+                    const statusMap = requestStatusLabels;
                     setTicket(prev => prev ? { ...prev, statusId: newMsg.statusId!, status: statusMap[newMsg.statusId!] ?? prev.status } : prev);
                 }
 
@@ -203,7 +201,7 @@ export default function AdminTicketChatPage() {
             signalRService.onRequestStatusChanged(change => {
                 if (change.requestPublicId !== requestId) return;
                 setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
-                if (change.statusId === 3) setIsConsultModalOpen(false);
+                if (change.statusId === RequestStatus.Completed) setIsConsultModalOpen(false);
             });
         };
 
@@ -246,7 +244,7 @@ export default function AdminTicketChatPage() {
                 files: selectedFiles,
             });
             if (messageType === 0) {
-                setTicket(prev => prev && prev.statusId !== 3 ? { ...prev, statusId: 2, status: "Cevaplandı" } : prev);
+                setTicket(prev => prev && prev.statusId !== RequestStatus.Completed ? { ...prev, statusId: RequestStatus.Replied, status: "Cevaplandı" } : prev);
             }
             setNewMessage("");
             setSelectedFiles([]);
@@ -255,7 +253,7 @@ export default function AdminTicketChatPage() {
         } catch (err) {
             console.error("Error sending message:", err);
             if (getApiErrorCode(err) === "RequestCompleted") {
-                setTicket(prev => prev ? { ...prev, statusId: 3, status: "Tamamlandı" } : prev);
+                setTicket(prev => prev ? { ...prev, statusId: RequestStatus.Completed, status: "Tamamlandı" } : prev);
                 setIsConsultModalOpen(false);
                 toast.error("Bu talep kapatılmış. Yeni mesaj gönderilemez.");
             } else toast.error(getApiErrorMessage(err));
@@ -370,7 +368,7 @@ export default function AdminTicketChatPage() {
             </div>
 
             {/* Input Area */}
-            {ticket?.statusId !== 3 && ticket?.status !== "Tamamlandı" ? (
+            {ticket?.statusId !== RequestStatus.Completed && ticket?.status !== "Tamamlandı" ? (
                 <ChatInput
                     messageType={messageType}
                     setMessageType={setMessageType}
