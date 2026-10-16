@@ -309,6 +309,19 @@ public class RequestHandlerTests : HandlerTestBase
         var updated = Db.CustomerRequests.Find(req.Id);
         updated!.CurrentExpertId.Should().Be(expertUser.Id);
         updated.StatusId.Should().Be(RequestStatusConstants.UnderTechnicalReview);
+        Db.ChangeTracker.Clear();
+        Db.CustomerRequestStatuses.Add(new CustomerRequestStatus { Id = RequestStatusConstants.UnderTechnicalReview, Name = "Teknik İncelemede" });
+        await Db.SaveChangesAsync();
+        Db.ChangeTracker.Clear();
+        var expertContext = Substitute.For<IUserContext>();
+        expertContext.UserId.Returns(expertUser.Id);
+        var assigned = new HelpCenter.Application.Features.Requests.Queries.GetAssignedRequests.GetAssignedRequestsQueryHandler(
+            Uow, NullLogger<HelpCenter.Application.Features.Requests.Queries.GetAssignedRequests.GetAssignedRequestsQueryHandler>.Instance, expertContext);
+        var queue = await assigned.Handle(new(), CancellationToken.None);
+        queue.Items.Should().Contain(x => x.PublicId == req.PublicId && x.CurrentExpertName == "Exp E");
+        // AssignedUser is the handling agent; consultation is tracked separately by CurrentExpert.
+        expertContext.UserId.Returns(expertUser.Id + agentUser.Id + 100);
+        (await assigned.Handle(new(), CancellationToken.None)).Items.Should().NotContain(x => x.PublicId == req.PublicId);
 
         // Re-read persisted state after consultation, then send one customer message.
         Db.ChangeTracker.Clear();
