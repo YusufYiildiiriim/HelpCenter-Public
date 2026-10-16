@@ -4,6 +4,7 @@ using HelpCenter.Infrastructure.Services.Cache;
 using HelpCenter.Infrastructure.Services.Email;
 using HelpCenter.Infrastructure.Services.Jwt;
 using Microsoft.Extensions.DependencyInjection;
+using HelpCenter.Infrastructure.Configuration;
 
 namespace HelpCenter.Infrastructure;
 
@@ -11,6 +12,9 @@ public static class ServiceRegistration
 {
     public static void AddInfrastructureServices(this IServiceCollection services)
     {
+        services.AddOptions<PasswordHashOptions>()
+            .BindConfiguration(PasswordHashOptions.SectionName)
+            .ValidateDataAnnotations().ValidateOnStart();
         services.AddMemoryCache();
         services.AddSingleton<ICacheService, MemoryCacheService>();
         services.AddScoped<IGenerateJwtToken, GenerateJwtToken>();

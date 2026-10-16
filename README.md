@@ -87,6 +87,12 @@ repository-root `.env`; Docker Compose reads the same file through `--env-file .
 
 Default seeded admin account: `admin@helpcenter.com` / `123456`. Its password is public; rotate it (or remove the seed) before any real deployment. See [SECURITY.md](SECURITY.md).
 
+Password hashing is configured in the API's `PasswordHashing` section: `MemorySizeKb=65536`,
+`Iterations=3`, `Parallelism=4`. Environment overrides use `PasswordHashing__MemorySizeKb`,
+`PasswordHashing__Iterations` and `PasswordHashing__Parallelism`. Invalid options fail startup.
+Successful staff/customer logins upgrade BCrypt or outdated Argon2id hashes to this policy;
+the forced password-change flag is preserved. Existing Argon2id hashes are verified using their encoded parameters.
+
 ### Windows (PowerShell)
 
 After filling the root `.env`, run from the repository root:

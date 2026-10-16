@@ -37,6 +37,10 @@ ekip konvansiyonuna bırakılmaz: CI içinde çalışan NetArchTest kuralları k
   geçer. Application; `IGenericRepository<T>`, `IUnitOfWork` ve `IUserContext` soyutlamalarını kullanır.
 - **Güvenlik:** Access token bellekten, refresh token döndürülen `HttpOnly` cookie'den kullanılır.
   Yeni parolalar Argon2id ile hashlenir; BCrypt yalnız eski hashleri doğrulamak için korunur.
+  Başarılı personel/müşteri girişinde eski hash güncel ayarlara yükseltilir; zorunlu parola değiştirme bayrağı korunur.
+  API `PasswordHashing` bölümünün varsayılanları `MemorySizeKb=65536`, `Iterations=3`, `Parallelism=4`;
+  ortam değişkenleri `PasswordHashing__MemorySizeKb`, `PasswordHashing__Iterations`, `PasswordHashing__Parallelism` ile ezilebilir.
+  Geçersiz ayarlar uygulama başlangıcında reddedilir; mevcut Argon2id hashleri kendi kayıtlı parametreleriyle doğrulanır.
   FluentValidation, endpoint kapsamlı native rate limiting, temizlenmiş `IExceptionHandler` cevapları
   ve `SecurityHeadersMiddleware` temel koruma katmanını tamamlar. Ayrıntı için [güvenlik politikasına](SECURITY.tr.md) bakın.
 - **Gözlemlenebilirlik:** Serilog, correlation ID, sağlık endpoint'leri, OpenTelemetry ve kimlik

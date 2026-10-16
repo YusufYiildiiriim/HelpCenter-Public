@@ -40,6 +40,13 @@ public class CustomerLoginQueryHandler : IRequestHandler<CustomerLoginQuery, Cus
         CustomerLoginRules.PasswordShouldMatch(_passwordService.VerifyPassword(request.Password, customer!.Account.Password));
         CustomerLoginRules.CustomerShouldBeActive(customer!);
 
+        if (_passwordService.NeedsRehash(customer.Account.Password))
+        {
+            customer.Account.Password = _passwordService.HashPassword(request.Password);
+            await _unitOfWork.Repository<Account>().UpdateAsync(customer.Account, cancellationToken);
+            await _unitOfWork.SaveAsync(cancellationToken);
+        }
+
         var tokens = await _tokenService.IssueCustomerTokensAsync(
             customer.Id,
             customer.CompanyId,

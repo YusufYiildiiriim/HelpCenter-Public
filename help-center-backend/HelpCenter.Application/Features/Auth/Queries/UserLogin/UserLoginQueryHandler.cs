@@ -38,6 +38,14 @@ public class UserLoginQueryHandler : IRequestHandler<UserLoginQuery, UserLoginRe
         var primaryRole = roleNames.FirstOrDefault();
         UserLoginRules.UserShouldHaveRole(primaryRole);
 
+        if (_passwordService.NeedsRehash(user.Account.Password))
+        {
+            // A hash upgrade must preserve the forced-password-change flag.
+            user.Account.Password = _passwordService.HashPassword(request.Password);
+            await _unitOfWork.Repository<Account>().UpdateAsync(user.Account, cancellationToken);
+            await _unitOfWork.SaveAsync(cancellationToken);
+        }
+
         var tokens = await _tokenService.IssueTokensAsync(
             userId: user!.Id,
             role: primaryRole!,
