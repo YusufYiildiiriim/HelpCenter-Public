@@ -105,7 +105,9 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, boo
                 await _unitOfWork.SaveAsync(cancellationToken);
             }
 
-            customerRequest.SetStatus(RequestStatusConstants.WaitingForReply);
+            // A customer follow-up does not end an ongoing expert investigation.
+            if (customerRequest.StatusId != RequestStatusConstants.UnderTechnicalReview)
+                customerRequest.SetStatus(RequestStatusConstants.WaitingForReply);
             await _unitOfWork.SaveAsync(cancellationToken);
 
             _logger.LogInformation("Mesaj başarıyla kaydedildi. Mesaj ID: {MessageId}", message.Id);

@@ -309,5 +309,25 @@ public class RequestHandlerTests : HandlerTestBase
         var updated = Db.CustomerRequests.Find(req.Id);
         updated!.CurrentExpertId.Should().Be(expertUser.Id);
         updated.StatusId.Should().Be(RequestStatusConstants.UnderTechnicalReview);
+
+        // Re-read persisted state after consultation, then send one customer message.
+        Db.ChangeTracker.Clear();
+        var send = new SendMessageCommandHandler(
+            Uow, _fileService, _hubService, NullLogger<SendMessageCommandHandler>.Instance);
+        await send.Handle(new SendMessageCommand
+        {
+            CustomerId = customer.Id,
+            RequestPublicId = req.PublicId,
+            MessageText = "Additional investigation details"
+        }, CancellationToken.None);
+
+        Db.ChangeTracker.Clear();
+        var afterMessage = Db.CustomerRequests.Find(req.Id)!;
+        afterMessage.StatusId.Should().Be(RequestStatusConstants.UnderTechnicalReview);
+        afterMessage.CurrentExpertId.Should().Be(expertUser.Id);
+        Db.CustomerRequestMessages.Should().ContainSingle(m => m.MessageText == "Additional investigation details");
+        await _hubService.Received().NotifyNewMessage(req.PublicId.ToString(),
+            Arg.Is<object>(payload => (int)payload.GetType().GetProperty("StatusId")!.GetValue(payload)! == RequestStatusConstants.UnderTechnicalReview),
+            MessageType.Public, Arg.Any<CancellationToken>());
     }
 }
