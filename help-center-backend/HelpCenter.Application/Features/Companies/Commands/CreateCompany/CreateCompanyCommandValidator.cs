@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Validation;
 using FluentValidation;
 
 namespace HelpCenter.Application.Features.Companies.Commands.CreateCompany;
@@ -11,12 +12,12 @@ public class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyComm
         RuleFor(x => x.Phone).NotEmpty().WithMessage("Telefon boş bırakılamaz.");
         RuleFor(x => x.Mail)
             .NotEmpty().WithMessage("Firma e-posta adresi boş bırakılamaz.")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+            .ValidEmail().WithMessage("Geçerli bir e-posta adresi giriniz.");
         RuleFor(x => x.ContactPersonName).NotEmpty().WithMessage("Yetkili adı boş bırakılamaz.");
         RuleFor(x => x.ContactPersonSurname).NotEmpty().WithMessage("Yetkili soyadı boş bırakılamaz.");
         RuleFor(x => x.ContactPersonEmail)
             .NotEmpty().WithMessage("Yetkili e-posta adresi boş bırakılamaz.")
-            .EmailAddress().WithMessage("Geçerli bir yetkili e-posta adresi giriniz.");
+            .ValidEmail().WithMessage("Geçerli bir yetkili e-posta adresi giriniz.");
         RuleFor(x => x.BranchCount)
             .GreaterThanOrEqualTo(0).WithMessage("Şube sayısı negatif olamaz.");
         RuleFor(x => x.ProjectId)

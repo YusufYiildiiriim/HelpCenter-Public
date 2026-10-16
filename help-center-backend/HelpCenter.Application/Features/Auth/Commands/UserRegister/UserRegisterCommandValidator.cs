@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Validation;
 using FluentValidation;
 
 namespace HelpCenter.Application.Features.Auth.Commands.UserRegister;
@@ -8,7 +9,7 @@ public class UserRegisterCommandValidator : AbstractValidator<UserRegisterComman
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("E-posta alanı boş bırakılamaz.")
-            .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+            .ValidEmail().WithMessage("Geçerli bir e-posta adresi giriniz.");
         RuleFor(x => x.Name).NotEmpty().WithMessage("Ad alanı boş bırakılamaz.");
         RuleFor(x => x.LastName).NotEmpty().WithMessage("Soyad alanı boş bırakılamaz.");
         RuleFor(x => x.Password)

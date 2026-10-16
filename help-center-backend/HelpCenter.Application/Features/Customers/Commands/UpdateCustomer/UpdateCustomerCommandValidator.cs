@@ -1,3 +1,4 @@
+using HelpCenter.Application.Common.Validation;
 using FluentValidation;
 
 namespace HelpCenter.Application.Features.Customers.Commands.UpdateCustomer;
@@ -11,7 +12,7 @@ public class UpdateCustomerCommandValidator : AbstractValidator<UpdateCustomerCo
         RuleFor(x => x.LastName).NotEmpty().WithMessage("Soyad boş bırakılamaz.");
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("E-posta alanı boş bırakılamaz.")
-            .EmailAddress().WithMessage("Geçerli bir e-posta giriniz.");
+            .ValidEmail().WithMessage("Geçerli bir e-posta giriniz.");
         RuleFor(x => x.CompanyId).GreaterThan(0).WithMessage("Geçersiz firma.");
     }
 }

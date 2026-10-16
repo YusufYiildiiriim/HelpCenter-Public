@@ -26,7 +26,7 @@ export function validateField(value: unknown, rules: FieldRules | undefined, lab
     return undefined;
   }
 
-  if (rules.type === "email" && !EMAIL_REGEX.test(str)) {
+  if (rules.type === "email" && (str.length > 254 || !EMAIL_REGEX.test(str))) {
     return "Geçerli bir e-posta adresi giriniz.";
   }
 
