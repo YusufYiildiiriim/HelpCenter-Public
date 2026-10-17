@@ -1,24 +1,24 @@
-# ADR-010: İç anahtarları Guid’e dönüştürme yönü
+# ADR-010: Saklanan kayıt kimliklerinde Guid kullanımı
 
 - Tarih: 2026-10-17
-- Durum: Accepted (yön kararı); uygulama ayrı backlog işi
+- Durum: Accepted (yön kararı); uygulama vault planına göre yapılacak
 
 ## Bağlam
 
-HelpCenter domain kayıtları `BaseEntity.Id` ve ilişkisel foreign key’ler için `int` kullanıyor. `BaseEntity.PublicId` zaten Guid ve dış kimlik olarak API/UI’da kullanılıyor. Audit log ve refresh token gibi yardımcı tablolarda bağımsız `long` anahtarlar da bulunuyor.
+HelpCenter bugün `BaseEntity` kayıtlarında integer PK, `AuditLog` ve `RefreshToken` tablolarında `bigint` PK; veritabanı ve API boyunca sayısal foreign/scalar kayıt referansları kullanıyor. İş kayıtlarının çoğunda `BaseEntity.PublicId` zaten Guid. Status kayıtlarının seed ve istemci sözleşmelerinde kullanılan sabit sayısal ID’leri var.
 
-Yusuf, iç kimlik modelini Guid’e taşıma kararını kesinleştirdi. Bu kayıt karar yönünü sabitler; şema veya uygulama kodunun dönüştürüldüğü anlamına gelmez.
+Yusuf, saklanan tüm kayıt kimliklerinin Guid olmasına karar verdi. Buna PK’ler, ilişkisel FK’ler ve kayda işaret eden scalar alanlar; status ID’leri, audit actor/target ID’leri ve refresh-token ID/referansları dahildir. Sayaçlar, sayfalama değerleri, enum değerleri ve kullanıcıya gösterilen ticket numarası kimlik değildir; tipleri korunur.
 
 ## Karar
 
-Domain entity’lerinin primary key’leri ve bunlara karşılık gelen ilişkisel foreign key’ler Guid olacak. Dönüşüm mevcut kayıtların ilişkilerini koruyacak şekilde tasarlanmalı; mümkün olan yerlerde mevcut `PublicId` Guid değerleri geçiş anahtarı olarak değerlendirilmelidir. API/UI kimlik sözleşmeleri ve token claim’leri geçiş boyunca uyumlu tutulmalıdır.
+Saklanan her entity’nin primary key’i ve ona karşılık gelen tüm ilişki/kayıt referansları Guid olacak. Mevcut kayıt ve ilişkiler açık bir eski→yeni eşleme ile korunacak. Mevcut `PublicId` olan satırlarda bu değer yeni anahtar olarak kullanılacak; `PublicId` olmayan `AuditLog` ve `RefreshToken` satırlarına tek seferlik Guid üretilecek ve migration eşlemesinde kalıcı olarak tutulacak.
 
-Uygulama işi başlamadan önce tüm FK, scalar ID tüketicisi, DTO, route, JWT claim’i, audit hedefi, seed ve istemci kullanım noktaları envanterlenecek. Audit log hedef kimlikleri ve RefreshToken yardımcı anahtarlarının kapsamı uygulama tasarımında açıkça karara bağlanacak. Migration gerçek verinin kopyasıyla izole SQL Server’da prova edilip doğrulanmadan yerel/ortak veritabanına uygulanmayacak.
+JWT claim’leri, API/UI DTO’ları, SignalR payload’ları, cache anahtarları, seed’ler, export’lar ve üretilen OpenAPI tipleri birlikte geçirilecek. Mevcut PublicId kullanan rotalar aynı kaydı bulmaya devam edecek. Sıralı uygulama, ön kontroller, doğrulama ve geri dönüş prosedürü ortak vault’taki “HelpCenter — Guid kimlik dönüşümü ana planı” belgesindedir.
 
 ## Sonuçlar
 
-- Yeni geliştirmelerde iç domain kimlikleri için hedef tip Guid’dir.
-- Bu ADR tek başına kod, migration, veritabanı veya API değişikliği yapmaz.
-- Mevcut `PublicId` değerlerini primary key’e dönüştürmek olası veri koruma yoludur; ilişki ve benzersizlik kontrolleriyle migration tasarımında doğrulanmalıdır.
-- Geçiş API/UI birlikte sürümleme, JWT eski claim uyumluluğu, seed ve veritabanı geri alma planı gerektirir.
-- Migration ve DB apply ayrı incelenebilir adımlardır; bu oturumda DB’ye dokunulmadı.
+- Bu ADR yön kararını kaydeder; tek başına kodu veya veritabanını değiştirmez.
+- Sayısal status ID’leri, koordineli API/UI geçişiyle sabit Guid seed kimliklerine dönüşür.
+- Kayıt kimlikleri uygulamada Guid olarak üretilir; kimlikler yetkilendirme sırrı değildir.
+- Sayısal sayaçlar, sayfa numarası/boyutu, enum sıra değerleri, sıralama pozisyonları ve string `TicketId` ayrı bir gereksinim yoksa değişmez.
+- Envanter, migration provası, performans ve geri dönüş provası ile kullanıcıya dönük cutover planı geçmeden DB geçişi yapılmaz.
