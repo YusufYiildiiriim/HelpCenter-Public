@@ -178,7 +178,15 @@ CREATE TABLE dbo.GuidIdentityPrimaryKeyMap
 (
     EntityName sysname NOT NULL PRIMARY KEY,
     ConstraintName sysname NOT NULL,
-    IndexType nvarchar(60) NOT NULL
+    IndexType nvarchar(60) NOT NULL,
+    IsDisabled bit NOT NULL,
+    FillFactor tinyint NOT NULL,
+    IgnoreDuplicateKey bit NOT NULL,
+    SuppressDuplicateKeyMessages bit NOT NULL,
+    IsPadded bit NOT NULL,
+    AllowRowLocks bit NOT NULL,
+    AllowPageLocks bit NOT NULL,
+    OptimizeForSequentialKey bit NOT NULL
 );
 CREATE TABLE dbo.GuidIdentityForeignKeyMap
 (
@@ -198,9 +206,35 @@ CREATE TABLE dbo.GuidIdentityIndexMap
 (
     EntityName sysname NOT NULL,
     IndexName sysname NOT NULL,
+    IsDisabled bit NOT NULL,
     DropSql nvarchar(max) NOT NULL,
     CreateSql nvarchar(max) NOT NULL,
     CONSTRAINT PK_GuidIdentityIndexMap PRIMARY KEY (EntityName, IndexName)
+);
+CREATE TABLE dbo.GuidIdentityIndexSnapshot
+(
+    EntityName sysname NOT NULL,
+    IndexName sysname NOT NULL,
+    ConstraintName sysname NULL,
+    IndexType int NOT NULL,
+    IsUnique bit NOT NULL,
+    IsPrimaryKey bit NOT NULL,
+    IsUniqueConstraint bit NOT NULL,
+    IsDisabled bit NOT NULL,
+    FillFactor tinyint NOT NULL,
+    IgnoreDuplicateKey bit NOT NULL,
+    SuppressDuplicateKeyMessages bit NOT NULL,
+    IsPadded bit NOT NULL,
+    AllowRowLocks bit NOT NULL,
+    AllowPageLocks bit NOT NULL,
+    HasFilter bit NOT NULL,
+    FilterDefinition nvarchar(max) NULL,
+    OptimizeForSequentialKey bit NOT NULL,
+    DataSpaceName sysname NOT NULL,
+    DataSpaceType char(2) NOT NULL,
+    KeyDefinition nvarchar(max) NOT NULL,
+    PartitionDefinition nvarchar(max) NOT NULL,
+    CONSTRAINT PK_GuidIdentityIndexSnapshot PRIMARY KEY(EntityName,IndexName)
 );
 CREATE TABLE dbo.GuidIdentityTriggerState
 (
@@ -308,10 +342,40 @@ IF EXISTS (
 IF EXISTS (
     SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
     WHERE i.index_id>0 AND i.is_primary_key=1
-      AND (i.fill_factor<>0 OR i.ignore_dup_key=1 OR i.is_padded=1 OR i.allow_row_locks=0 OR i.allow_page_locks=0
+      AND (i.fill_factor<>0 OR i.ignore_dup_key=1 OR i.suppress_dup_key_messages=1 OR i.is_padded=1 OR i.allow_row_locks=0 OR i.allow_page_locks=0
            OR i.optimize_for_sequential_key=1 OR i.is_disabled=1)
 )
     THROW 51000, 'Non-default primary-key index options are unsupported by this cutover manifest.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE i.index_id>0 AND i.is_hypothetical=1
+      AND EXISTS(SELECT 1 FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+                 JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=c.name
+                 WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id)
+)
+    THROW 51000, 'A hypothetical index covers a migrated identity column; reconcile it before cutover.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE i.index_id>0 AND i.is_disabled=1
+      AND EXISTS(SELECT 1 FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+                 JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=c.name
+                 WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id)
+)
+    THROW 51000, 'A disabled index covers a migrated identity column; rebuild or reconcile it before cutover.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.data_spaces ds ON ds.data_space_id=i.data_space_id
+    LEFT JOIN sys.filegroups fg ON fg.data_space_id=ds.data_space_id
+    WHERE i.index_id>0 AND
+      (ds.type=N'PS' OR ISNULL(fg.is_default,0)=0 OR i.is_padded=1 OR i.optimize_for_sequential_key=1 OR i.suppress_dup_key_messages=1)
+      AND EXISTS(SELECT 1 FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+                 JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=c.name
+                 WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id)
+)
+    THROW 51000, 'An affected index uses a partition scheme, non-default filegroup, unsupported padding/sequential-key option, or duplicate-key message option.', 1;
 IF EXISTS (
     SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
     JOIN sys.index_columns xc ON xc.object_id=i.object_id AND xc.index_id=i.index_id
@@ -501,15 +565,44 @@ IF EXISTS (
 )
     THROW 51000, 'Partitioned, non-default-filegroup, PAD_INDEX, or OPTIMIZE_FOR_SEQUENTIAL_KEY index metadata is unsupported.', 1;
 -- Persist index definitions before replacing any identity-bearing column.
-DECLARE @indexEntity sysname,@indexName sysname,@keys nvarchar(max),@includes nvarchar(max),@filter nvarchar(max),@unique bit,@clustered bit,@isConstraint bit,@schema sysname,@create nvarchar(max),@drop nvarchar(max),@indexObject int,@fillfactor tinyint,@ignoredup bit,@allowrow bit,@allowpage bit;
+DECLARE @indexEntity sysname,@indexName sysname,@keys nvarchar(max),@includes nvarchar(max),@filter nvarchar(max),@unique bit,@clustered bit,@isConstraint bit,@schema sysname,@create nvarchar(max),@drop nvarchar(max),@indexObject int,@fillfactor tinyint,@ignoredup bit,@allowrow bit,@allowpage bit,@indexDisabled bit;
+INSERT dbo.GuidIdentityIndexSnapshot
+(
+    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+    IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+)
+SELECT t.name,i.name,kc.name,i.type,i.is_unique,i.is_primary_key,i.is_unique_constraint,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,
+       i.is_padded,i.allow_row_locks,i.allow_page_locks,i.has_filter,i.filter_definition,i.optimize_for_sequential_key,ds.name,ds.type,
+       ISNULL(cols.KeyDefinition,N''),ISNULL(parts.PartitionDefinition,N'')
+FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+JOIN sys.data_spaces ds ON ds.data_space_id=i.data_space_id
+LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=i.object_id AND kc.unique_index_id=i.index_id
+OUTER APPLY
+(
+    SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(ic.key_ordinal,N'|',ic.is_included_column,N'|',ic.is_descending_key,N'|',ic.partition_ordinal,N'|',c.name)),N';')
+           WITHIN GROUP(ORDER BY ic.index_column_id) AS KeyDefinition
+    FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+    WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id
+) cols
+OUTER APPLY
+(
+    SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(p.partition_number,N'|',p.data_compression,N'|',p.data_compression_desc)),N';')
+           WITHIN GROUP(ORDER BY p.partition_number) AS PartitionDefinition
+    FROM sys.partitions p WHERE p.object_id=i.object_id AND p.index_id=i.index_id
+) parts
+WHERE i.index_id>0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
+  AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id
+             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name
+             WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
 DECLARE index_cursor CURSOR LOCAL FAST_FORWARD FOR
-SELECT t.name,i.name,i.object_id,i.is_unique,CONVERT(bit,CASE WHEN i.type=1 THEN 1 ELSE 0 END),i.is_unique_constraint,SCHEMA_NAME(t.schema_id),i.filter_definition,i.fill_factor,i.ignore_dup_key,i.allow_row_locks,i.allow_page_locks
+SELECT t.name,i.name,i.object_id,i.is_unique,CONVERT(bit,CASE WHEN i.type=1 THEN 1 ELSE 0 END),i.is_unique_constraint,SCHEMA_NAME(t.schema_id),i.filter_definition,i.fill_factor,i.ignore_dup_key,i.allow_row_locks,i.allow_page_locks,i.is_disabled
 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
 WHERE i.index_id>0 AND i.is_primary_key=0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
 AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
-OPEN index_cursor; FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage;
+OPEN index_cursor; FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage,@indexDisabled;
 WHILE @@FETCH_STATUS=0
 BEGIN
+    IF @indexDisabled=1 THROW 51000, 'A disabled migrated index cannot be reconstructed safely.', 1;
     SELECT @keys=STRING_AGG(QUOTENAME(c.name)+CASE WHEN ic.is_descending_key=1 THEN N' DESC' ELSE N' ASC' END,N',') WITHIN GROUP(ORDER BY ic.key_ordinal)
     FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
     WHERE ic.object_id=@indexObject AND ic.index_id=(SELECT index_id FROM sys.indexes WHERE object_id=@indexObject AND name=@indexName) AND ic.is_included_column=0;
@@ -520,8 +613,8 @@ BEGIN
     SET @create=CASE WHEN @isConstraint=1 THEN N'ALTER TABLE '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ADD CONSTRAINT '+QUOTENAME(@indexName)+N' UNIQUE '+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'('+@keys+N') WITH (FILLFACTOR='+CONVERT(nvarchar(3),ISNULL(NULLIF(@fillfactor,0),0))+N');'
         ELSE N'CREATE '+CASE WHEN @unique=1 THEN N'UNIQUE ' ELSE N'' END+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'INDEX '+QUOTENAME(@indexName)+N' ON '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ('+@keys+N')'+CASE WHEN @includes IS NULL THEN N'' ELSE N' INCLUDE ('+@includes+N')' END+CASE WHEN @filter IS NULL THEN N'' ELSE N' WHERE '+@filter END+N' WITH (FILLFACTOR='+CONVERT(nvarchar(3),ISNULL(NULLIF(@fillfactor,0),0))+N', IGNORE_DUP_KEY='+CASE WHEN @ignoredup=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_ROW_LOCKS='+CASE WHEN @allowrow=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_PAGE_LOCKS='+CASE WHEN @allowpage=1 THEN N'ON' ELSE N'OFF' END+N');' END;
     SET @drop=CASE WHEN @isConstraint=1 THEN N'ALTER TABLE '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' DROP CONSTRAINT '+QUOTENAME(@indexName)+N';' ELSE N'DROP INDEX '+QUOTENAME(@indexName)+N' ON '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N';' END;
-    INSERT dbo.GuidIdentityIndexMap VALUES(@indexEntity,@indexName,@drop,@create);
-    FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage;
+    INSERT dbo.GuidIdentityIndexMap(EntityName,IndexName,IsDisabled,DropSql,CreateSql) VALUES(@indexEntity,@indexName,@indexDisabled,@drop,@create);
+    FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage,@indexDisabled;
 END
 CLOSE index_cursor; DEALLOCATE index_cursor;
 
@@ -592,8 +685,9 @@ END
 CLOSE drop_fk; DEALLOCATE drop_fk;
 
 -- Save and drop every simple Id primary key.
-INSERT dbo.GuidIdentityPrimaryKeyMap(EntityName,ConstraintName,IndexType)
-SELECT t.name,k.name,i.type_desc FROM sys.key_constraints k JOIN sys.tables t ON t.object_id=k.parent_object_id
+INSERT dbo.GuidIdentityPrimaryKeyMap(EntityName,ConstraintName,IndexType,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,IsPadded,AllowRowLocks,AllowPageLocks,OptimizeForSequentialKey)
+SELECT t.name,k.name,i.type_desc,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,i.is_padded,i.allow_row_locks,i.allow_page_locks,i.optimize_for_sequential_key
+FROM sys.key_constraints k JOIN sys.tables t ON t.object_id=k.parent_object_id
 JOIN sys.indexes i ON i.object_id=k.parent_object_id AND i.index_id=k.unique_index_id
 JOIN @Entities e ON e.EntityName=t.name WHERE k.type=N'PK' AND SCHEMA_NAME(t.schema_id)=N'dbo'
 AND (SELECT COUNT(*) FROM sys.index_columns ic WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id AND ic.key_ordinal>0)=1
@@ -754,6 +848,90 @@ IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityForeignKeyMap)<>
      JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id WHERE rc.name=N'Id')
     THROW 51000, 'The identity foreign-key count changed during reconstruction.', 1;
 
+IF OBJECT_ID(N'dbo.GuidIdentityIndexSnapshot',N'U') IS NULL
+    THROW 51000, 'The captured exact index/PK metadata snapshot is missing.', 1;
+CREATE TABLE #CurrentIndexSnapshot
+(
+    EntityName sysname NOT NULL,IndexName sysname NOT NULL,ConstraintName sysname NULL,IndexType int NOT NULL,
+    IsUnique bit NOT NULL,IsPrimaryKey bit NOT NULL,IsUniqueConstraint bit NOT NULL,IsDisabled bit NOT NULL,
+    FillFactor tinyint NOT NULL,IgnoreDuplicateKey bit NOT NULL,SuppressDuplicateKeyMessages bit NOT NULL,IsPadded bit NOT NULL,AllowRowLocks bit NOT NULL,
+    AllowPageLocks bit NOT NULL,HasFilter bit NOT NULL,FilterDefinition nvarchar(max) NULL,
+    OptimizeForSequentialKey bit NOT NULL,DataSpaceName sysname NOT NULL,DataSpaceType char(2) NOT NULL,
+    KeyDefinition nvarchar(max) NOT NULL,PartitionDefinition nvarchar(max) NOT NULL,
+    PRIMARY KEY(EntityName,IndexName)
+);
+INSERT #CurrentIndexSnapshot
+(
+    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+    IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+)
+SELECT t.name,i.name,kc.name,i.type,i.is_unique,i.is_primary_key,i.is_unique_constraint,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,
+       i.is_padded,i.allow_row_locks,i.allow_page_locks,i.has_filter,i.filter_definition,i.optimize_for_sequential_key,ds.name,ds.type,
+       ISNULL(cols.KeyDefinition,N''),ISNULL(parts.PartitionDefinition,N'')
+FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+JOIN sys.data_spaces ds ON ds.data_space_id=i.data_space_id
+LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=i.object_id AND kc.unique_index_id=i.index_id
+OUTER APPLY
+(
+    SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(ic.key_ordinal,N'|',ic.is_included_column,N'|',ic.is_descending_key,N'|',ic.partition_ordinal,N'|',c.name)),N';')
+           WITHIN GROUP(ORDER BY ic.index_column_id) AS KeyDefinition
+    FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+    WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id
+) cols
+OUTER APPLY
+(
+    SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(p.partition_number,N'|',p.data_compression,N'|',p.data_compression_desc)),N';')
+           WITHIN GROUP(ORDER BY p.partition_number) AS PartitionDefinition
+    FROM sys.partitions p WHERE p.object_id=i.object_id AND p.index_id=i.index_id
+) parts
+WHERE i.index_id>0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
+  AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id
+             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name
+             WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
+IF EXISTS
+(
+    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    FROM dbo.GuidIdentityIndexSnapshot
+    EXCEPT
+    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    FROM #CurrentIndexSnapshot
+)
+OR EXISTS
+(
+    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    FROM #CurrentIndexSnapshot
+    EXCEPT
+    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    FROM dbo.GuidIdentityIndexSnapshot
+)
+    THROW 51000, 'Rebuilt PK/index catalog metadata differs from the exact captured snapshot.', 1;
+IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrimaryKeyMap)<>30
+   OR EXISTS
+   (
+       SELECT 1 FROM dbo.GuidIdentityPrimaryKeyMap p
+       LEFT JOIN sys.tables t ON t.name=p.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
+       LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=t.object_id AND kc.name=p.ConstraintName AND kc.type=N'PK'
+       LEFT JOIN sys.indexes i ON i.object_id=kc.parent_object_id AND i.index_id=kc.unique_index_id
+       WHERE i.index_id IS NULL OR i.type_desc<>p.IndexType OR i.is_disabled<>p.IsDisabled OR i.fill_factor<>p.FillFactor
+          OR i.ignore_dup_key<>p.IgnoreDuplicateKey OR i.suppress_dup_key_messages<>p.SuppressDuplicateKeyMessages
+          OR i.is_padded<>p.IsPadded OR i.allow_row_locks<>p.AllowRowLocks
+          OR i.allow_page_locks<>p.AllowPageLocks OR i.optimize_for_sequential_key<>p.OptimizeForSequentialKey
+   )
+    THROW 51000, 'A rebuilt primary key differs from its captured supported metadata.', 1;
+IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityIndexMap)<>
+   (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityIndexSnapshot WHERE IsPrimaryKey=0)
+   OR EXISTS
+   (
+       SELECT 1 FROM dbo.GuidIdentityIndexMap m
+       LEFT JOIN dbo.GuidIdentityIndexSnapshot s ON s.EntityName=m.EntityName AND s.IndexName=m.IndexName
+       WHERE s.IndexName IS NULL OR m.IsDisabled<>s.IsDisabled
+   )
+    THROW 51000, 'The rebuilt secondary-index inventory differs from its captured metadata.', 1;
+
 DECLARE @ResultMetadata table(ProcedureName sysname,ColumnName sysname,SystemTypeName nvarchar(256),ErrorNumber int NULL);
 INSERT @ResultMetadata
 SELECT p.name,d.name,d.system_type_name,d.error_number
@@ -791,6 +969,7 @@ IF EXISTS(SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,Is
 
 DROP TABLE dbo.GuidIdentityTriggerState;
 DROP TABLE dbo.GuidIdentityIndexMap;
+DROP TABLE dbo.GuidIdentityIndexSnapshot;
 DROP TABLE dbo.GuidIdentityForeignKeyMap;
 DROP TABLE dbo.GuidIdentityPrimaryKeyMap;
 DROP TABLE dbo.GuidIdentityColumnMap;
@@ -815,6 +994,7 @@ IF OBJECT_ID(N'dbo.GuidIdentityMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrimaryKeyMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityForeignKeyMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityIndexMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityIndexSnapshot',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityTriggerState',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareTextReferenceMap',N'U') IS NOT NULL
