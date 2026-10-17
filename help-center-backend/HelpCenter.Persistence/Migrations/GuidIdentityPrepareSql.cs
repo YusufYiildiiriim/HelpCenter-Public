@@ -6,13 +6,15 @@ namespace HelpCenter.Persistence.Migrations;
 /// </summary>
 internal static class GuidIdentityPrepareSql
 {
-    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityPrepareTextReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareRowCounts; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareMap;";
+    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityPrepareTextReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareForeignKeyInventory; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareRowCounts; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareMap;";
 
     internal const string Up = """
 SET XACT_ABORT ON;
 IF OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareRowCounts',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareReferenceMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareTextReferenceMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareForeignKeyInventory',N'U') IS NOT NULL
     THROW 51000, 'Guid identity preparation artifacts already exist; inspect the database before retrying.', 1;
 
 CREATE TABLE dbo.GuidIdentityPrepareMap
@@ -51,6 +53,25 @@ CREATE TABLE dbo.GuidIdentityPrepareTextReferenceMap
     ReferencedLegacyId bigint NULL,
     GuidId uniqueidentifier NOT NULL,
     CONSTRAINT PK_GuidIdentityPrepareTextReferenceMap PRIMARY KEY(ParentLegacyId,ColumnName)
+);
+CREATE TABLE dbo.GuidIdentityPrepareForeignKeyInventory
+(
+    ParentSchema sysname NOT NULL,
+    ParentEntityName sysname NOT NULL,
+    ConstraintName sysname NOT NULL,
+    ParentColumnName sysname NOT NULL,
+    ParentSqlType sysname NOT NULL,
+    ReferencedSchema sysname NOT NULL,
+    ReferencedEntityName sysname NOT NULL,
+    ReferencedColumnName sysname NOT NULL,
+    ReferencedSqlType sysname NOT NULL,
+    DeleteAction nvarchar(60) NOT NULL,
+    UpdateAction nvarchar(60) NOT NULL,
+    IsDisabled bit NOT NULL,
+    IsNotTrusted bit NOT NULL,
+    Disposition varchar(24) NOT NULL,
+    CONSTRAINT PK_GuidIdentityPrepareForeignKeyInventory PRIMARY KEY(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ReferencedColumnName),
+    CONSTRAINT CK_GuidIdentityPrepareForeignKeyInventory_Disposition CHECK(Disposition IN('GuidIdentity','UnchangedExternal'))
 );
 
 DECLARE @Entities table(EntityName sysname PRIMARY KEY, HasPublicId bit NOT NULL);
@@ -110,6 +131,55 @@ BEGIN
 END;
 CLOSE entity_cursor; DEALLOCATE entity_cursor;
 
+-- Classify every FK touching a converted entity. The finalizer changes only Id-target relationships;
+-- alternate-key/PublicId targets are conservatively rejected until explicitly proven unchanged.
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities re ON re.EntityName=rt.name
+    JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+    WHERE rc.name<>N'Id')
+    THROW 51000, 'A foreign key targets a non-Id key on a converted entity; alternate/PublicId FK support is not proven.', 1;
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities re ON re.EntityName=rt.name
+    JOIN sys.foreign_key_columns allcols ON allcols.constraint_object_id=fkc.constraint_object_id
+    GROUP BY fkc.constraint_object_id HAVING COUNT(DISTINCT allcols.constraint_column_id)>1)
+    THROW 51000, 'A composite FK touches a converted entity key; explicit support is required.', 1;
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities re ON re.EntityName=rt.name
+    JOIN sys.tables pt ON pt.object_id=fk.parent_object_id LEFT JOIN @Entities pe ON pe.EntityName=pt.name
+    WHERE pe.EntityName IS NULL)
+    THROW 51000, 'An external parent FK references a converted entity; it cannot be safely rebuilt by this cutover.', 1;
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities pe ON pe.EntityName=pt.name
+    JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
+    WHERE pc.name=N'Id')
+    THROW 51000, 'A converted entity primary Id is also an FK parent column; this shape is unsupported.', 1;
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities pe ON pe.EntityName=pt.name
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id LEFT JOIN @Entities re ON re.EntityName=rt.name
+    JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
+    JOIN sys.types pty ON pty.user_type_id=pc.user_type_id
+    JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+    WHERE re.EntityName IS NOT NULL AND (SCHEMA_NAME(pt.schema_id)<>N'dbo' OR SCHEMA_NAME(rt.schema_id)<>N'dbo')
+       OR (re.EntityName IS NOT NULL AND rc.name=N'Id' AND pty.name NOT IN(N'int',N'bigint')))
+    THROW 51000, 'An identity FK is outside dbo or does not use a supported numeric parent column.', 1;
+
+INSERT dbo.GuidIdentityPrepareForeignKeyInventory(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition)
+SELECT SCHEMA_NAME(pt.schema_id),pt.name,fk.name,pc.name,pty.name,SCHEMA_NAME(rt.schema_id),rt.name,rc.name,rty.name,
+       fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_disabled,fk.is_not_trusted,
+       CASE WHEN re.EntityName IS NOT NULL AND rc.name=N'Id' THEN 'GuidIdentity' ELSE 'UnchangedExternal' END
+FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
+JOIN sys.types pty ON pty.user_type_id=pc.user_type_id
+JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+JOIN sys.types rty ON rty.user_type_id=rc.user_type_id
+LEFT JOIN @Entities pe ON pe.EntityName=pt.name LEFT JOIN @Entities re ON re.EntityName=rt.name
+WHERE pe.EntityName IS NOT NULL OR re.EntityName IS NOT NULL;
+
 -- Persist every actual database FK to an identity, and fail on unsupported composite references.
 IF EXISTS(SELECT fk.object_id FROM sys.foreign_keys fk JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id
           JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities e ON e.EntityName=rt.name
@@ -167,6 +237,13 @@ INSERT @ScalarRefs VALUES
 (N'UserRoles',N'UserId',N'Users'),(N'UserRoles',N'RoleId',N'Roles'),
 (N'Users',N'AccountId',N'Accounts'),(N'MenuItems',N'ParentId',N'MenuItems'),
 (N'AuditLogs',N'ActorUserId',N'Users'),(N'RefreshTokens',N'UserId',N'Users'),(N'RefreshTokens',N'CustomerId',N'Customers');
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @ScalarRefs sr ON sr.ParentEntityName=pt.name
+    JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id AND pc.name=sr.ColumnName
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+    WHERE rt.name<>sr.ReferencedEntityName OR rc.name<>N'Id' OR SCHEMA_NAME(rt.schema_id)<>N'dbo')
+    THROW 51000, 'A declared identity scalar FK targets a different entity/key than the explicit migration manifest.', 1;
 DECLARE @scalarParent sysname,@scalarColumn sysname,@scalarTarget sysname;
 DECLARE scalar_cursor CURSOR LOCAL FAST_FORWARD FOR SELECT ParentEntityName,ColumnName,ReferencedEntityName FROM @ScalarRefs;
 OPEN scalar_cursor; FETCH NEXT FROM scalar_cursor INTO @scalarParent,@scalarColumn,@scalarTarget;
