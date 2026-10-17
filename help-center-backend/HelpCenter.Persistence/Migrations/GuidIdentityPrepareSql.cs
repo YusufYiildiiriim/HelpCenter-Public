@@ -135,11 +135,10 @@ IF EXISTS
     THROW 51000, 'A SQL synonym or dependent module targets a converted entity; synonym cutover is unsupported.', 1;
 IF EXISTS
 (
-    SELECT 1 FROM sys.objects o JOIN sys.sql_expression_dependencies sed ON sed.referencing_id=o.object_id
-    JOIN sys.tables t ON t.object_id=sed.referenced_id JOIN @Entities e ON e.EntityName=t.name
-    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA') AND SCHEMA_NAME(t.schema_id)=N'dbo'
+    SELECT 1 FROM sys.objects o
+    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA')
 )
-    THROW 51000, 'A CLR SQL module has a catalog dependency on a converted entity; CLR module cutover is unsupported.', 1;
+    THROW 51000, 'SQL CLR modules exist in this database; GUID identity migration is unsupported until they are removed or separately reviewed.', 1;
 IF EXISTS(SELECT 1 FROM @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
           LEFT JOIN sys.columns c ON c.object_id=t.object_id AND c.name=N'Id'
           LEFT JOIN sys.types ty ON ty.user_type_id=c.user_type_id

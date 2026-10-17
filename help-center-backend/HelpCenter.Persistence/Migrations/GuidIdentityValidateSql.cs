@@ -78,11 +78,10 @@ IF EXISTS
     THROW 51000, 'A SQL synonym or dependent module now targets a converted entity.', 1;
 IF EXISTS
 (
-    SELECT 1 FROM sys.objects o JOIN sys.sql_expression_dependencies sed ON sed.referencing_id=o.object_id
-    JOIN sys.tables t ON t.object_id=sed.referenced_id JOIN @Entities e ON e.EntityName=t.name
-    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA') AND SCHEMA_NAME(t.schema_id)=N'dbo'
+    SELECT 1 FROM sys.objects o
+    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA')
 )
-    THROW 51000, 'A CLR SQL module now has a catalog dependency on a converted entity.', 1;
+    THROW 51000, 'SQL CLR modules exist in this database; GUID identity validation is unsupported until they are removed or separately reviewed.', 1;
 IF (SELECT COUNT(*) FROM dbo.GuidIdentityPrepareRowCounts)<>(SELECT COUNT(*) FROM @Entities)
  OR EXISTS(SELECT e.EntityName FROM @Entities e LEFT JOIN dbo.GuidIdentityPrepareRowCounts c ON c.EntityName=e.EntityName WHERE c.EntityName IS NULL)
     THROW 51000, 'The prepared entity row-count manifest is incomplete.', 1;
