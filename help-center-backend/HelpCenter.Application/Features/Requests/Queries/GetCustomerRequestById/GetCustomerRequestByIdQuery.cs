@@ -6,5 +6,5 @@ namespace HelpCenter.Application.Features.Requests.Queries.GetCustomerRequestByI
 public class GetCustomerRequestByIdQuery : IRequest<CustomerRequestDto>
 {
     public Guid PublicId { get; set; }
-    public int CustomerId { get; set; }
+    public Guid CustomerId { get; set; }
 }

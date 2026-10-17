@@ -34,16 +34,16 @@ public class AuditLogWriter : IAuditLogWriter
     public Task WriteAsync(string eventType, object? metadata = null, CancellationToken ct = default)
         => WriteInternalAsync(eventType, targetType: null, targetId: null, before: null, after: null, metadata, ct);
 
-    public Task WriteAsync(string eventType, string targetType, int? targetId, object? metadata = null, CancellationToken ct = default)
+    public Task WriteAsync(string eventType, string targetType, Guid? targetId, object? metadata = null, CancellationToken ct = default)
         => WriteInternalAsync(eventType, targetType, targetId, before: null, after: null, metadata, ct);
 
-    public Task WriteDiffAsync(string eventType, string targetType, int targetId, object? before, object? after, CancellationToken ct = default)
+    public Task WriteDiffAsync(string eventType, string targetType, Guid targetId, object? before, object? after, CancellationToken ct = default)
         => WriteInternalAsync(eventType, targetType, targetId, before, after, metadata: null, ct);
 
     private async Task WriteInternalAsync(
         string eventType,
         string? targetType,
-        int? targetId,
+        Guid? targetId,
         object? before,
         object? after,
         object? metadata,
@@ -52,7 +52,7 @@ public class AuditLogWriter : IAuditLogWriter
         var http = _httpAccessor.HttpContext;
         var user = http?.User;
 
-        var actorId = TryParseInt(user?.FindFirst(AppClaimTypes.UserId)?.Value);
+        var actorId = TryParseGuid(user?.FindFirst(AppClaimTypes.UserId)?.Value);
         var actorEmail = user?.FindFirst(ClaimTypes.Email)?.Value
                          ?? user?.FindFirst(AppClaimTypes.Email)?.Value;
 
@@ -76,6 +76,6 @@ public class AuditLogWriter : IAuditLogWriter
         await _db.SaveChangesAsync(ct);
     }
 
-    private static int? TryParseInt(string? value)
-        => int.TryParse(value, out var n) ? n : null;
+    private static Guid? TryParseGuid(string? value)
+        => Guid.TryParse(value, out var id) && id != Guid.Empty ? id : null;
 }

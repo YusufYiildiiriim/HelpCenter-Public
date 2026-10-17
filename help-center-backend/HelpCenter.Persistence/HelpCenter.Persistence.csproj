@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Context\Seed\SystemDefaults\system-defaults.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Only for ProjectTo (IQueryable -> DTO projection) — allows reusing the AutoMapper
          profiles in the Application layer instead of REDEFINING them here.
          GenericRepository.FirstOrDefaultProjectedAsync/GetPaginatedProjectedAsync's

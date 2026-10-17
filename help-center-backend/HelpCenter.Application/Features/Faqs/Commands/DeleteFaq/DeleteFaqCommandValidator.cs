@@ -6,6 +6,6 @@ public class DeleteFaqCommandValidator : AbstractValidator<DeleteFaqCommand>
 {
     public DeleteFaqCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz SSS ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz SSS ID.");
     }
 }

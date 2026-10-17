@@ -36,8 +36,8 @@ public class PublicController : ControllerBase
 
     [HttpGet("faq")]
     public async Task<IActionResult> GetFaqs(
-        [FromQuery] int? projectId = null,
-        [FromQuery] int? moduleId = null,
+        [FromQuery] Guid? projectId = null,
+        [FromQuery] Guid? moduleId = null,
         [FromQuery] string? search = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 12)
@@ -47,7 +47,7 @@ public class PublicController : ControllerBase
     }
 
     [HttpGet("modules")]
-    public async Task<IActionResult> GetModules([FromQuery] int? projectId = null)
+    public async Task<IActionResult> GetModules([FromQuery] Guid? projectId = null)
     {
         var response = await _mediator.Send(new GetPublicModulesQuery(projectId));
         return Ok(response);
@@ -55,7 +55,7 @@ public class PublicController : ControllerBase
 
     [HttpGet("guides")]
     public async Task<IActionResult> GetGuides(
-        [FromQuery] int? projectId = null,
+        [FromQuery] Guid? projectId = null,
         [FromQuery] string? module = null,
         [FromQuery] string? search = null,
         [FromQuery] int pageNumber = 1,

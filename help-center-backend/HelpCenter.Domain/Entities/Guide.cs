@@ -6,11 +6,11 @@ namespace HelpCenter.Domain.Entities
         public string Description { get; set; } = string.Empty;
         public virtual ICollection<Document>? Documents { get; set; }
 
-        public int? PreviousGuideId { get; set; }
+        public Guid? PreviousGuideId { get; set; }
         public virtual Guide? PreviousRequest { get; set; }
         public virtual Guide? NextRequest { get; set; }
 
-        public int? ModuleId { get; set; }
+        public Guid? ModuleId { get; set; }
         public virtual Module? ModuleEntity { get; set; }
 
         // Retained for rollback and compatibility with the existing name-based API.
@@ -18,10 +18,10 @@ namespace HelpCenter.Domain.Entities
         public string? YoutubeUrl { get; set; }
         public bool IsPublic { get; set; } = false;
 
-        public int? ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public virtual Project? Project { get; set; }
 
-        public void UpdateInfo(string title, string description, string module, string? youtubeUrl, int? previousGuideId, bool isActive, bool isPublic)
+        public void UpdateInfo(string title, string description, string module, string? youtubeUrl, Guid? previousGuideId, bool isActive, bool isPublic)
         {
             Title = title;
             Description = description;

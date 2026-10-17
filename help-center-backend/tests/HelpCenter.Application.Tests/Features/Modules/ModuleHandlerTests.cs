@@ -165,7 +165,7 @@ public class ModuleHandlerTests : HandlerTestBase
         Db.ChangeTracker.Clear();
 
         var handler = new AssignExpertToModuleCommandHandler(Uow);
-        var command = new AssignExpertToModuleCommand { ModuleId = module.Id, UserId = 99999 };
+        var command = new AssignExpertToModuleCommand { ModuleId = module.Id, UserId = HelpCenter.Application.Tests.TestIds.FromInt(99999) };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
@@ -182,7 +182,7 @@ public class ModuleHandlerTests : HandlerTestBase
             Name = "Support Module",
             Description = "Handles support",
             IsActive = true,
-            ExpertUserIds = new List<int> { 99999 }
+            ExpertUserIds = new List<Guid> { TestIds.FromInt(99999) }
         };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
@@ -206,7 +206,7 @@ public class ModuleHandlerTests : HandlerTestBase
             Name = "New Module",
             Description = "New",
             IsActive = true,
-            ExpertUserIds = new List<int> { 99999 }
+            ExpertUserIds = new List<Guid> { TestIds.FromInt(99999) }
         };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
@@ -219,7 +219,7 @@ public class ModuleHandlerTests : HandlerTestBase
     {
         var module = new Module { Name = "Reporting Module", CreatedAt = DateTime.UtcNow };
         Db.Modules.Add(module);
-        var me = new ModuleExpert { Module = module, UserId = 5, CreatedAt = DateTime.UtcNow };
+        var me = new ModuleExpert { Module = module, UserId = HelpCenter.Application.Tests.TestIds.FromInt(5), CreatedAt = DateTime.UtcNow };
         Db.ModuleExperts.Add(me);
         await Db.SaveChangesAsync();
         Db.ChangeTracker.Clear();

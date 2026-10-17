@@ -11,7 +11,7 @@ namespace HelpCenter.Domain.Entities
     /// </summary>
     public class RolePermissionAction : BaseEntity
     {
-        public int RolePermissionId { get; set; }
+        public Guid RolePermissionId { get; set; }
         public string Action { get; set; } = string.Empty;
 
         public virtual RolePermission RolePermission { get; set; } = null!;

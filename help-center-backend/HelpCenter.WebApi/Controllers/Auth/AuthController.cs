@@ -99,7 +99,7 @@ public class AuthController : ControllerBase
     [HttpPost("dashboard-login")]
     [Authorize(Roles = "Admin")]
     [EnableRateLimiting("auth")]
-    public async Task<IActionResult> DashboardLogin([FromBody] int companyId)
+    public async Task<IActionResult> DashboardLogin([FromBody] Guid companyId)
     {
         var company = await _unitOfWork.Repository<Company>().FirstOrDefaultAsync(
             x => x.Id == companyId, cancellationToken: HttpContext.RequestAborted);
@@ -128,9 +128,9 @@ public class AuthController : ControllerBase
 
         object? permissions = null;
         bool isPasswordChangeRequired = false;
-        int userId = 0;
+        Guid userId = Guid.Empty;
 
-        if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out userId))
+        if (!string.IsNullOrEmpty(userIdStr) && Guid.TryParse(userIdStr, out userId))
         {
             var state = await _mediator.Send(new GetVerifyStateQuery(userId));
             isPasswordChangeRequired = state.IsPasswordChangeRequired;

@@ -26,6 +26,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
     {
         builder.ToTable("AuditLogs");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedNever();
 
         builder.Property(x => x.EventType).IsRequired().HasMaxLength(100);
         builder.Property(x => x.ActorEmail).HasMaxLength(256);

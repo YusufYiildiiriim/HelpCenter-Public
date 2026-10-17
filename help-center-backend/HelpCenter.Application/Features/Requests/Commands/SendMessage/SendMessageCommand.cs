@@ -7,7 +7,7 @@ namespace HelpCenter.Application.Features.Requests.Commands.SendMessage;
 public class SendMessageCommand : IRequest<bool>, IInvalidatesMessageCache
 {
     public Guid RequestPublicId { get; set; }
-    public int CustomerId { get; set; }
+    public Guid CustomerId { get; set; }
     public string MessageText { get; set; } = string.Empty;
     public List<FileUpload>? Files { get; set; }
 }

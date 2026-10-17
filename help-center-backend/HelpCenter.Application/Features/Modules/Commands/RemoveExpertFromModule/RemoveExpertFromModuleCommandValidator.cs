@@ -6,6 +6,6 @@ public class RemoveExpertFromModuleCommandValidator : AbstractValidator<RemoveEx
 {
     public RemoveExpertFromModuleCommandValidator()
     {
-        RuleFor(x => x.ExpertId).GreaterThan(0).WithMessage("Geçersiz uzman ID.");
+        RuleFor(x => x.ExpertId).NotEmpty().WithMessage("Geçersiz uzman ID.");
     }
 }

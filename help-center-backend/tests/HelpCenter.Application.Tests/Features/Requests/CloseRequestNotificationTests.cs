@@ -56,7 +56,7 @@ public class CloseRequestNotificationTests : HandlerTestBase
     public async Task Notification_failure_does_not_undo_or_misreport_a_committed_close()
     {
         var request = Seed();
-        _hub.NotifyRequestStatusChanged(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<string>(), default)
+        _hub.NotifyRequestStatusChanged(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<string>(), default)
             .Returns(Task.FromException(new InvalidOperationException("Hub unavailable")));
         var handler = new CloseRequestCommandHandler(Uow, _hub, _logger);
         (await handler.Handle(new() { PublicId = request.PublicId, CustomerId = request.CustomerId }, default)).Should().BeTrue();

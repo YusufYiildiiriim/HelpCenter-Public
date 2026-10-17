@@ -29,7 +29,7 @@ public class AuthTokenService : IAuthTokenService
         _configuration = configuration;
     }
 
-    public async Task<AuthTokens> IssueTokensAsync(int userId, string role, string email, string? ipAddress, string? userAgent, CancellationToken ct = default)
+    public async Task<AuthTokens> IssueTokensAsync(Guid userId, string role, string email, string? ipAddress, string? userAgent, CancellationToken ct = default)
     {
         var (accessToken, accessExp) = GenerateAccessToken(userId, role, email);
         var (rawRefresh, hash, refreshExp) = GenerateRefreshToken();
@@ -48,7 +48,7 @@ public class AuthTokenService : IAuthTokenService
         return new AuthTokens(accessToken, accessExp, rawRefresh, refreshExp);
     }
 
-    public async Task<AuthTokens> IssueCustomerTokensAsync(int customerId, int companyId, string email, string? ipAddress, string? userAgent, CancellationToken ct = default)
+    public async Task<AuthTokens> IssueCustomerTokensAsync(Guid customerId, Guid companyId, string email, string? ipAddress, string? userAgent, CancellationToken ct = default)
     {
         var (accessToken, accessExp) = GenerateAccessToken(customerId, "Customer", email, companyId.ToString());
         var (rawRefresh, hash, refreshExp) = GenerateRefreshToken();
@@ -169,7 +169,7 @@ public class AuthTokenService : IAuthTokenService
 
     // ----- Internals -----
 
-    private (string token, DateTime expires) GenerateAccessToken(int principalId, string role, string email, string? companyId = null)
+    private (string token, DateTime expires) GenerateAccessToken(Guid principalId, string role, string email, string? companyId = null)
     {
         var jwt = _configuration.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["SecretKey"]!));

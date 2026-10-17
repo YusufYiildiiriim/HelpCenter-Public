@@ -23,26 +23,26 @@ public class HubUserContext : IUserContext
 
     public bool IsAuthenticated => _user?.Identity?.IsAuthenticated == true;
 
-    public int? CompanyId => int.TryParse(_user?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id > 0 ? id : null;
+    public Guid? CompanyId => Guid.TryParse(_user?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id != Guid.Empty ? id : null;
 
-    public int UserId
+    public Guid UserId
     {
         get
         {
             var claim = _user?.FindFirst(AppClaimTypes.UserId)?.Value ?? _user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return int.TryParse(claim, out var id) ? id : 0;
+            return Guid.TryParse(claim, out var id) ? id : Guid.Empty;
         }
     }
 
-    public IReadOnlyList<int> RoleIds
+    public IReadOnlyList<Guid> RoleIds
     {
         get
         {
-            if (_user == null) return Array.Empty<int>();
+            if (_user == null) return Array.Empty<Guid>();
 
             return _user.FindAll(AppClaimTypes.RoleId)
-                .Select(c => int.TryParse(c.Value, out var id) ? id : 0)
-                .Where(id => id > 0)
+                .Select(c => Guid.TryParse(c.Value, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
                 .ToArray();
         }
     }

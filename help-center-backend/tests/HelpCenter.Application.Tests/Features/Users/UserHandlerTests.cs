@@ -56,7 +56,7 @@ public class UserHandlerTests : HandlerTestBase
             LastName = "UpdatedLast",
             Email = "updated@example.com",
             IsActive = true,
-            RoleIds = new List<int> { 1, 2 }
+            RoleIds = new List<Guid> { TestIds.FromInt(1), TestIds.FromInt(2) }
         };
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -74,7 +74,7 @@ public class UserHandlerTests : HandlerTestBase
         var handler = new UpdateUserCommandHandler(
             Uow, _passwordService, NullLogger<UpdateUserCommandHandler>.Instance, _auditLog, new UpdateUserRules(Uow));
 
-        var command = new UpdateUserCommand { Id = 9999, Name = "Nobody" };
+        var command = new UpdateUserCommand { Id = TestIds.FromInt(9999), Name = "Nobody" };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 

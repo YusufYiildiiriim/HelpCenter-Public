@@ -12,6 +12,6 @@ public class SendMessageCommandValidator : AbstractValidator<SendMessageCommand>
             .NotEmpty()
             .When(x => x.Files == null || x.Files.Count == 0)
             .WithMessage("Mesaj metni boş olamaz.");
-        RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Geçersiz kullanıcı.");
+        RuleFor(x => x.CustomerId).NotEmpty().WithMessage("Geçersiz kullanıcı.");
     }
 }

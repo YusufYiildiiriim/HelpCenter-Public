@@ -13,5 +13,5 @@ public interface IConversationReadService
     /// side, and saves. The return value is the number of messages marked (0 means the conversation
     /// does not exist or there were no messages to mark).
     /// </summary>
-    Task<int> MarkMessagesAsReadAsync(int conversationId, bool readerIsAgent, CancellationToken cancellationToken = default);
+    Task<int> MarkMessagesAsReadAsync(Guid conversationId, bool readerIsAgent, CancellationToken cancellationToken = default);
 }

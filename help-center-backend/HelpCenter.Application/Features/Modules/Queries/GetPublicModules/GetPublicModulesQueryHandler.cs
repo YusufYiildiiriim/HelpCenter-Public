@@ -28,11 +28,11 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
             async ct =>
             {
                 var projectId = request.ProjectId;
-                List<int> projectModuleIds = new();
-                List<int?> guideModuleIds = new();
+                List<Guid> projectModuleIds = new();
+                List<Guid?> guideModuleIds = new();
                 List<string> guideModuleNames = new();
 
-                if (projectId.HasValue && projectId.Value > 0)
+                if (projectId.HasValue && projectId.Value != Guid.Empty)
                 {
                     projectModuleIds = await _unitOfWork.Repository<ProjectModule>().SelectAsync(
                         pm => pm.ProjectId == projectId.Value,
@@ -51,7 +51,7 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
 
                 Expression<Func<Module, bool>> predicate = m =>
                     m.IsActive &&
-                    (!projectId.HasValue || projectId.Value <= 0 ||
+                    (!projectId.HasValue || projectId.Value == Guid.Empty ||
                      projectModuleIds.Contains(m.Id) ||
                      guideModuleIds.Contains(m.Id) || guideModuleNames.Contains(m.Name));
 

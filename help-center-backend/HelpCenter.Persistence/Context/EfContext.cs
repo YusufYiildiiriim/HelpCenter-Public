@@ -90,11 +90,13 @@ public class EfContext : DbContext
                 }
 
                 // PublicId Configuration — a real/randomly generated, stored external identity
-                // for each entity, replacing the XOR/HMAC scheme that "obfuscated" the int Id
+                // for each entity, replacing the XOR/HMAC scheme that "obfuscated" the Guid Id
                 // reversibly with a fixed salt embedded in HashService's source code.
                 // Runtime entities create their identity in BaseEntity. Keep the value generator
                 // as a fallback for explicitly empty IDs, and the database default for HasData
                 // rows or SQL inserts that omit PublicId. Existing non-empty values are preserved.
+                modelBuilder.Entity(entityType.ClrType).Property<Guid>(nameof(BaseEntity.Id)).ValueGeneratedNever();
+
                 var publicIdProperty = modelBuilder.Entity(entityType.ClrType)
                     .Property(nameof(BaseEntity.PublicId))
                     .ValueGeneratedOnAdd()
@@ -277,9 +279,9 @@ public class EfContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Modular Data Seeding — only the required SystemDefaults (roles, permissions, admin, etc.).
-        // Sample/demo data (SampleData) no longer lives here, see SampleDataSeeder.
-        modelBuilder.SeedSystemDefaults();
+        // System defaults are inserted by SystemDefaultsSeedHostedService at runtime. Keeping
+        // them out of HasData prevents EF migrations from overwriting environment-specific IDs
+        // or customized permission/admin data.
 
         base.OnModelCreating(modelBuilder);
     }

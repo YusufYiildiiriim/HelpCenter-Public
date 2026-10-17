@@ -4,13 +4,13 @@ namespace HelpCenter.Domain.Entities
 {
     public class ConversationParticipant : BaseEntity
     {
-        public int ConversationId { get; set; }
+        public Guid ConversationId { get; set; }
         public virtual Conversation Conversation { get; set; } = null!;
 
-        public int? UserId { get; set; }
+        public Guid? UserId { get; set; }
         public virtual User? User { get; set; }
 
-        public int? CustomerId { get; set; }
+        public Guid? CustomerId { get; set; }
         public virtual Customer? Customer { get; set; }
 
         public ParticipantType Type { get; set; }

@@ -24,7 +24,7 @@ public class AdminModuleExpertsController : ControllerBase
 
     [HttpGet("{moduleId}")]
     [HasPermission(AppResources.Modules, PermissionActions.Read)]
-    public async Task<IActionResult> GetByModuleId(int moduleId)
+    public async Task<IActionResult> GetByModuleId(Guid moduleId)
     {
         var response = await _mediator.Send(new GetExpertsByModuleIdQuery(moduleId));
         return Ok(response);
@@ -42,7 +42,7 @@ public class AdminModuleExpertsController : ControllerBase
     [HttpDelete("{expertId}")]
     [HasPermission(AppResources.Modules, PermissionActions.Update)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> Remove(int expertId)
+    public async Task<IActionResult> Remove(Guid expertId)
     {
         var response = await _mediator.Send(new RemoveExpertFromModuleCommand(expertId));
         return Ok(response);

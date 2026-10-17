@@ -3,6 +3,7 @@ using HelpCenter.Application.Interfaces;
 using HelpCenter.Application.Tests.Common;
 using HelpCenter.Domain.Constants;
 using HelpCenter.Persistence.Context.Seed.SampleData;
+using HelpCenter.Persistence.Context.Seed.SystemDefaults;
 using HelpCenter.Persistence.Services;
 using NSubstitute;
 using Xunit;
@@ -14,6 +15,7 @@ public class RbacPermissionTests : HandlerTestBase
     public RbacPermissionTests()
     {
         Db.Database.EnsureCreated();
+        SystemDefaultsSeeder.SeedAsync(Db).GetAwaiter().GetResult();
 
         // Agent (User 2) and Expert (User 4) come from the sample/demo data. Since this data is no
         // longer embedded in migrations, EnsureCreated alone is not enough; tests are treated as
@@ -22,7 +24,7 @@ public class RbacPermissionTests : HandlerTestBase
         SampleDataSeeder.SeedAsync(Db).GetAwaiter().GetResult();
     }
 
-    private DataScopeService CreateScopeServiceForUser(int userId)
+    private DataScopeService CreateScopeServiceForUser(Guid userId)
     {
         var userContext = Substitute.For<IUserContext>();
         userContext.UserId.Returns(userId);
@@ -33,7 +35,7 @@ public class RbacPermissionTests : HandlerTestBase
     public async Task Admin_should_have_full_crud_permissions_across_all_resources()
     {
         // User 1: Admin
-        var scope = CreateScopeServiceForUser(1);
+        var scope = CreateScopeServiceForUser(TestIds.FromInt(1));
 
         var resources = new[]
         {
@@ -63,7 +65,7 @@ public class RbacPermissionTests : HandlerTestBase
     public async Task Admin_should_have_unrestricted_allowed_fields_on_dashboard()
     {
         // User 1: Admin
-        var scope = CreateScopeServiceForUser(1);
+        var scope = CreateScopeServiceForUser(TestIds.FromInt(1));
         var allowedFields = await scope.GetAllowedFieldsAsync(AppResources.Dashboard);
 
         // Null means all fields are unrestricted
@@ -74,7 +76,7 @@ public class RbacPermissionTests : HandlerTestBase
     public async Task Agent_should_have_read_and_update_on_requests_and_companies_but_not_delete()
     {
         // User 2: Agent 1
-        var scope = CreateScopeServiceForUser(2);
+        var scope = CreateScopeServiceForUser(TestIds.FromInt(2));
 
         var canReadRequests = await scope.HasPermissionAsync(AppResources.Requests, PermissionActions.Read);
         var canUpdateRequests = await scope.HasPermissionAsync(AppResources.Requests, PermissionActions.Update);
@@ -97,7 +99,7 @@ public class RbacPermissionTests : HandlerTestBase
     public async Task Agent_should_have_restricted_allowed_fields_on_dashboard()
     {
         // User 2: Agent 1
-        var scope = CreateScopeServiceForUser(2);
+        var scope = CreateScopeServiceForUser(TestIds.FromInt(2));
         var allowedFields = await scope.GetAllowedFieldsAsync(AppResources.Dashboard);
 
         allowedFields.Should().NotBeNull();
@@ -111,7 +113,7 @@ public class RbacPermissionTests : HandlerTestBase
     public async Task Expert_should_only_have_access_to_assigned_requests()
     {
         // User 4: Expert
-        var scope = CreateScopeServiceForUser(4);
+        var scope = CreateScopeServiceForUser(TestIds.FromInt(4));
 
         var canReadAssigned = await scope.HasPermissionAsync(AppResources.AssignedRequests, PermissionActions.Read);
         var canUpdateAssigned = await scope.HasPermissionAsync(AppResources.AssignedRequests, PermissionActions.Update);

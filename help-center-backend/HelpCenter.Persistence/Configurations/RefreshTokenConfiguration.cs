@@ -26,6 +26,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         builder.ToTable("RefreshTokens");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedNever();
 
         builder.Property(x => x.TokenHash).IsRequired().HasMaxLength(128);
         builder.Property(x => x.RevokedReason).HasMaxLength(200);

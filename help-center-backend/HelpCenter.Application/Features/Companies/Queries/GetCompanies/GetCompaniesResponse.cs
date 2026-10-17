@@ -2,7 +2,7 @@ namespace HelpCenter.Application.Features.Companies.Queries.GetCompanies;
 
 public class GetCompaniesResponse
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public Guid PublicId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
@@ -15,9 +15,9 @@ public class GetCompaniesResponse
     public string ContactPersonUsername { get; set; } = string.Empty;
     public bool IsDemoActive { get; set; }
     public int BranchCount { get; set; }
-    public List<int> ModuleIds { get; set; } = new();
+    public List<Guid> ModuleIds { get; set; } = new();
     public string PreviousSystem { get; set; } = string.Empty;
-    public int? ProjectId { get; set; }
+    public Guid? ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public byte[] RowVersion { get; set; } = null!;
 }

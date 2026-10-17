@@ -8,7 +8,7 @@ public class CreateFaqCommandValidator : AbstractValidator<CreateFaqCommand>
     {
         RuleFor(x => x.Title).NotEmpty().WithMessage("Başlık boş bırakılamaz.");
         RuleFor(x => x.Description).NotEmpty().WithMessage("Açıklama boş bırakılamaz.");
-        RuleFor(x => x.ProjectId).GreaterThan(0).When(x => x.ProjectId.HasValue).WithMessage("Geçersiz proje ID.");
-        RuleFor(x => x.ModuleId).GreaterThan(0).When(x => x.ModuleId.HasValue).WithMessage("Geçersiz modül ID.");
+        RuleFor(x => x.ProjectId).NotEmpty().When(x => x.ProjectId.HasValue).WithMessage("Geçersiz proje ID.");
+        RuleFor(x => x.ModuleId).NotEmpty().When(x => x.ModuleId.HasValue).WithMessage("Geçersiz modül ID.");
     }
 }

@@ -19,7 +19,7 @@ public class CustomerFaqController : ControllerBase
     }
 
     [HttpGet("get-all-faq")]
-    public async Task<IActionResult> GetAll([FromQuery] int? projectId, [FromQuery] int? moduleId)
+    public async Task<IActionResult> GetAll([FromQuery] Guid? projectId, [FromQuery] Guid? moduleId)
     {
         var response = await _mediator.Send(new GetCustomerFaqsQuery(projectId, moduleId));
         return Ok(response);

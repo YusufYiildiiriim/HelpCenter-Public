@@ -8,6 +8,6 @@ public class UserRegisterCommand : IRequest<bool>
     public string Name { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public List<int>? RoleIds { get; set; }
+    public List<Guid>? RoleIds { get; set; }
     public string? Username { get; set; }
 }

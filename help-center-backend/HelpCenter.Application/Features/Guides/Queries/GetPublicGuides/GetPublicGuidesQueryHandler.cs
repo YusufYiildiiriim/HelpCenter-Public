@@ -49,10 +49,10 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
         CancellationToken ct)
     {
         var projectId = request.ProjectId;
-        List<int> projectModuleIds = new();
+        List<Guid> projectModuleIds = new();
         List<string> projectModuleNames = new();
 
-        if (projectId.HasValue && projectId.Value > 0)
+        if (projectId.HasValue && projectId.Value != Guid.Empty)
         {
             projectModuleIds = await _unitOfWork.Repository<ProjectModule>().SelectAsync(
                 pm => pm.ProjectId == projectId.Value,
@@ -67,7 +67,7 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
 
         Expression<Func<Guide, bool>> predicate = g =>
             g.IsActive && g.IsPublic &&
-            (!projectId.HasValue || projectId.Value <= 0 ||
+            (!projectId.HasValue || projectId.Value == Guid.Empty ||
              g.ProjectId == projectId.Value ||
              (!g.ProjectId.HasValue && (g.ModuleId.HasValue ? projectModuleIds.Contains(g.ModuleId.Value) : projectModuleNames.Contains(g.Module)))) &&
             (string.IsNullOrWhiteSpace(request.Module) || (g.ModuleEntity != null ? g.ModuleEntity.Name : g.Module) == request.Module) &&
@@ -95,12 +95,12 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
                 g => new { g.Id, g.PublicId },
                 cancellationToken: ct))
               .ToDictionary(x => x.Id, x => x.PublicId)
-            : new Dictionary<int, Guid>();
+            : new Dictionary<Guid, Guid>();
 
         for (int i = 0; i < guides.Count; i++)
         {
             dtos[i].PublicId = guides[i].PublicId;
-            dtos[i].PreviousGuidePublicId = guides[i].PreviousGuideId is int prevId
+            dtos[i].PreviousGuidePublicId = guides[i].PreviousGuideId is Guid prevId
                 && previousGuidePublicIds.TryGetValue(prevId, out var prevPublicId)
                 ? prevPublicId
                 : null;

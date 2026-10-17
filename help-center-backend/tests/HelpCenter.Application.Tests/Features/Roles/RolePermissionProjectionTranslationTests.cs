@@ -8,6 +8,7 @@ using HelpCenter.Domain.Constants;
 using HelpCenter.Domain.Entities;
 using HelpCenter.Domain.Events;
 using HelpCenter.Persistence.Context;
+using HelpCenter.Persistence.Context.Seed.SystemDefaults;
 using HelpCenter.Persistence.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ public class RolePermissionProjectionTranslationTests : IDisposable
         var options = new DbContextOptionsBuilder<EfContext>().UseSqlite(_connection).Options;
         _db = new EfContext(options);
         _db.Database.EnsureCreated();
+        SystemDefaultsSeeder.SeedAsync(_db).GetAwaiter().GetResult();
         _uow = new UnitOfWork(_db);
     }
 
@@ -54,10 +56,10 @@ public class RolePermissionProjectionTranslationTests : IDisposable
     // matches the real seed data without needing to create another role.
     // Since the Agent role already has several default permissions (Requests/AssignedRequests/Companies/Dashboard)
     // (see PermissionSeed.cs), tests use a NON-CONFLICTING, one-off ResourceKey.
-    private const int AgentRoleId = 2;
+    private static readonly Guid AgentRoleId = Guid.Parse("00000000-0000-0000-0000-000000000002");
     private const string TestResourceKey = "TestOnlyResource123";
 
-    private async Task<int> SeedAgentUserWithReadPermissionAsync()
+    private async Task<Guid> SeedAgentUserWithReadPermissionAsync()
     {
         var account = new Account { Email = "ali@test.com", Username = "ali", FirstName = "Ali", LastName = "Agent", Password = "x", CreatedAt = DateTime.UtcNow };
         _db.Accounts.Add(account);
@@ -110,7 +112,7 @@ public class RolePermissionProjectionTranslationTests : IDisposable
         var emailDispatcher = Substitute.For<IEmailDispatcher>();
         var handler = new RequestCreatedEventHandler(_uow, emailDispatcher, NullLogger<RequestCreatedEventHandler>.Instance);
 
-        var domainEvent = new RequestCreatedEvent(1, "Test Customer", "Test Request");
+        var domainEvent = new RequestCreatedEvent(TestIds.FromInt(1), "Test Customer", "Test Request");
         await handler.Handle(new RequestCreatedNotification(domainEvent), CancellationToken.None);
 
         emailDispatcher.Received(1).EnqueueAgentNotifications(

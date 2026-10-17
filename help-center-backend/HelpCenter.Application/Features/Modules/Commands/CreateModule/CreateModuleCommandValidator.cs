@@ -9,7 +9,7 @@ public class CreateModuleCommandValidator : AbstractValidator<CreateModuleComman
         RuleFor(x => x.Name).NotEmpty().WithMessage("Modül adı boş bırakılamaz.");
         RuleFor(x => x.Description).NotEmpty().WithMessage("Modül açıklaması boş bırakılamaz.");
         RuleForEach(x => x.ExpertUserIds)
-            .GreaterThan(0).WithMessage("Geçersiz uzman kullanıcı ID.")
+            .NotEmpty().WithMessage("Geçersiz uzman kullanıcı ID.")
             .When(x => x.ExpertUserIds != null);
     }
 }

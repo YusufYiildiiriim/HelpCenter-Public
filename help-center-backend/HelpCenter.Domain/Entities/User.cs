@@ -2,7 +2,7 @@ namespace HelpCenter.Domain.Entities
 {
     public class User : BaseEntity
     {
-        public int AccountId { get; set; }
+        public Guid AccountId { get; set; }
         public virtual Account Account { get; set; } = null!;
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new HashSet<UserRole>();
@@ -78,7 +78,7 @@ namespace HelpCenter.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void SyncRoles(IEnumerable<int> roleIds)
+        public void SyncRoles(IEnumerable<Guid> roleIds)
         {
             // Simple approach: Clear and re-add for UserRoles (assuming it's a join table without extra data)
             UserRoles.Clear();
@@ -89,7 +89,7 @@ namespace HelpCenter.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void AddRoles(IEnumerable<int> roleIds)
+        public void AddRoles(IEnumerable<Guid> roleIds)
         {
             foreach (var roleId in roleIds)
             {

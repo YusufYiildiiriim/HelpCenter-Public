@@ -30,7 +30,7 @@ public class PermissionHandlerTests
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
-            new Claim("UserId", "1"),
+            new Claim("UserId", "00000000-0000-0000-0000-000000000001"),
             new Claim(ClaimTypes.Role, "Admin")
         }, "TestAuth"));
 

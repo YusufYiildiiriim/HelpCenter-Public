@@ -28,7 +28,7 @@ public class GetVerifyStateQueryHandler : IRequestHandler<GetVerifyStateQuery, G
     {
         var result = new GetVerifyStateResponse();
 
-        if (request.UserId <= 0) return result;
+        if (request.UserId == Guid.Empty) return result;
 
         // The verify flow is "best effort": a single failed read must not drop the
         // session verification entirely. The error is still logged.

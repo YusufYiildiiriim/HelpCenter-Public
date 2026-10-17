@@ -18,27 +18,27 @@ public class HttpBasedUserContext : IUserContext
 
     public bool IsAuthenticated => User?.Identity?.IsAuthenticated == true;
 
-    public int? CompanyId => int.TryParse(User?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id > 0 ? id : null;
+    public Guid? CompanyId => Guid.TryParse(User?.FindFirst(AppClaimTypes.CompanyId)?.Value, out var id) && id != Guid.Empty ? id : null;
 
-    public int UserId
+    public Guid UserId
     {
         get
         {
             var claim = User?.FindFirst(AppClaimTypes.UserId)?.Value ?? User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return int.TryParse(claim, out var id) ? id : 0;
+            return Guid.TryParse(claim, out var id) ? id : Guid.Empty;
         }
     }
 
-    public IReadOnlyList<int> RoleIds
+    public IReadOnlyList<Guid> RoleIds
     {
         get
         {
             var user = User;
-            if (user == null) return Array.Empty<int>();
+            if (user == null) return Array.Empty<Guid>();
 
             return user.FindAll(AppClaimTypes.RoleId)
-                .Select(c => int.TryParse(c.Value, out var id) ? id : 0)
-                .Where(id => id > 0)
+                .Select(c => Guid.TryParse(c.Value, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
                 .ToArray();
         }
     }

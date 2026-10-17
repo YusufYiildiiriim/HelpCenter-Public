@@ -2,4 +2,4 @@ using MediatR;
 
 namespace HelpCenter.Application.Features.Roles.Queries.GetUserPermissions;
 
-public record GetUserPermissionsQuery(int UserId) : IRequest<UserPermissionsDto>;
+public record GetUserPermissionsQuery(Guid UserId) : IRequest<UserPermissionsDto>;

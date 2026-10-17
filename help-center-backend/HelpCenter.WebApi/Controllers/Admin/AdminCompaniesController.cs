@@ -95,12 +95,12 @@ public class AdminCompaniesController : ControllerBase
         string ContactPersonPhone,
         bool IsDemoActive,
         int BranchCount,
-        List<int> ModuleIds,
+        List<Guid> ModuleIds,
         string PreviousSystem,
         string? RowVersion = null,
         string? Password = null,
         string? ContactPersonUsername = null,
-        int? ProjectId = null);
+        Guid? ProjectId = null);
 
     [HttpDelete("{publicId}")]
     [HasPermission(AppResources.Companies, PermissionActions.Delete)]

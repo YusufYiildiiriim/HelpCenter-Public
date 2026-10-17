@@ -9,7 +9,7 @@ namespace HelpCenter.Domain.Entities
         public virtual ICollection<ConversationParticipant> Participants { get; set; } = new HashSet<ConversationParticipant>();
         public virtual ICollection<CustomerRequestMessage> Messages { get; set; } = new HashSet<CustomerRequestMessage>();
 
-        public ConversationParticipant AddParticipant(int? customerId, int? userId, ParticipantType type)
+        public ConversationParticipant AddParticipant(Guid? customerId, Guid? userId, ParticipantType type)
         {
             var participant = Participants.FirstOrDefault(p =>
                 (customerId.HasValue && p.CustomerId == customerId && p.Type == type) ||

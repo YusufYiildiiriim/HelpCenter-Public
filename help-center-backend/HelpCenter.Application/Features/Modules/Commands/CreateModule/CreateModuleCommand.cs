@@ -7,5 +7,5 @@ public class CreateModuleCommand : IRequest<bool>
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
-    public List<int>? ExpertUserIds { get; set; }
+    public List<Guid>? ExpertUserIds { get; set; }
 }

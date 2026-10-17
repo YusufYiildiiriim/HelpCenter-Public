@@ -9,5 +9,5 @@ public class UpdateModuleCommand : IRequest<bool>
     public string Description { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public byte[]? RowVersion { get; set; }
-    public List<int>? ExpertUserIds { get; set; }
+    public List<Guid>? ExpertUserIds { get; set; }
 }

@@ -24,7 +24,7 @@ public class ExpertQueueEndpointsTests(SqlServerWebApplicationFactory factory)
         using var expertClient = expert.Client;
         using var otherClient = other.Client;
         Guid publicId;
-        int adminId;
+        Guid adminId;
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<EfContext>();

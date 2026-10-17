@@ -8,10 +8,10 @@ public static class RoleSeed
     public static void SeedRoles(this ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Role>().HasData(
-            new Role { PublicId = Guid.Empty, Id = 1, Name = "Admin", Description = "Süper Admin - Tam yetki", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-            new Role { PublicId = Guid.Empty, Id = 2, Name = "Agent", Description = "Müşteri Temsilcisi - Talep ve firma okuma/yönetme", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-            new Role { PublicId = Guid.Empty, Id = 3, Name = "Customer", Description = "Son Kullanıcı - Talep oluşturma ve mesajlaşma", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-            new Role { PublicId = Guid.Empty, Id = 4, Name = "Expert", Description = "Yetkili Kişi - Modül uzmanı, yalnızca atanan talepleri inceler", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+            new Role { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), Name = "Admin", Description = "Süper Admin - Tam yetki", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+            new Role { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), Name = "Agent", Description = "Müşteri Temsilcisi - Talep ve firma okuma/yönetme", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+            new Role { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), Name = "Customer", Description = "Son Kullanıcı - Talep oluşturma ve mesajlaşma", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+            new Role { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), Name = "Expert", Description = "Yetkili Kişi - Modül uzmanı, yalnızca atanan talepleri inceler", IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
         );
     }
 }

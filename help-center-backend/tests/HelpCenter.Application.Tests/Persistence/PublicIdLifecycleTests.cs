@@ -1,5 +1,6 @@
 using HelpCenter.Domain.Entities;
 using HelpCenter.Persistence.Context;
+using HelpCenter.Persistence.Context.Seed.SystemDefaults;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,7 +12,7 @@ namespace HelpCenter.Application.Tests.Persistence;
 public sealed class PublicIdLifecycleTests
 {
     [Fact]
-    public void New_entities_have_stable_distinct_public_ids_before_tracking()
+    public void New_entities_use_one_stable_guid_for_id_and_public_id_before_tracking()
     {
         var first = new FAQ();
         var second = new FAQ();
@@ -19,8 +20,9 @@ public sealed class PublicIdLifecycleTests
 
         Assert.NotEqual(Guid.Empty, identity);
         Assert.NotEqual(identity, second.PublicId);
+        Assert.Equal(first.Id, identity);
         Assert.Equal(identity, first.PublicId);
-        Assert.Equal(0, first.Id);
+        Assert.NotEqual(Guid.Empty, first.Id);
     }
 
     [Fact]
@@ -34,7 +36,7 @@ public sealed class PublicIdLifecycleTests
         var fresh = new FAQ { Title = "Fresh" };
         var original = fresh.PublicId;
         var assignedId = Guid.NewGuid();
-        var imported = new FAQ { Title = "Imported", PublicId = assignedId };
+        var imported = new FAQ { Title = "Imported", Id = assignedId, PublicId = assignedId };
         db.FAQs.AddRange(fresh, imported);
 
         Assert.Equal(original, fresh.PublicId);
@@ -46,15 +48,14 @@ public sealed class PublicIdLifecycleTests
     }
 
     [Fact]
-    public void System_seed_public_ids_keep_the_store_generated_sentinel()
+    public void System_defaults_are_not_embedded_in_the_ef_model()
     {
         using var db = CreateSqlServerModel();
         var seeds = db.GetService<IDesignTimeModel>().Model.GetEntityTypes()
             .Where(type => typeof(BaseEntity).IsAssignableFrom(type.ClrType))
             .SelectMany(type => type.GetSeedData()).ToList();
 
-        Assert.NotEmpty(seeds);
-        Assert.All(seeds, seed => Assert.Equal(Guid.Empty, seed[nameof(BaseEntity.PublicId)]));
+        Assert.Empty(seeds);
     }
 
     [Fact]

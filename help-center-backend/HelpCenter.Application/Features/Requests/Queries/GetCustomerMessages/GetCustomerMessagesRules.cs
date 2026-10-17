@@ -22,7 +22,7 @@ public static class GetCustomerMessagesRules
     /// <summary>
     /// Verifies that the request belongs to the given customer.
     /// </summary>
-    public static void RequestShouldBelongToCustomer(CustomerMessagesTicketSummary ticket, int customerId)
+    public static void RequestShouldBelongToCustomer(CustomerMessagesTicketSummary ticket, Guid customerId)
     {
         if (ticket.CustomerId != customerId)
         {

@@ -9,7 +9,7 @@ namespace HelpCenter.WebApi.IntegrationTests.Infrastructure;
 
 internal static class StaffTestSession
 {
-    internal static async Task<(HttpClient Client, int UserId, int RoleId)> CreateAsync(SqlServerWebApplicationFactory factory, string resource)
+    internal static async Task<(HttpClient Client, Guid UserId, Guid RoleId)> CreateAsync(SqlServerWebApplicationFactory factory, string resource)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EfContext>();

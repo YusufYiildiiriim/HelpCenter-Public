@@ -30,7 +30,7 @@ public class RequestCreatedEventHandler : INotificationHandler<RequestCreatedNot
         // "User.Account" string path and (Email, FullName) extracted manually. Now only these
         // two fields are projected directly in SQL.
         var agentContacts = await _unitOfWork.Repository<UserRole>().SelectAsync(
-            ur => ur.RoleId == 2 && ur.IsActive &&
+            ur => ur.Role.Name == "Agent" && ur.IsActive &&
                   ur.User != null && ur.User.IsActive && ur.User.Account != null,
             ur => new { ur.User!.Account.Email, ur.User.Account.FullName },
             cancellationToken: cancellationToken);

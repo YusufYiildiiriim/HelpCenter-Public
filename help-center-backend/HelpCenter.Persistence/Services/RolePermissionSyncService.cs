@@ -14,7 +14,7 @@ public class RolePermissionSyncService : IRolePermissionSyncService
     }
 
     public async Task<bool> SyncPermissionsAsync(
-        int roleId,
+        Guid roleId,
         IEnumerable<(string ResourceKey, IReadOnlyList<string> Actions, string? AllowedFieldsJson)> permissions,
         CancellationToken cancellationToken = default)
     {

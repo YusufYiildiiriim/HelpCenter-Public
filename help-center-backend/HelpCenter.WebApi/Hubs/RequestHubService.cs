@@ -19,12 +19,12 @@ namespace HelpCenter.WebApi.Hubs
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveMessage", messageData, cancellationToken);
         }
 
-        public async Task NotifyMessagesRead(string requestId, int userId, CancellationToken cancellationToken)
+        public async Task NotifyMessagesRead(string requestId, bool isAgent, CancellationToken cancellationToken)
         {
-            await _hubContext.Clients.Group(requestId).SendAsync("MessagesRead", userId, cancellationToken);
+            await _hubContext.Clients.Group(requestId).SendAsync("MessagesRead", new { requestId, isAgent }, cancellationToken);
         }
 
-        public Task NotifyRequestStatusChanged(string requestId, int statusId, string status, CancellationToken cancellationToken)
+        public Task NotifyRequestStatusChanged(string requestId, Guid statusId, string status, CancellationToken cancellationToken)
         {
             return _hubContext.Clients.Group(requestId).SendAsync("RequestStatusChanged",
                 new { RequestPublicId = requestId, StatusId = statusId, Status = status }, cancellationToken);

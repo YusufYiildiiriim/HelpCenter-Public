@@ -20,7 +20,7 @@ public class RequestStatusHubTests
             RequestStatusConstants.Completed, "Tamamlandı", default);
         await proxy.Received(1).SendCoreAsync("RequestStatusChanged", Arg.Is<object?[]>(args =>
             args.Length == 1 && args[0]!.GetType().GetProperty("RequestPublicId")!.GetValue(args[0])!.Equals(requestId)
-            && (int)args[0]!.GetType().GetProperty("StatusId")!.GetValue(args[0])! == RequestStatusConstants.Completed), default);
+            && args[0]!.GetType().GetProperty("StatusId")!.GetValue(args[0])!.Equals(RequestStatusConstants.Completed)), default);
         context.Clients.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "get_All");
     }
 }

@@ -99,7 +99,7 @@ public class AuthHandlerTests : HandlerTestBase
         var user = CreateTestUser("admin@test.com", "admin", "hashed_pwd");
         AssignRole(user, "Admin");
         _passwordService.VerifyPassword("Pass123!", "hashed_pwd").Returns(true);
-        _tokenService.IssueTokensAsync(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+        _tokenService.IssueTokensAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(new AuthTokens("access_token", DateTime.UtcNow.AddMinutes(15), "refresh_token", DateTime.UtcNow.AddDays(7)));
 
         var handler = new UserLoginQueryHandler(Uow, _passwordService, _tokenService);
@@ -322,7 +322,7 @@ public class AuthHandlerTests : HandlerTestBase
 
         result.Should().BeTrue();
         Db.Users.Should().ContainSingle(u => u.Account.Email == "newuser@test.com");
-        await _auditLog.Received(1).WriteAsync("UserRegistered", "User", Arg.Any<int>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
+        await _auditLog.Received(1).WriteAsync("UserRegistered", "User", Arg.Any<Guid>(), Arg.Any<object>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -391,7 +391,7 @@ public class AuthHandlerTests : HandlerTestBase
         var reader = new UserPermissionsReader(Uow);
         var handler = new GetVerifyStateQueryHandler(Uow, reader, NullLogger<GetVerifyStateQueryHandler>.Instance);
 
-        var result = await handler.Handle(new GetVerifyStateQuery(0), CancellationToken.None);
+        var result = await handler.Handle(new GetVerifyStateQuery(Guid.Empty), CancellationToken.None);
 
         result.Should().NotBeNull();
         result.IsPasswordChangeRequired.Should().BeFalse();

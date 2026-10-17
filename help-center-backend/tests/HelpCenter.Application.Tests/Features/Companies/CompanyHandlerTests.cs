@@ -102,7 +102,7 @@ public class CompanyHandlerTests : HandlerTestBase
         {
             PublicId = company.PublicId,
             Name = "Sync Company",
-            ModuleIds = new List<int> { mod1.Id, mod3.Id }
+            ModuleIds = new List<Guid> { mod1.Id, mod3.Id }
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

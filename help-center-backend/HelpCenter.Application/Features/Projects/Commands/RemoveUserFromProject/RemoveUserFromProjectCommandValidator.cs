@@ -6,6 +6,6 @@ public class RemoveUserFromProjectCommandValidator : AbstractValidator<RemoveUse
 {
     public RemoveUserFromProjectCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz atama ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz atama ID.");
     }
 }

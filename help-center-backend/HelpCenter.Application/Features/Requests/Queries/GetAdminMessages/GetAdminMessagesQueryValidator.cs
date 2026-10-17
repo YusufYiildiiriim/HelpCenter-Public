@@ -5,6 +5,6 @@ public class GetAdminMessagesQueryValidator : AbstractValidator<GetAdminMessages
     public GetAdminMessagesQueryValidator()
     {
         RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
-        RuleFor(x => x.BeforeId).GreaterThan(0).When(x => x.BeforeId.HasValue);
+        RuleFor(x => x.BeforeId).NotEmpty().When(x => x.BeforeId.HasValue);
     }
 }

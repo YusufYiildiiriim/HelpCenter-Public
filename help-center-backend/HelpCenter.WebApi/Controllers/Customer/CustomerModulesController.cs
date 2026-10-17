@@ -25,8 +25,8 @@ public class CustomerModulesController : ControllerBase
         var userIdStr = User.FindFirst(AppClaimTypes.UserId)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var companyIdStr = User.FindFirst(AppClaimTypes.CompanyId)?.Value;
 
-        int.TryParse(userIdStr, out int customerId);
-        int.TryParse(companyIdStr, out int companyId);
+        Guid.TryParse(userIdStr, out var customerId);
+        Guid.TryParse(companyIdStr, out var companyId);
 
         var response = await _mediator.Send(new GetCustomerModulesQuery
         {

@@ -5,7 +5,7 @@ public class PublicGuideDto
     public Guid PublicId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public int? ModuleId { get; set; }
+    public Guid? ModuleId { get; set; }
     public string Module { get; set; } = string.Empty;
     public string? YoutubeUrl { get; set; }
     public Guid? PreviousGuidePublicId { get; set; }

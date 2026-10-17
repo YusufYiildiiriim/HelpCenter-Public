@@ -6,7 +6,7 @@ public class AssignUserToProjectCommandValidator : AbstractValidator<AssignUserT
 {
     public AssignUserToProjectCommandValidator()
     {
-        RuleFor(x => x.ProjectId).GreaterThan(0).WithMessage("Geçersiz proje ID.");
-        RuleFor(x => x.UserId).GreaterThan(0).WithMessage("Geçersiz kullanıcı ID.");
+        RuleFor(x => x.ProjectId).NotEmpty().WithMessage("Geçersiz proje ID.");
+        RuleFor(x => x.UserId).NotEmpty().WithMessage("Geçersiz kullanıcı ID.");
     }
 }

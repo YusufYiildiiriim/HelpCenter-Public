@@ -21,7 +21,7 @@ public class Module : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SyncExperts(IEnumerable<int> userIds)
+    public void SyncExperts(IEnumerable<Guid> userIds)
     {
         // Remove experts not in the new list
         var toRemove = ModuleExperts.Where(x => !userIds.Contains(x.UserId) && !x.IsDeleted).ToList();
@@ -47,7 +47,7 @@ public class Module : BaseEntity
         }
     }
 
-    public void AddExpert(int userId)
+    public void AddExpert(Guid userId)
     {
         if (!ModuleExperts.Any(x => x.UserId == userId && !x.IsDeleted))
         {

@@ -74,7 +74,7 @@ public class AdminProjectsController : ControllerBase
 
     [HttpGet("{projectId}/users")]
     [HasPermission(AppResources.Projects, PermissionActions.Read)]
-    public async Task<IActionResult> GetUsers(int projectId)
+    public async Task<IActionResult> GetUsers(Guid projectId)
     {
         var response = await _mediator.Send(new GetUsersByProjectIdQuery(projectId));
         return Ok(response);
@@ -92,7 +92,7 @@ public class AdminProjectsController : ControllerBase
     [HttpDelete("remove-user/{id}")]
     [HasPermission(AppResources.Projects, PermissionActions.Update)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> RemoveUser(int id)
+    public async Task<IActionResult> RemoveUser(Guid id)
     {
         var response = await _mediator.Send(new RemoveUserFromProjectCommand(id));
         return Ok(response);

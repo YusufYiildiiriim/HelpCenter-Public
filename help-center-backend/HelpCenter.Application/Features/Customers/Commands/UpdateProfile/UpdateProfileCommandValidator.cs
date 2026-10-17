@@ -6,7 +6,7 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 {
     public UpdateProfileCommandValidator()
     {
-        RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Geçersiz müşteri.");
+        RuleFor(x => x.CustomerId).NotEmpty().WithMessage("Geçersiz müşteri.");
         RuleFor(x => x.FirstName).NotEmpty().WithMessage("Ad boş bırakılamaz.");
         RuleFor(x => x.LastName).NotEmpty().WithMessage("Soyad boş bırakılamaz.");
     }

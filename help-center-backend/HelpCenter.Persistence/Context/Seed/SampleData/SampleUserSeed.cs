@@ -17,7 +17,7 @@ public static class SampleUserSeed
         // Agent 1 (Unrestricted customer representative)
         new Account
         {
-            Id = 2,
+            PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2),
             Email = "agent1@helpcenter.com",
             Username = "agent1.user",
             FirstName = "Ali",
@@ -30,7 +30,7 @@ public static class SampleUserSeed
         // Agent 2 (Restricted customer representative - Only PRJ-1 and MOD-1)
         new Account
         {
-            Id = 3,
+            PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3),
             Email = "agent2@helpcenter.com",
             Username = "agent2.user",
             FirstName = "Berna",
@@ -43,7 +43,7 @@ public static class SampleUserSeed
         // Expert (Module technical expert - MOD-1 Accounting and MOD-4 API)
         new Account
         {
-            Id = 4,
+            PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4),
             Email = "expert@helpcenter.com",
             Username = "expert.user",
             FirstName = "Erol",
@@ -57,31 +57,31 @@ public static class SampleUserSeed
 
     public static IReadOnlyList<User> BuildUsers() =>
     [
-        new User { Id = 2, AccountId = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new User { Id = 3, AccountId = 3, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new User { Id = 4, AccountId = 4, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new User { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), AccountId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new User { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), AccountId = SeedIdentity.FromLegacyInt(3), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new User { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), AccountId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
     ];
 
     public static IReadOnlyList<UserRole> BuildUserRoles() =>
     [
-        new UserRole { Id = 2, UserId = 2, RoleId = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 1 -> Agent
-        new UserRole { Id = 3, UserId = 3, RoleId = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 2 -> Agent
-        new UserRole { Id = 4, UserId = 4, RoleId = 4, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }  // Expert -> Expert
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(2), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 1 -> Agent
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(3), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 2 -> Agent
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), RoleId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }  // Expert -> Expert
     ];
 
     // Expert assignments: User 4 -> Module 1 & Module 4
     public static IReadOnlyList<ModuleExpert> BuildModuleExperts() =>
     [
-        new ModuleExpert { Id = 1, ModuleId = 1, UserId = 4, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new ModuleExpert { Id = 2, ModuleId = 4, UserId = 4, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
     ];
 
     public static IReadOnlyList<UserProject> BuildUserProjects() =>
     [
-        new UserProject { Id = 1, UserId = 1, ProjectId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { Id = 2, UserId = 1, ProjectId = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { Id = 3, UserId = 2, ProjectId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { Id = 4, UserId = 2, ProjectId = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { Id = 5, UserId = 3, ProjectId = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(5), Id = SeedIdentity.FromLegacyInt(5), UserId = SeedIdentity.FromLegacyInt(3), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
     ];
 }

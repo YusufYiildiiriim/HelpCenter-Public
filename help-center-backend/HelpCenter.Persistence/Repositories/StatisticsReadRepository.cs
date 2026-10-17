@@ -78,7 +78,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         {
             rows.Add(new AgentPerformanceDto
             {
-                UserId = ToInt(reader["UserId"]),
+                UserId = ToGuid(reader["UserId"]),
                 FullName = reader["FullName"] as string ?? string.Empty,
                 Assigned = ToInt(reader["Assigned"]),
                 Completed = ToInt(reader["Completed"]),
@@ -182,7 +182,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         {
             rows.Add(new NameCountDto
             {
-                Id = ToInt(reader[idColumn]),
+                Id = ToGuid(reader[idColumn]),
                 Name = reader["Name"] as string ?? string.Empty,
                 Count = ToInt(reader["Count"])
             });
@@ -213,6 +213,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         return await command.ExecuteReaderAsync(cancellationToken);
     }
 
+    private static Guid ToGuid(object? value) => value is Guid id ? id : Guid.Parse(Convert.ToString(value)!);
     private static int ToInt(object? value) => value is null or DBNull ? 0 : Convert.ToInt32(value);
 
     private static long ToLong(object? value) => value is null or DBNull ? 0 : Convert.ToInt64(value);

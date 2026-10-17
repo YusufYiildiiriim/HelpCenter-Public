@@ -8,8 +8,8 @@ public class DataScopeService : IDataScopeService
 {
     private readonly IUnitOfWork _uow;
     private readonly IUserContext _userContext;
-    private int? _cachedUserId;
-    private List<int>? _cachedRoleIds;
+    private Guid? _cachedUserId;
+    private List<Guid>? _cachedRoleIds;
     private readonly Dictionary<string, HashSet<string>?> _allowedFieldsCache = new();
     private readonly Dictionary<string, bool> _permissionCache = new();
 
@@ -19,21 +19,21 @@ public class DataScopeService : IDataScopeService
         _userContext = userContext;
     }
 
-    public int CurrentUserId
+    public Guid CurrentUserId
     {
         get
         {
             var id = _userContext.UserId;
-            if (id > 0)
+            if (id != Guid.Empty)
             {
                 _cachedUserId = id;
                 return id;
             }
-            return _cachedUserId ?? 0;
+            return _cachedUserId ?? Guid.Empty;
         }
     }
 
-    private async Task<List<int>> GetRoleIdsAsync(CancellationToken ct)
+    private async Task<List<Guid>> GetRoleIdsAsync(CancellationToken ct)
     {
         if (_cachedRoleIds != null) return _cachedRoleIds;
 

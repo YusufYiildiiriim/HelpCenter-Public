@@ -13,7 +13,7 @@ public class ConversationReadService : IConversationReadService
         _efContext = efContext;
     }
 
-    public async Task<int> MarkMessagesAsReadAsync(int conversationId, bool readerIsAgent, CancellationToken cancellationToken = default)
+    public async Task<int> MarkMessagesAsReadAsync(Guid conversationId, bool readerIsAgent, CancellationToken cancellationToken = default)
     {
         var conversation = await _efContext.Conversations
             .Include(c => c.Messages)

@@ -7,13 +7,13 @@ namespace HelpCenter.Domain.Entities;
 /// </summary>
 public sealed class AuditLog
 {
-    public long Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>Machine-readable event type (e.g. "RoleCreated", "UserPasswordChanged").</summary>
     public string EventType { get; set; } = string.Empty;
 
     /// <summary>The user who performed the operation (null for system).</summary>
-    public int? ActorUserId { get; set; }
+    public Guid? ActorUserId { get; set; }
     public string? ActorEmail { get; set; }
 
     /// <summary>Source IP + user-agent — for forensics.</summary>
@@ -25,7 +25,7 @@ public sealed class AuditLog
 
     /// <summary>Target entity type (e.g. "Role") and id.</summary>
     public string? TargetType { get; set; }
-    public int? TargetId { get; set; }
+    public Guid? TargetId { get; set; }
 
     /// <summary>Diff of the change — optional for large payloads.</summary>
     public string? BeforeJson { get; set; }

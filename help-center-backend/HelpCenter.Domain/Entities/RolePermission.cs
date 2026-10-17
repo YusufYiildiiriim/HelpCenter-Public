@@ -5,7 +5,7 @@ namespace HelpCenter.Domain.Entities
 {
     public class RolePermission : BaseEntity
     {
-        public int RoleId { get; set; }
+        public Guid RoleId { get; set; }
         public string ResourceKey { get; set; } = string.Empty;
 
         /// <summary>

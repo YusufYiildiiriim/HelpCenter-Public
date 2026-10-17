@@ -24,17 +24,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Account", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -53,8 +50,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsPasswordChangeRequired")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -100,40 +97,19 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Accounts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "admin@helpcenter.com",
-                            FirstName = "Admin",
-                            IsActive = true,
-                            IsDeleted = false,
-                            IsPasswordChangeRequired = false,
-                            LastName = "User",
-                            Password = "$2a$11$pCDJIRu1tH/Ir19q7P0fv.1oiPQ4SLP6vOEYU5LjinQtMzn5eL3f2",
-                            PhoneNumber = "+90 000 000 0000",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
-                            Username = "admin.user"
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.AuditLog", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ActorEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int?>("ActorUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AfterJson")
                         .HasColumnType("nvarchar(max)");
@@ -160,8 +136,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("OccurredAt")
                         .HasColumnType("datetime2(3)");
 
-                    b.Property<int?>("TargetId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("TargetId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TargetType")
                         .HasMaxLength(100)
@@ -184,11 +160,8 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Company", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -220,8 +193,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -232,8 +205,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDemoActive")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Mail")
                         .IsRequired()
@@ -251,8 +224,8 @@ namespace HelpCenter.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -280,20 +253,17 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CompanyModule", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -301,11 +271,11 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -335,17 +305,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Conversation", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -353,8 +320,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -383,23 +350,20 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.ConversationParticipant", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -410,8 +374,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -430,8 +394,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -449,23 +413,20 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -473,8 +434,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -505,29 +466,26 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CustomerRequest", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("AssignedUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("CurrentExpertId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CurrentExpertId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -539,11 +497,11 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Priority")
                         .HasColumnType("int");
@@ -553,8 +511,8 @@ namespace HelpCenter.Persistence.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<int?>("RequestSubjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("RequestSubjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -562,8 +520,8 @@ namespace HelpCenter.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("StatusId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TicketId")
                         .IsRequired()
@@ -600,27 +558,24 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CustomerRequestEvaluation", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CustomerRequestId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CustomerRequestId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CustomerUserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CustomerUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -628,8 +583,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NewStatus")
                         .IsRequired()
@@ -672,20 +627,17 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CustomerRequestMessage", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -696,8 +648,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MessageText")
                         .IsRequired()
@@ -714,8 +666,8 @@ namespace HelpCenter.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("SenderParticipantId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("SenderParticipantId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -737,23 +689,20 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CustomerRequestMessageDocument", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CustomerRequestId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CustomerRequestId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("CustomerRequestMessageId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CustomerRequestMessageId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -765,8 +714,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -800,17 +749,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.CustomerRequestStatus", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -822,15 +768,15 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -854,74 +800,25 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("CustomerRequestStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Kullanıcıdan gelen talep cevaplanmayı bekliyor.",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Cevap Bekliyor",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Talep bir temsilci tarafından cevaplandı.",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Cevaplandı",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Talep başarıyla kapatıldı.",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Tamamlandı",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Talep bir uzman tarafından inceleniyor.",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Teknik İncelemede",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Document", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GuideId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("GuideId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -929,8 +826,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -962,17 +859,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.FAQ", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -987,14 +881,14 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1028,17 +922,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Guide", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1053,21 +944,21 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Module")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("PreviousGuideId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("PreviousGuideId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1108,17 +999,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.MenuItem", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("GroupTitle")
                         .HasColumnType("nvarchar(max)");
@@ -1137,14 +1025,14 @@ namespace HelpCenter.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1176,222 +1064,18 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("MenuItems");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 15,
-                            CreatedAt = new DateTime(2026, 10, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "ClipboardList",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Denetim Kayıtları",
-                            Order = 15,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "AuditLogs",
-                            Route = "/admin/settings/audit-logs",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            GroupTitle = "Talep Takip",
-                            Icon = "BarChart3",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "İstatistikler",
-                            Order = 1,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Dashboard",
-                            Route = "/admin",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "ClipboardList",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Talepler",
-                            Order = 2,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Requests",
-                            Route = "/admin/requests",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "Inbox",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Bana Atananlar",
-                            Order = 3,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "AssignedRequests",
-                            Route = "/admin/requests/assigned",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            GroupTitle = "Tanımlamalar",
-                            Icon = "Building2",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Firmalar",
-                            Order = 4,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Companies",
-                            Route = "/admin/companies",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "FolderKanban",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Projeler",
-                            Order = 5,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Projects",
-                            Route = "/admin/projects",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "Users",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Kullanıcılar",
-                            Order = 6,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Users",
-                            Route = "/admin/users",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "HelpCircle",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "SSS Yönetimi",
-                            Order = 7,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "FAQ",
-                            Route = "/admin/ss",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "BookOpen",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Kullanım Kılavuzu",
-                            Order = 8,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Guide",
-                            Route = "/admin/guide",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            GroupTitle = "Sistem Ayarları",
-                            Icon = "ShieldCheck",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Rol ve Yetkiler",
-                            Order = 10,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Roles",
-                            Route = "/admin/settings/roles",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "LayoutGrid",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Departman Modülleri",
-                            Order = 11,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Modules",
-                            Route = "/admin/modules",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "MessageSquare",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Talep Konuları",
-                            Order = 12,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Subjects",
-                            Route = "/admin/subjects",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "LayoutList",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Talep Durumları",
-                            Order = 13,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Statuses",
-                            Route = "/admin/statuses",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CreatedAt = new DateTime(2026, 8, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Icon = "Building2",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Label = "Kurum Bilgileri",
-                            Order = 14,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "OrganizationSettings",
-                            Route = "/admin/settings/organization",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Module", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1406,8 +1090,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1437,17 +1121,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.ModuleExpert", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1455,11 +1136,11 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1475,8 +1156,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -1492,11 +1173,8 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.OrganizationInfo", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
@@ -1504,8 +1182,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .HasMaxLength(200)
@@ -1520,8 +1198,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(500)
@@ -1568,38 +1246,18 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("OrganizationInfos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "info@helpcenter.com",
-                            IsActive = true,
-                            IsDeleted = false,
-                            OrganizationName = "Help Center",
-                            Phone = "+90 (212) 555 0100",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
-                            TaxNumber = "1234567890",
-                            TaxOffice = "Maslak V.D.",
-                            Website = "https://helpcenter.com"
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Project", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1611,8 +1269,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1642,17 +1300,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.ProjectModule", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1660,14 +1315,14 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1697,11 +1352,8 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.RefreshToken", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2(3)");
@@ -1710,8 +1362,8 @@ namespace HelpCenter.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime2(3)");
@@ -1740,8 +1392,8 @@ namespace HelpCenter.Persistence.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -1757,23 +1409,20 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.RequestHistory", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Action")
                         .HasColumnType("int");
 
-                    b.Property<int>("ActorAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ActorAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1781,8 +1430,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NewValue")
                         .HasColumnType("nvarchar(max)");
@@ -1798,8 +1447,8 @@ namespace HelpCenter.Persistence.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<int>("RequestId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1824,17 +1473,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.RequestSubject", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1849,18 +1495,18 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("ModuleId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -1890,17 +1536,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Role", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -1911,8 +1554,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1938,61 +1581,12 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Süper Admin - Tam yetki",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Admin",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Müşteri Temsilcisi - Talep ve firma okuma/yönetme",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Agent",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Son Kullanıcı - Talep oluşturma ve mesajlaşma",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Customer",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Yetkili Kişi - Modül uzmanı, yalnızca atanan talepleri inceler",
-                            IsActive = true,
-                            IsDeleted = false,
-                            Name = "Expert",
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.RolePermission", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AllowedFieldsJson")
                         .HasColumnType("nvarchar(max)");
@@ -2000,8 +1594,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2009,8 +1603,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -2021,8 +1615,8 @@ namespace HelpCenter.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -2041,249 +1635,12 @@ namespace HelpCenter.Persistence.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("RolePermissions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Dashboard",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Requests",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Companies",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Users",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "FAQ",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Guide",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Roles",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Modules",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Subjects",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Statuses",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "AssignedRequests",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Customers",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "CustomerRequests",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 15,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Projects",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "OrganizationSettings",
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 20,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Requests",
-                            RoleId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 21,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "AssignedRequests",
-                            RoleId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 22,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Companies",
-                            RoleId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 23,
-                            AllowedFieldsJson = "[\"statusDistribution\",\"dailyTrend\"]",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "Dashboard",
-                            RoleId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 30,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "CustomerRequests",
-                            RoleId = 3,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 40,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            ResourceKey = "AssignedRequests",
-                            RoleId = 4,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.RolePermissionAction", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Action")
                         .IsRequired()
@@ -2292,8 +1649,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2301,16 +1658,16 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<int>("RolePermissionId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RolePermissionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -2330,433 +1687,21 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("RolePermissionActions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 2,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 3,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 3,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 3,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 3,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 4,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 4,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 4,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 4,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 8,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 8,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 8,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 8,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 9,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 19,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 9,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 20,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 9,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 21,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 9,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 22,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 15,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 23,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 15,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 24,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 15,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 25,
-                            Action = "Delete",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 15,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 26,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 16,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 27,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 16,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 50,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 20,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 51,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 20,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 52,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 21,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 53,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 22,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 54,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 23,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 70,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 30,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 71,
-                            Action = "Create",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 30,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 72,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 30,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 80,
-                            Action = "Read",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 40,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        },
-                        new
-                        {
-                            Id = 81,
-                            Action = "Update",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RolePermissionId = 40,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2764,8 +1709,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -2790,33 +1735,18 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AccountId = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.UserProject", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2824,11 +1754,11 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
@@ -2844,8 +1774,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -2861,17 +1791,14 @@ namespace HelpCenter.Persistence.Migrations
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.UserRole", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2879,16 +1806,16 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LastModifiedByAccountId")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -2899,8 +1826,8 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -2912,19 +1839,6 @@ namespace HelpCenter.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            IsActive = true,
-                            IsDeleted = false,
-                            PublicId = new Guid("00000000-0000-0000-0000-000000000000"),
-                            RoleId = 1,
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 },
-                            UserId = 1
-                        });
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Company", b =>

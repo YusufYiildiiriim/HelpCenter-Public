@@ -5,9 +5,9 @@ namespace HelpCenter.Application.Features.Requests.Commands.MarkMessagesRead;
 
 public static class MarkMessagesReadRules
 {
-    public static void ReaderShouldBeAuthenticated(bool authenticated, int userId)
+    public static void ReaderShouldBeAuthenticated(bool authenticated, Guid userId)
     {
-        if (!authenticated || userId <= 0)
+        if (!authenticated || userId == Guid.Empty)
             throw new UnauthorizedException("Kimlik doğrulaması gerekli.");
     }
 
@@ -22,7 +22,7 @@ public static class MarkMessagesReadRules
         if (request == null || request.IsDeleted) throw new RequestNotFoundException();
     }
 
-    public static void RequestShouldBelongToCustomer(CustomerRequest request, int customerId)
+    public static void RequestShouldBelongToCustomer(CustomerRequest request, Guid customerId)
     {
         if (request.CustomerId != customerId) throw new RequestNotBelongToCustomerException();
     }

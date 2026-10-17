@@ -15,5 +15,5 @@ public interface IDataScopeService
     /// </summary>
     Task<bool> HasPermissionAsync(string resourceKey, string action, CancellationToken ct = default);
 
-    int CurrentUserId { get; }
+    Guid CurrentUserId { get; }
 }

@@ -30,7 +30,7 @@ public class UpdateProjectRules
     /// <summary>
     /// Verifies that the project name is unique.
     /// </summary>
-    public async Task ProjectNameShouldBeUniqueAsync(string name, int? currentProjectId, CancellationToken cancellationToken)
+    public async Task ProjectNameShouldBeUniqueAsync(string name, Guid? currentProjectId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<Project>()
             .FindAsync(p => p.Name == name && (currentProjectId == null || p.Id != currentProjectId.Value), cancellationToken);

@@ -18,10 +18,10 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
 
     public async Task<List<CustomerModuleDto>> Handle(GetCustomerModulesQuery request, CancellationToken cancellationToken)
     {
-        int targetCompanyId = request.CompanyId;
-        int? targetProjectId = null;
+        Guid targetCompanyId = request.CompanyId;
+        Guid? targetProjectId = null;
 
-        if (targetCompanyId == 0 && request.CustomerId > 0)
+        if (targetCompanyId == Guid.Empty && request.CustomerId != Guid.Empty)
         {
             var customer = (await _unitOfWork.Repository<Customer>()
                 .FindAsync(x => x.Id == request.CustomerId, cancellationToken, c => c.Company))
@@ -33,14 +33,14 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
                 targetProjectId = customer.Company.ProjectId;
             }
         }
-        else if (targetCompanyId > 0)
+        else if (targetCompanyId != Guid.Empty)
         {
             var company = await _unitOfWork.Repository<Company>()
                 .GetAsync(targetCompanyId, cancellationToken);
             targetProjectId = company?.ProjectId;
         }
 
-        if (targetCompanyId == 0)
+        if (targetCompanyId == Guid.Empty)
         {
             return new List<CustomerModuleDto>();
         }

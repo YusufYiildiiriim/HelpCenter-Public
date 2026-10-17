@@ -7,33 +7,33 @@ namespace HelpCenter.Domain.Entities
     public class CustomerRequest : BaseEntity
     {
         public string TicketId { get; set; } = string.Empty;
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public virtual Customer Customer { get; set; } = null!;
         public string Title { get; set; } = string.Empty;
-        public int? RequestSubjectId { get; set; }
+        public Guid? RequestSubjectId { get; set; }
         public virtual RequestSubject? RequestSubject { get; set; }
-        public int? ModuleId { get; set; }
+        public Guid? ModuleId { get; set; }
         public virtual Module? Module { get; set; }
         public string Description { get; set; } = string.Empty;
 
         public RequestPriority Priority { get; set; } = RequestPriority.Low;
-        public int? AssignedUserId { get; set; }
+        public Guid? AssignedUserId { get; set; }
         public virtual User? AssignedUser { get; set; }
 
-        public int? CurrentExpertId { get; set; }
+        public Guid? CurrentExpertId { get; set; }
         public virtual User? CurrentExpert { get; set; }
 
-        public int? ConversationId { get; set; }
+        public Guid? ConversationId { get; set; }
         public virtual Conversation? Conversation { get; set; }
 
         public virtual ICollection<CustomerRequestMessageDocument> Documents { get; set; } = new HashSet<CustomerRequestMessageDocument>();
         public virtual ICollection<CustomerRequestEvaluation> Actions { get; set; } = new HashSet<CustomerRequestEvaluation>();
         public virtual ICollection<RequestHistory> Histories { get; set; } = new HashSet<RequestHistory>();
 
-        public int StatusId { get; set; }
+        public Guid StatusId { get; set; }
         public virtual CustomerRequestStatus Status { get; set; } = null!;
 
-        public static CustomerRequest Create(int customerId, int? moduleId, int? requestSubjectId, string title, RequestPriority priority, string customerFullName = "")
+        public static CustomerRequest Create(Guid customerId, Guid? moduleId, Guid? requestSubjectId, string title, RequestPriority priority, string customerFullName = "")
         {
             var request = new CustomerRequest
             {
@@ -50,7 +50,7 @@ namespace HelpCenter.Domain.Entities
         }
 
         // Rich Domain Logic
-        public void AssignAgent(int agentId, int actorAccountId, string? note = null)
+        public void AssignAgent(Guid agentId, Guid actorAccountId, string? note = null)
         {
             string? oldAgent = AssignedUserId?.ToString();
             AssignedUserId = agentId;
@@ -59,11 +59,11 @@ namespace HelpCenter.Domain.Entities
             AddHistory(actorAccountId, RequestActionType.Assigned, oldAgent, agentId.ToString(), note);
         }
 
-        public void AssignExpert(int expertId, int actorAccountId, string expertEmail, string expertFullName, string agentFullName, string? note = null)
+        public void AssignExpert(Guid expertId, Guid actorAccountId, string expertEmail, string expertFullName, string agentFullName, string? note = null)
         {
             string? oldExpert = CurrentExpertId?.ToString();
             CurrentExpertId = expertId;
-            int oldStatus = StatusId;
+            Guid oldStatus = StatusId;
             StatusId = RequestStatusConstants.UnderTechnicalReview;
             UpdatedAt = DateTime.UtcNow;
 
@@ -76,16 +76,16 @@ namespace HelpCenter.Domain.Entities
             RaiseDomainEvent(new ExpertAssignedEvent(expertEmail, expertFullName, agentFullName, Title));
         }
 
-        public void Complete(int actorAccountId, string? note = null)
+        public void Complete(Guid actorAccountId, string? note = null)
         {
-            int oldStatus = StatusId;
+            Guid oldStatus = StatusId;
             StatusId = RequestStatusConstants.Completed;
             UpdatedAt = DateTime.UtcNow;
 
             AddHistory(actorAccountId, RequestActionType.StatusChanged, oldStatus.ToString(), StatusId.ToString(), note ?? "Talep Tamamlandı");
         }
 
-        public void ChangePriority(RequestPriority priority, int actorAccountId, string? note = null)
+        public void ChangePriority(RequestPriority priority, Guid actorAccountId, string? note = null)
         {
             string oldPriority = Priority.ToString();
             Priority = priority;
@@ -94,9 +94,9 @@ namespace HelpCenter.Domain.Entities
             AddHistory(actorAccountId, RequestActionType.PriorityUpdated, oldPriority, priority.ToString(), note);
         }
 
-        public void SetStatus(int statusId, int? actorAccountId = null, string? note = null)
+        public void SetStatus(Guid statusId, Guid? actorAccountId = null, string? note = null)
         {
-            int oldStatus = StatusId;
+            Guid oldStatus = StatusId;
             StatusId = statusId;
             UpdatedAt = DateTime.UtcNow;
 
@@ -106,7 +106,7 @@ namespace HelpCenter.Domain.Entities
             }
         }
 
-        public void AddHistory(int actorAccountId, RequestActionType action, string? oldValue = null, string? newValue = null, string? note = null)
+        public void AddHistory(Guid actorAccountId, RequestActionType action, string? oldValue = null, string? newValue = null, string? note = null)
         {
             Histories.Add(new RequestHistory
             {

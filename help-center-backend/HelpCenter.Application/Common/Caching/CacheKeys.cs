@@ -21,13 +21,13 @@ public static class CacheKeys
     /// Page/pageSize are part of the key: the page/limit combination is finite and predictable,
     /// so there is no cache cardinality risk (the real risk is free-text search, which never enters the cache).
     /// </summary>
-    public static string PublicFaqs(int? projectId, int? moduleId, int pageNumber, int pageSize) =>
+    public static string PublicFaqs(Guid? projectId, Guid? moduleId, int pageNumber, int pageSize) =>
         $"{PublicFaqsPrefix}:{projectId?.ToString() ?? "all"}:{moduleId?.ToString() ?? "all"}:{pageNumber}:{pageSize}";
 
-    public static string PublicModules(int? projectId) => $"{PublicModulesPrefix}:{projectId?.ToString() ?? "all"}";
+    public static string PublicModules(Guid? projectId) => $"{PublicModulesPrefix}:{projectId?.ToString() ?? "all"}";
 
     /// <summary>Only called for requests without search (Search empty) — see GetPublicGuidesQueryHandler.</summary>
-    public static string PublicGuides(int? projectId, string? module, int pageNumber, int pageSize) =>
+    public static string PublicGuides(Guid? projectId, string? module, int pageNumber, int pageSize) =>
         $"{PublicGuidesPrefix}:{projectId?.ToString() ?? "all"}:{module ?? "all"}:{pageNumber}:{pageSize}";
     public static string OrganizationInfoPublic() => $"{OrganizationInfoPrefix}:public";
     public static string OrganizationInfoAdmin() => $"{OrganizationInfoPrefix}:admin";

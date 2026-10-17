@@ -58,7 +58,7 @@ public class MarkMessagesReadCommandHandler : IRequestHandler<MarkMessagesReadCo
 
         if (markedCount == 0) return true;
 
-        await _hubService.NotifyMessagesRead(request.RequestPublicId.ToString(), request.IsAgent ? 1 : 0, cancellationToken);
+        await _hubService.NotifyMessagesRead(request.RequestPublicId.ToString(), request.IsAgent, cancellationToken);
 
         return true;
     }

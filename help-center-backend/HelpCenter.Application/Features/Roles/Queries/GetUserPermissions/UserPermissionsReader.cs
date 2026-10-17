@@ -18,7 +18,7 @@ public sealed class UserPermissionsReader
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<UserPermissionsDto> ReadAsync(int userId, CancellationToken cancellationToken)
+    public async Task<UserPermissionsDto> ReadAsync(Guid userId, CancellationToken cancellationToken)
     {
         // Previously the full role graph was fetched with a "Role.RolePermissions.Actions" string-path
         // Include and flattened on the C# side. Now only the (ResourceKey, Actions) pairs are projected

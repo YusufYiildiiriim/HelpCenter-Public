@@ -2,4 +2,4 @@ using MediatR;
 
 namespace HelpCenter.Application.Features.Faqs.Queries.GetCustomerFaqs;
 
-public record GetCustomerFaqsQuery(int? ProjectId = null, int? ModuleId = null) : IRequest<List<CustomerFaqDto>>;
+public record GetCustomerFaqsQuery(Guid? ProjectId = null, Guid? ModuleId = null) : IRequest<List<CustomerFaqDto>>;

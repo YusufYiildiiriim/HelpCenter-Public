@@ -15,10 +15,8 @@ public class AssignUserToProjectCommandHandler : IRequestHandler<AssignUserToPro
 
     public async Task<bool> Handle(AssignUserToProjectCommand request, CancellationToken cancellationToken)
     {
-        var projects = await _unitOfWork.Repository<Project>()
-            .FindAsync(x => x.Id == request.ProjectId, cancellationToken, x => x.UserProjects);
-
-        var project = projects.FirstOrDefault();
+        var project = await _unitOfWork.Repository<Project>()
+            .FirstOrDefaultAsync(x => x.Id == request.ProjectId, asTracking: true, cancellationToken, x => x.UserProjects);
         AssignUserToProjectRules.ProjectShouldExist(project);
 
         var user = await _unitOfWork.Repository<User>().GetAsync(request.UserId, cancellationToken);

@@ -26,8 +26,8 @@ public class AuditLogEndpointsTests(SqlServerWebApplicationFactory factory)
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<EfContext>();
-            db.AuditLogs.AddRange(new AuditLog { EventType = marker, ActorUserId = allowed.UserId, ActorEmail = "private@example.test", IpAddress = "private-ip", BeforeJson = "secret-before", MetadataJson = "secret-metadata", TargetType = "Role", TargetId = 123 },
-                new AuditLog { EventType = marker, ActorUserId = allowed.UserId, TargetType = "Role", TargetId = 456 });
+            db.AuditLogs.AddRange(new AuditLog { EventType = marker, ActorUserId = allowed.UserId, ActorEmail = "private@example.test", IpAddress = "private-ip", BeforeJson = "secret-before", MetadataJson = "secret-metadata", TargetType = "Role", TargetId = Guid.NewGuid() },
+                new AuditLog { EventType = marker, ActorUserId = allowed.UserId, TargetType = "Role", TargetId = Guid.NewGuid() });
             await db.SaveChangesAsync();
         }
         var response = await client.GetAsync($"/api/admin/audit-logs?eventType={marker}&actorUserId={allowed.UserId}&targetType=Role&pageSize=1&pageNumber=1");

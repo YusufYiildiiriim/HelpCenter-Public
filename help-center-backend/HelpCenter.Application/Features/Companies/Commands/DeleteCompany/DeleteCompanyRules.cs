@@ -31,7 +31,7 @@ public class DeleteCompanyRules
     /// Verifies the company cannot be deleted while it has (any customer's) support
     /// requests attached to it.
     /// </summary>
-    public async Task CompanyShouldNotHaveActiveRequestsAsync(int companyId, CancellationToken cancellationToken)
+    public async Task CompanyShouldNotHaveActiveRequestsAsync(Guid companyId, CancellationToken cancellationToken)
     {
         var hasRequests = await _unitOfWork.Repository<CustomerRequest>()
             .AnyAsync(r => r.Customer.CompanyId == companyId, cancellationToken: cancellationToken);

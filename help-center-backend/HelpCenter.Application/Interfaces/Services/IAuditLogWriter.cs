@@ -12,14 +12,14 @@ public interface IAuditLogWriter
     Task WriteAsync(
         string eventType,
         string targetType,
-        int? targetId,
+        Guid? targetId,
         object? metadata = null,
         CancellationToken ct = default);
 
     Task WriteDiffAsync(
         string eventType,
         string targetType,
-        int targetId,
+        Guid targetId,
         object? before,
         object? after,
         CancellationToken ct = default);

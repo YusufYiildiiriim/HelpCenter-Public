@@ -8,6 +8,6 @@ public class GetFaqsQuery : IRequest<PaginatedResponse<FaqDto>>
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
     public string? Search { get; set; }
-    public int? ProjectId { get; set; }
-    public int? ModuleId { get; set; }
+    public Guid? ProjectId { get; set; }
+    public Guid? ModuleId { get; set; }
 }

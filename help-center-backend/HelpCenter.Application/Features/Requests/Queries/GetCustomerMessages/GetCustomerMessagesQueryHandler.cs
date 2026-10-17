@@ -6,8 +6,8 @@ using MediatR;
 namespace HelpCenter.Application.Features.Requests.Queries.GetCustomerMessages;
 
 public sealed record CustomerMessagesTicketSummary(
-    int CustomerId,
-    int? ConversationId,
+    Guid CustomerId,
+    Guid? ConversationId,
     string? CustomerFirstName,
     string? CustomerLastName,
     bool CustomerHasAccount);

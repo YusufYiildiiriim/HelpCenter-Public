@@ -320,7 +320,7 @@ public class RequestHandlerTests : HandlerTestBase
         var queue = await assigned.Handle(new(), CancellationToken.None);
         queue.Items.Should().Contain(x => x.PublicId == req.PublicId && x.CurrentExpertName == "Exp E");
         // AssignedUser is the handling agent; consultation is tracked separately by CurrentExpert.
-        expertContext.UserId.Returns(expertUser.Id + agentUser.Id + 100);
+        expertContext.UserId.Returns(Guid.NewGuid());
         (await assigned.Handle(new(), CancellationToken.None)).Items.Should().NotContain(x => x.PublicId == req.PublicId);
 
         // Re-read persisted state after consultation, then send one customer message.
@@ -340,7 +340,7 @@ public class RequestHandlerTests : HandlerTestBase
         afterMessage.CurrentExpertId.Should().Be(expertUser.Id);
         Db.CustomerRequestMessages.Should().ContainSingle(m => m.MessageText == "Additional investigation details");
         await _hubService.Received().NotifyNewMessage(req.PublicId.ToString(),
-            Arg.Is<object>(payload => (int)payload.GetType().GetProperty("StatusId")!.GetValue(payload)! == RequestStatusConstants.UnderTechnicalReview),
+            Arg.Is<object>(payload => payload.GetType().GetProperty("StatusId")!.GetValue(payload)!.Equals(RequestStatusConstants.UnderTechnicalReview)),
             MessageType.Public, Arg.Any<CancellationToken>());
     }
 }

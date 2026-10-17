@@ -15,10 +15,8 @@ public class AssignExpertToModuleCommandHandler : IRequestHandler<AssignExpertTo
 
     public async Task<bool> Handle(AssignExpertToModuleCommand request, CancellationToken cancellationToken)
     {
-        var modules = await _unitOfWork.Repository<Module>()
-            .FindAsync(x => x.Id == request.ModuleId, cancellationToken, x => x.ModuleExperts);
-
-        var module = modules.FirstOrDefault();
+        var module = await _unitOfWork.Repository<Module>()
+            .FirstOrDefaultAsync(x => x.Id == request.ModuleId, asTracking: true, cancellationToken, x => x.ModuleExperts);
         AssignExpertToModuleRules.ModuleShouldExist(module);
 
         var user = await _unitOfWork.Repository<User>().GetAsync(request.UserId, cancellationToken);

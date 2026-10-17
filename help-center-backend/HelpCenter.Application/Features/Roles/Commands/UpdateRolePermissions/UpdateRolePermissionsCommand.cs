@@ -4,7 +4,7 @@ namespace HelpCenter.Application.Features.Roles.Commands.UpdateRolePermissions;
 
 public class UpdateRolePermissionsCommand : IRequest<bool>
 {
-    public int RoleId { get; set; }
+    public Guid RoleId { get; set; }
     public List<UpdateRolePermissionDto> Permissions { get; set; } = new();
 }
 

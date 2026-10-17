@@ -14,7 +14,7 @@ namespace HelpCenter.Application.Features.Requests.Queries.GetAdminMessages;
 /// code but never read) is also gone.
 /// </summary>
 public sealed record AdminMessagesTicketSummary(
-    int? ConversationId,
+    Guid? ConversationId,
     string? CustomerFirstName,
     string? CustomerLastName,
     bool CustomerHasAccount);

@@ -30,7 +30,7 @@ public class UpdateUserRules
     /// <summary>
     /// Verifies that the email address is not used by another account (excluding the user's own account).
     /// </summary>
-    public async Task EmailShouldBeUniqueAsync(string email, int currentAccountId, CancellationToken cancellationToken)
+    public async Task EmailShouldBeUniqueAsync(string email, Guid currentAccountId, CancellationToken cancellationToken)
     {
         var exists = await _unitOfWork.Repository<Account>()
             .AnyAsync(x => x.Email == email && x.Id != currentAccountId, cancellationToken: cancellationToken);
@@ -43,7 +43,7 @@ public class UpdateUserRules
     /// <summary>
     /// Verifies that the username is not used by another account (excluding the user's own account).
     /// </summary>
-    public async Task UsernameShouldBeUniqueAsync(string username, int currentAccountId, CancellationToken cancellationToken)
+    public async Task UsernameShouldBeUniqueAsync(string username, Guid currentAccountId, CancellationToken cancellationToken)
     {
         var exists = await _unitOfWork.Repository<Account>()
             .AnyAsync(x => x.Username == username && x.Id != currentAccountId, cancellationToken: cancellationToken);

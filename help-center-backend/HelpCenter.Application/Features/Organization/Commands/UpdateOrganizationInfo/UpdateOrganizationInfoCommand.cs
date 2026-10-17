@@ -4,7 +4,7 @@ namespace HelpCenter.Application.Features.Organization.Commands.UpdateOrganizati
 
 public class UpdateOrganizationInfoCommand : IRequest<bool>
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string OrganizationName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? Email { get; set; }

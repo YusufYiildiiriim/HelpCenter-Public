@@ -16,11 +16,11 @@ public sealed class RepositoryContractTests
         await connection.OpenAsync();
         using var db = new EfContext(new DbContextOptionsBuilder<EfContext>().UseSqlite(connection).Options);
         await db.Database.EnsureCreatedAsync();
-        db.AuditLogs.AddRange(new AuditLog { Id = 3000000001, EventType = "Second" }, new AuditLog { Id = 3000000000, EventType = "First" });
+        db.AuditLogs.AddRange(new AuditLog { Id = TestIds.FromInt(2), EventType = "Second" }, new AuditLog { Id = TestIds.FromInt(1), EventType = "First" });
         await db.SaveChangesAsync();
         var repo = new GenericRepository<AuditLog>(db);
         var page = await repo.GetPaginatedAsync(null, 1, 1);
-        Assert.Equal(3000000000L, Assert.Single(page.Items).Id);
+        Assert.Equal(TestIds.FromInt(1), Assert.Single(page.Items).Id);
         var projected = await repo.GetPaginatedProjectedAsync(null, item => item.EventType, 2, 1);
         Assert.Equal("Second", Assert.Single(projected.Items));
         await Assert.ThrowsAsync<NotSupportedException>(() => repo.SoftDeleteRangeAsync(_ => true));

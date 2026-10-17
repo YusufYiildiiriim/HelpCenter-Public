@@ -2,7 +2,7 @@ namespace HelpCenter.Application.Features.Organization.Queries.GetOrganizationIn
 
 public class OrganizationInfoDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string OrganizationName { get; set; } = string.Empty;
     public string? LogoUrl { get; set; }
     public string? Phone { get; set; }

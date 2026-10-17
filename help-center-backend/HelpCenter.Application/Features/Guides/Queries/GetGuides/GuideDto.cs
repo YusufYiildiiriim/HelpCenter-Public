@@ -2,11 +2,11 @@ namespace HelpCenter.Application.Features.Guides.Queries.GetGuides;
 
 public class GuideDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public int? PreviousGuideId { get; set; }
-    public int? ModuleId { get; set; }
+    public Guid? PreviousGuideId { get; set; }
+    public Guid? ModuleId { get; set; }
     public string Module { get; set; } = string.Empty;
     public string? YoutubeUrl { get; set; }
     public int DocumentCount { get; set; }

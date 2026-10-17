@@ -55,7 +55,7 @@ public class AdminFaqController : ControllerBase
     [HttpDelete("delete-faq/{id}")]
     [HasPermission(AppResources.FAQ, PermissionActions.Delete)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var response = await _mediator.Send(new DeleteFaqCommand(id));
         return Ok(response);

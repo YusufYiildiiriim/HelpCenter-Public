@@ -80,7 +80,7 @@ public class RoleHandlerTests : HandlerTestBase
     {
         var role = new Role { Name = "Assigned Role", CreatedAt = DateTime.UtcNow };
         Db.Roles.Add(role);
-        var userRole = new UserRole { Role = role, UserId = 1, CreatedAt = DateTime.UtcNow };
+        var userRole = new UserRole { Role = role, UserId = HelpCenter.Application.Tests.TestIds.FromInt(1), CreatedAt = DateTime.UtcNow };
         Db.UserRoles.Add(userRole);
         await Db.SaveChangesAsync();
         Db.ChangeTracker.Clear();

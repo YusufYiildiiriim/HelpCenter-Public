@@ -97,7 +97,7 @@ public class AdminRequestsController : ControllerBase
 
     [HttpGet("{requestPublicId}/messages")]
     [HasPermission(AppResources.Requests, PermissionActions.Read)]
-    public async Task<IActionResult> GetMessages(Guid requestPublicId, [FromQuery] int pageSize = 20, [FromQuery] int? beforeId = null)
+    public async Task<IActionResult> GetMessages(Guid requestPublicId, [FromQuery] int pageSize = 20, [FromQuery] Guid? beforeId = null)
     {
         var response = await _mediator.Send(new GetAdminMessagesQuery { RequestPublicId = requestPublicId, PageSize = pageSize, BeforeId = beforeId });
         return Ok(response);
@@ -105,7 +105,7 @@ public class AdminRequestsController : ControllerBase
 
     [HttpGet("assigned/{requestPublicId}/messages")]
     [HasPermission(AppResources.AssignedRequests, PermissionActions.Read)]
-    public async Task<IActionResult> GetAssignedMessages(Guid requestPublicId, [FromQuery] int pageSize = 20, [FromQuery] int? beforeId = null)
+    public async Task<IActionResult> GetAssignedMessages(Guid requestPublicId, [FromQuery] int pageSize = 20, [FromQuery] Guid? beforeId = null)
     {
         var response = await _mediator.Send(new GetAdminMessagesQuery
         {

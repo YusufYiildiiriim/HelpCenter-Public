@@ -19,7 +19,7 @@ public class CreateRequestSubjectRules
     /// <summary>
     /// Verifies that the subject name is unique.
     /// </summary>
-    public async Task SubjectNameShouldBeUniqueAsync(string name, int? currentSubjectId, CancellationToken cancellationToken)
+    public async Task SubjectNameShouldBeUniqueAsync(string name, Guid? currentSubjectId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<RequestSubject>()
             .FindAsync(s => s.Name == name && (currentSubjectId == null || s.Id != currentSubjectId.Value), cancellationToken);

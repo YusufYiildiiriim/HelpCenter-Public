@@ -27,6 +27,9 @@ namespace HelpCenter.Persistence.ServiceRegistration
             services.AddScoped<IRequestCsvExportService, HelpCenter.Persistence.Services.RequestCsvExportService>();
             services.AddScoped<IRolePermissionSyncService, HelpCenter.Persistence.Services.RolePermissionSyncService>();
 
+            // Required system metadata runs in all environments, before optional sample data.
+            services.AddHostedService<HelpCenter.Persistence.Services.SystemDefaultsSeedHostedService>();
+
             // Only runs in Development/Staging, adds sample/demo data idempotently
             // (see SampleDataSeedHostedService — never leaks into production).
             services.AddHostedService<HelpCenter.Persistence.Services.SampleDataSeedHostedService>();

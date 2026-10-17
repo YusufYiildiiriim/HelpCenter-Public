@@ -9,7 +9,7 @@ namespace HelpCenter.Application.Features.Guides.Queries.GetPublicGuides;
 /// (GuideReaderModal forward/back navigation and the mind map). The default (grid) view is paged.
 /// </summary>
 public record GetPublicGuidesQuery(
-    int? ProjectId = null,
+    Guid? ProjectId = null,
     string? Module = null,
     string? Search = null,
     int PageNumber = 1,

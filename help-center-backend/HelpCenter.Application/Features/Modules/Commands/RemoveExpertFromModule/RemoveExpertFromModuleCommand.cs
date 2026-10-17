@@ -2,4 +2,4 @@ using MediatR;
 
 namespace HelpCenter.Application.Features.Modules.Commands.RemoveExpertFromModule;
 
-public record RemoveExpertFromModuleCommand(int ExpertId) : IRequest<bool>;
+public record RemoveExpertFromModuleCommand(Guid ExpertId) : IRequest<bool>;

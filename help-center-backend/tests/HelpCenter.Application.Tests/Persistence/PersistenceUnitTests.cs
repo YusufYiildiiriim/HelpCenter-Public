@@ -50,11 +50,11 @@ public class PersistenceUnitTests : HandlerTestBase
     public async Task DataScopeService_HasPermissionAsync_should_return_true_when_user_has_action()
     {
         var userContext = Substitute.For<IUserContext>();
-        userContext.UserId.Returns(1);
+        userContext.UserId.Returns(TestIds.FromInt(1));
 
         var role = new Role { Name = "AdminRole", CreatedAt = DateTime.UtcNow };
         Db.Roles.Add(role);
-        var userRole = new UserRole { UserId = 1, Role = role, CreatedAt = DateTime.UtcNow };
+        var userRole = new UserRole { UserId = HelpCenter.Application.Tests.TestIds.FromInt(1), Role = role, CreatedAt = DateTime.UtcNow };
         Db.UserRoles.Add(userRole);
 
         var rolePerm = new RolePermission { Role = role, ResourceKey = "Users", CreatedAt = DateTime.UtcNow };
@@ -75,11 +75,11 @@ public class PersistenceUnitTests : HandlerTestBase
     public async Task DataScopeService_GetAllowedFieldsAsync_should_merge_allowed_fields()
     {
         var userContext = Substitute.For<IUserContext>();
-        userContext.UserId.Returns(2);
+        userContext.UserId.Returns(TestIds.FromInt(2));
 
         var role = new Role { Name = "EditorRole", CreatedAt = DateTime.UtcNow };
         Db.Roles.Add(role);
-        Db.UserRoles.Add(new UserRole { UserId = 2, Role = role, CreatedAt = DateTime.UtcNow });
+        Db.UserRoles.Add(new UserRole { UserId = HelpCenter.Application.Tests.TestIds.FromInt(2), Role = role, CreatedAt = DateTime.UtcNow });
 
         var rolePerm = new RolePermission
         {

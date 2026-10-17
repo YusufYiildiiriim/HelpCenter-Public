@@ -19,7 +19,7 @@ public class CreateModuleRules
     /// <summary>
     /// Verifies that the module name is unique.
     /// </summary>
-    public async Task ModuleNameShouldBeUniqueAsync(string name, int? currentModuleId, CancellationToken cancellationToken)
+    public async Task ModuleNameShouldBeUniqueAsync(string name, Guid? currentModuleId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<Module>()
             .FindAsync(m => m.Name == name && (currentModuleId == null || m.Id != currentModuleId.Value), cancellationToken);
@@ -33,7 +33,7 @@ public class CreateModuleRules
     /// <summary>
     /// Verifies that all users to be assigned as experts exist in the system.
     /// </summary>
-    public async Task UsersShouldExistAsync(IEnumerable<int> userIds, CancellationToken cancellationToken)
+    public async Task UsersShouldExistAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken)
     {
         var distinctIds = userIds.Distinct().ToList();
         if (distinctIds.Count == 0)

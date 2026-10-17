@@ -6,13 +6,13 @@ namespace HelpCenter.Persistence.Repositories;
 
 public sealed class ModuleUsageReadRepository(EfContext context) : IModuleUsageReadRepository
 {
-    public async Task<IReadOnlyDictionary<int, int>> CountAsync(
+    public async Task<IReadOnlyDictionary<Guid, int>> CountAsync(
         IReadOnlyCollection<ModuleUsageLookup> modules,
         bool onlyActive,
         CancellationToken cancellationToken = default)
     {
         if (modules.Count == 0)
-            return new Dictionary<int, int>();
+            return new Dictionary<Guid, int>();
 
         var ids = modules.Select(module => module.Id).Distinct().ToArray();
         var names = modules.Select(module => module.Name).Distinct(StringComparer.Ordinal).ToArray();

@@ -4,7 +4,7 @@ namespace HelpCenter.Application.Features.Requests.Queries.GetCustomerMessages;
 
 public class CustomerMessageDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string MessageText { get; set; } = string.Empty;
     public bool IsAgent { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -16,7 +16,7 @@ public class CustomerMessageDto
 
 public class CustomerMessageDocumentDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string Path { get; set; } = string.Empty;
 }

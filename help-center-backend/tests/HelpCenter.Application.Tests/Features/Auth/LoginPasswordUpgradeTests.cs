@@ -28,8 +28,8 @@ public class LoginPasswordUpgradeTests : HandlerTestBase
     public LoginPasswordUpgradeTests()
     {
         var tokens = new AuthTokens("access", DateTime.UtcNow.AddMinutes(15), "refresh", DateTime.UtcNow.AddDays(7));
-        _tokens.IssueTokensAsync(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokens);
-        _tokens.IssueCustomerTokensAsync(Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokens);
+        _tokens.IssueTokensAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokens);
+        _tokens.IssueCustomerTokensAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokens);
     }
 
     private Account Seed(bool customer, string hash, bool active = true, bool hasRole = true)

@@ -14,7 +14,7 @@ public class PublicFaqHandlerTests : HandlerTestBase
     // Bkz. PublicGuideHandlerTests — MemoryCache burada da bilerek dispose edilmiyor.
     private static ICacheService Cache => new MemoryCacheService(new MemoryCache(new MemoryCacheOptions()));
 
-    private void SeedFaq(string title, int? moduleId = null, bool isPublic = true, bool isActive = true)
+    private void SeedFaq(string title, Guid? moduleId = null, bool isPublic = true, bool isActive = true)
     {
         var faq = new FAQ
         {

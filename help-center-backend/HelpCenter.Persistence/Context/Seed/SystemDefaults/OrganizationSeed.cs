@@ -10,7 +10,7 @@ public static class OrganizationSeed
         modelBuilder.Entity<OrganizationInfo>().HasData(
             new OrganizationInfo
             {
-                PublicId = Guid.Empty, Id = 1,
+                PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1),
                 OrganizationName = "Help Center",
                 Phone = "+90 (212) 555 0100",
                 Email = "info@helpcenter.com",

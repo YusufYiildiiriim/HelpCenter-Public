@@ -29,7 +29,7 @@ public class AdminCompaniesControllerTests
         ContactPersonPhone: "555",
         IsDemoActive: false,
         BranchCount: 1,
-        ModuleIds: new List<int>(),
+        ModuleIds: new List<Guid>(),
         PreviousSystem: "None",
         RowVersion: rowVersion);
 

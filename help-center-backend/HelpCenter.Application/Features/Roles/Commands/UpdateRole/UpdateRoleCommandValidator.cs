@@ -6,7 +6,7 @@ public class UpdateRoleCommandValidator : AbstractValidator<UpdateRoleCommand>
 {
     public UpdateRoleCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz rol ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz rol ID.");
         RuleFor(x => x.Name).NotEmpty().WithMessage("Rol adı boş bırakılamaz.");
     }
 }

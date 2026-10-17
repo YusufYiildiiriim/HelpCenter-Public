@@ -48,7 +48,7 @@ namespace HelpCenter.WebApi.Hubs
         public async Task MarkAsRead(string requestId)
         {
             var access = await AuthorizeRequestAccessAsync(requestId);
-            await Clients.Group(requestId).SendAsync("MessagesRead", access.UserId);
+            await Clients.Group(requestId).SendAsync("MessagesRead", new { requestId, isAgent = access.IsAgent });
         }
 
         private async Task<RequestAccess> AuthorizeRequestAccessAsync(string requestId)
@@ -57,7 +57,7 @@ namespace HelpCenter.WebApi.Hubs
                 throw new HubException("Geçersiz talep kimliği.");
 
             var userContext = new HubUserContext(Context.User);
-            if (!userContext.IsAuthenticated || userContext.UserId <= 0)
+            if (!userContext.IsAuthenticated || userContext.UserId == Guid.Empty)
                 throw new HubException("Kimlik doğrulaması gerekli.");
 
             var scope = new DataScopeService(_uow, userContext);
@@ -72,7 +72,7 @@ namespace HelpCenter.WebApi.Hubs
                 if (customerRequest.CustomerId != userContext.UserId)
                     throw new HubException("Bu talebe erişim yetkiniz yok.");
 
-                return new RequestAccess(false, userContext.UserId);
+                return new RequestAccess(false, userContext.UserId, IsAgent: false);
             }
 
             var canReadAllRequests = await scope.HasPermissionAsync(AppResources.Requests, PermissionActions.Read);
@@ -82,9 +82,9 @@ namespace HelpCenter.WebApi.Hubs
             if (!canReadAllRequests && !canReadAssignedRequest)
                 throw new HubException("Bu talebe erişim yetkiniz yok.");
 
-            return new RequestAccess(true, userContext.UserId);
+            return new RequestAccess(true, userContext.UserId, !userContext.IsCustomer);
         }
 
-        private sealed record RequestAccess(bool CanAccessInternal, int UserId);
+        private sealed record RequestAccess(bool CanAccessInternal, Guid UserId, bool IsAgent);
     }
 }

@@ -30,7 +30,7 @@ public class UpdateFaqRules
     /// <summary>
     /// Verifies the FAQ title is unique.
     /// </summary>
-    public async Task FaqTitleShouldBeUniqueAsync(string title, int currentFaqId, CancellationToken cancellationToken)
+    public async Task FaqTitleShouldBeUniqueAsync(string title, Guid currentFaqId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<FAQ>()
             .FindAsync(f => f.Title == title && f.Id != currentFaqId, cancellationToken);
@@ -44,7 +44,7 @@ public class UpdateFaqRules
     /// <summary>
     /// Verifies the selected project exists in the system.
     /// </summary>
-    public async Task ProjectShouldExistAsync(int? projectId, CancellationToken cancellationToken)
+    public async Task ProjectShouldExistAsync(Guid? projectId, CancellationToken cancellationToken)
     {
         if (!projectId.HasValue) return;
 
@@ -58,7 +58,7 @@ public class UpdateFaqRules
     /// <summary>
     /// Verifies the selected module exists in the system and is assigned to the selected project.
     /// </summary>
-    public async Task ModuleShouldBelongToProjectAsync(int? projectId, int? moduleId, CancellationToken cancellationToken)
+    public async Task ModuleShouldBelongToProjectAsync(Guid? projectId, Guid? moduleId, CancellationToken cancellationToken)
     {
         if (!moduleId.HasValue) return;
 

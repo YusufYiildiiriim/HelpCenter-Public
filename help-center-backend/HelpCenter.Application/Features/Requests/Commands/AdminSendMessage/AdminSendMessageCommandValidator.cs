@@ -12,7 +12,7 @@ public class AdminSendMessageCommandValidator : AbstractValidator<AdminSendMessa
             .NotEmpty()
             .When(x => x.Files == null || x.Files.Count == 0)
             .WithMessage("Mesaj metni boş olamaz.");
-        RuleFor(x => x.SenderUserId).GreaterThan(0).WithMessage("Geçersiz kullanıcı.");
+        RuleFor(x => x.SenderUserId).NotEmpty().WithMessage("Geçersiz kullanıcı.");
         RuleFor(x => x.Type).IsInEnum().WithMessage("Lütfen geçerli bir mesaj türü seçiniz.");
     }
 }

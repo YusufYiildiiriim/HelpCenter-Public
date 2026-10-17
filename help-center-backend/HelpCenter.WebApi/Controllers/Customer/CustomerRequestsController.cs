@@ -28,18 +28,18 @@ public class CustomerRequestsController : ControllerBase
         _mediator = mediator;
     }
 
-    private int CurrentCustomerId
+    private Guid CurrentCustomerId
     {
         get
         {
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (int.TryParse(idClaim, out int id)) return id;
+            if (Guid.TryParse(idClaim, out var id)) return id;
 
             // Fallback to UserId claim if NameIdentifier is not an int (e.g. for admins)
             var userIdClaim = User.FindFirstValue(AppClaimTypes.UserId);
-            if (int.TryParse(userIdClaim, out int userId)) return userId;
+            if (Guid.TryParse(userIdClaim, out var userId)) return userId;
 
-            return 0;
+            return Guid.Empty;
         }
     }
 

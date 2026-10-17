@@ -30,7 +30,7 @@ public class UpdateGuideRules
     /// <summary>
     /// Verifies the guide title is unique.
     /// </summary>
-    public async Task GuideTitleShouldBeUniqueAsync(string title, int currentGuideId, CancellationToken cancellationToken)
+    public async Task GuideTitleShouldBeUniqueAsync(string title, Guid currentGuideId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<Guide>()
             .FindAsync(g => g.Title == title && g.Id != currentGuideId, cancellationToken);

@@ -263,11 +263,11 @@ public class MiscFeaturesHandlerTests : HandlerTestBase
     public async Task GetMenuItems_should_return_active_menu_items()
     {
         var userContext = Substitute.For<IUserContext>();
-        userContext.UserId.Returns(1);
+        userContext.UserId.Returns(TestIds.FromInt(1));
 
         var role = new Role { Name = "AdminRole", IsActive = true, CreatedAt = DateTime.UtcNow };
         Db.Roles.Add(role);
-        var userRole = new UserRole { UserId = 1, Role = role, CreatedAt = DateTime.UtcNow };
+        var userRole = new UserRole { UserId = HelpCenter.Application.Tests.TestIds.FromInt(1), Role = role, CreatedAt = DateTime.UtcNow };
         Db.UserRoles.Add(userRole);
 
         var perm = new RolePermission { Role = role, ResourceKey = "Dashboard", CreatedAt = DateTime.UtcNow };

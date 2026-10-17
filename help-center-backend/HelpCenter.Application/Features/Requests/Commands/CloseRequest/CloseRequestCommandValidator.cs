@@ -7,7 +7,7 @@ public class CloseRequestCommandValidator : AbstractValidator<CloseRequestComman
     public CloseRequestCommandValidator()
     {
         RuleFor(x => x.PublicId).NotEmpty().WithMessage("Geçersiz talep.");
-        RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Geçersiz müşteri.");
+        RuleFor(x => x.CustomerId).NotEmpty().WithMessage("Geçersiz müşteri.");
         RuleFor(x => x.Rating).InclusiveBetween(1, 5).WithMessage("Değerlendirme puanı 1 ile 5 arasında olmalıdır.");
     }
 }

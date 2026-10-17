@@ -4,6 +4,8 @@ using HelpCenter.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using HelpCenter.Persistence.Context.Seed.SystemDefaults;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace HelpCenter.Application.Tests.Persistence;
@@ -11,21 +13,23 @@ namespace HelpCenter.Application.Tests.Persistence;
 public class RequestStatusContractTests
 {
     [Fact]
-    public void System_status_seeds_keep_the_stable_wire_contract_without_migration()
+    public async Task Runtime_system_status_seed_keeps_the_stable_wire_contract()
     {
-        using var db = new EfContext(new DbContextOptionsBuilder<EfContext>()
-            .UseSqlServer("Server=localhost;Database=ModelOnly;Integrated Security=true;TrustServerCertificate=true").Options);
-        var seeds = db.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(CustomerRequestStatus))!.GetSeedData().ToList();
-        var expected = new Dictionary<int, string>
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new EfContext(new DbContextOptionsBuilder<EfContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        await SystemDefaultsSeeder.SeedAsync(db);
+        var seeds = await db.CustomerRequestStatuses.ToDictionaryAsync(x => x.Id, x => x.Name);
+        var expected = new Dictionary<Guid, string>
         {
             [RequestStatusConstants.WaitingForReply] = "Cevap Bekliyor",
             [RequestStatusConstants.Replied] = "Cevaplandı",
             [RequestStatusConstants.Completed] = "Tamamlandı",
             [RequestStatusConstants.UnderTechnicalReview] = "Teknik İncelemede"
         };
-        Assert.Equal(new[] { 1, 2, 3, 4 }, expected.Keys);
-        Assert.Equal(4, seeds.Count);
-        foreach (var seed in seeds) Assert.Equal(expected[(int)seed["Id"]!], seed["Name"]);
-        Assert.False(db.Database.HasPendingModelChanges());
+        Assert.Equal(4, expected.Count);
+        Assert.Equal(expected.Count, seeds.Count);
+        foreach (var seed in seeds) Assert.Equal(expected[seed.Key], seed.Value);
     }
 }

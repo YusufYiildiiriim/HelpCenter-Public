@@ -30,7 +30,7 @@ public class UpdateCompanyRules
     /// <summary>
     /// Verifies the company name is unique.
     /// </summary>
-    public async Task CompanyNameShouldBeUniqueAsync(string name, int? currentCompanyId, CancellationToken cancellationToken)
+    public async Task CompanyNameShouldBeUniqueAsync(string name, Guid? currentCompanyId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<Company>()
             .FindAsync(c => c.Name == name && (currentCompanyId == null || c.Id != currentCompanyId.Value), cancellationToken);

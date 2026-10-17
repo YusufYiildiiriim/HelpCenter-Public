@@ -4,10 +4,10 @@ namespace HelpCenter.Domain.Entities
 {
     public class CustomerRequestMessage : BaseEntity
     {
-        public int ConversationId { get; set; }
+        public Guid ConversationId { get; set; }
         public virtual Conversation Conversation { get; set; } = null!;
 
-        public int SenderParticipantId { get; set; }
+        public Guid SenderParticipantId { get; set; }
         public virtual ConversationParticipant SenderParticipant { get; set; } = null!;
 
         public string MessageText { get; set; } = string.Empty;

@@ -8,7 +8,7 @@ namespace HelpCenter.Application.Features.Requests.Commands.AdminSendMessage;
 public class AdminSendMessageCommand : IRequest<bool>, IInvalidatesMessageCache
 {
     public Guid RequestPublicId { get; set; }
-    public int SenderUserId { get; set; }
+    public Guid SenderUserId { get; set; }
     public string MessageText { get; set; } = string.Empty;
     public MessageType Type { get; set; } = MessageType.Public;
     public List<FileUpload>? Files { get; set; }

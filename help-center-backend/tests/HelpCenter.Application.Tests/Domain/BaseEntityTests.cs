@@ -17,7 +17,7 @@ public class BaseEntityTests
     {
         var entity = new TestEntity();
 
-        entity.Id.Should().Be(0);
+        entity.Id.Should().NotBe(Guid.Empty);
         entity.IsDeleted.Should().BeFalse();
         entity.IsActive.Should().BeTrue();
         entity.UpdatedAt.Should().BeNull();

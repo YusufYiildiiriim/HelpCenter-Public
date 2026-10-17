@@ -6,6 +6,6 @@ public class DeleteUserCommandValidator : AbstractValidator<DeleteUserCommand>
 {
     public DeleteUserCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz kullanıcı ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz kullanıcı ID.");
     }
 }

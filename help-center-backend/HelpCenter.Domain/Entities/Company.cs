@@ -18,7 +18,7 @@ namespace HelpCenter.Domain.Entities
         public bool IsDemoActive { get; set; } = false;
         public int BranchCount { get; set; }
         public string PreviousSystem { get; set; } = string.Empty;
-        public int? ProjectId { get; set; }
+        public Guid? ProjectId { get; set; }
         public virtual Project? Project { get; set; }
         public virtual ICollection<CompanyModule> CompanyModules { get; set; } = new HashSet<CompanyModule>();
         public virtual ICollection<Customer> Users { get; set; } = new HashSet<Customer>();
@@ -44,7 +44,7 @@ namespace HelpCenter.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void SyncModules(IEnumerable<int> moduleIds)
+        public void SyncModules(IEnumerable<Guid> moduleIds)
         {
             foreach (var existing in CompanyModules.Where(cm => !cm.IsDeleted))
             {
@@ -57,7 +57,7 @@ namespace HelpCenter.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public void SetProject(int? projectId)
+        public void SetProject(Guid? projectId)
         {
             ProjectId = projectId;
             UpdatedAt = DateTime.UtcNow;

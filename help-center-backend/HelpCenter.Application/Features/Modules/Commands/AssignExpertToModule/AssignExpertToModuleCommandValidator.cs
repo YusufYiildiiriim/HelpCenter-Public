@@ -6,7 +6,7 @@ public class AssignExpertToModuleCommandValidator : AbstractValidator<AssignExpe
 {
     public AssignExpertToModuleCommandValidator()
     {
-        RuleFor(x => x.ModuleId).GreaterThan(0).WithMessage("Geçersiz modül ID.");
-        RuleFor(x => x.UserId).GreaterThan(0).WithMessage("Geçersiz kullanıcı ID.");
+        RuleFor(x => x.ModuleId).NotEmpty().WithMessage("Geçersiz modül ID.");
+        RuleFor(x => x.UserId).NotEmpty().WithMessage("Geçersiz kullanıcı ID.");
     }
 }

@@ -19,7 +19,7 @@ public class CreateRoleRules
     /// <summary>
     /// Verifies that the role name is unique.
     /// </summary>
-    public async Task RoleNameShouldBeUniqueAsync(string name, int? currentRoleId, CancellationToken cancellationToken)
+    public async Task RoleNameShouldBeUniqueAsync(string name, Guid? currentRoleId, CancellationToken cancellationToken)
     {
         var existing = await _unitOfWork.Repository<Role>()
             .FindAsync(r => r.Name == name && (currentRoleId == null || r.Id != currentRoleId.Value), cancellationToken);

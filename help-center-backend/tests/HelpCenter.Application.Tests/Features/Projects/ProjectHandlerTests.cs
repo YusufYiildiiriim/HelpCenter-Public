@@ -143,7 +143,7 @@ public class ProjectHandlerTests : HandlerTestBase
         Db.ChangeTracker.Clear();
 
         var handler = new AssignUserToProjectCommandHandler(Uow);
-        var command = new AssignUserToProjectCommand { ProjectId = project.Id, UserId = 99999 };
+        var command = new AssignUserToProjectCommand { ProjectId = project.Id, UserId = HelpCenter.Application.Tests.TestIds.FromInt(99999) };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
@@ -156,7 +156,7 @@ public class ProjectHandlerTests : HandlerTestBase
     {
         var project = new Project { Name = "Mobile App", CreatedAt = DateTime.UtcNow };
         Db.Projects.Add(project);
-        var userProject = new UserProject { Project = project, UserId = 3, CreatedAt = DateTime.UtcNow };
+        var userProject = new UserProject { Project = project, UserId = HelpCenter.Application.Tests.TestIds.FromInt(3), CreatedAt = DateTime.UtcNow };
         Db.UserProjects.Add(userProject);
         await Db.SaveChangesAsync();
 

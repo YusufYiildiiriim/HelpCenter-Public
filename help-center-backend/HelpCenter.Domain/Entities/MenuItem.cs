@@ -8,14 +8,14 @@ namespace HelpCenter.Domain.Entities
         public string Icon { get; set; } = string.Empty;
         public string Route { get; set; } = string.Empty;
         public string ResourceKey { get; set; } = string.Empty;
-        public int? ParentId { get; set; }
+        public Guid? ParentId { get; set; }
         public int Order { get; set; }
         public string? GroupTitle { get; set; }
 
         public virtual MenuItem? Parent { get; set; }
         public virtual ICollection<MenuItem> Children { get; set; } = new HashSet<MenuItem>();
 
-        public static MenuItem Create(string label, string icon, string route, string resourceKey, int order, string? groupTitle = null, int? parentId = null)
+        public static MenuItem Create(string label, string icon, string route, string resourceKey, int order, string? groupTitle = null, Guid? parentId = null)
         {
             return new MenuItem
             {

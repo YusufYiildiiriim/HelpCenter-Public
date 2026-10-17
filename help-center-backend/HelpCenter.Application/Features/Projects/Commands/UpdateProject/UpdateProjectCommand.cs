@@ -9,6 +9,6 @@ public class UpdateProjectCommand : IRequest<bool>
     public string Description { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public byte[]? RowVersion { get; set; }
-    public List<int>? UserIds { get; set; }
-    public List<int>? ModuleIds { get; set; }
+    public List<Guid>? UserIds { get; set; }
+    public List<Guid>? ModuleIds { get; set; }
 }

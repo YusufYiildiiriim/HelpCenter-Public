@@ -16,7 +16,7 @@ public class UserRegisterCommandValidator : AbstractValidator<UserRegisterComman
             .NotEmpty().WithMessage("Şifre alanı boş bırakılamaz.")
             .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır.");
         RuleForEach(x => x.RoleIds)
-            .GreaterThan(0).WithMessage("Geçersiz rol ID.")
+            .NotEmpty().WithMessage("Geçersiz rol ID.")
             .When(x => x.RoleIds != null);
     }
 }

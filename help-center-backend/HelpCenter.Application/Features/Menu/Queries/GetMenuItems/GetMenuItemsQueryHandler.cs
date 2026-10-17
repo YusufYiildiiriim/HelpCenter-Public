@@ -19,7 +19,7 @@ public class GetMenuItemsQueryHandler : IRequestHandler<GetMenuItemsQuery, List<
     public async Task<List<MenuItemDto>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
     {
         var userId = _userContext.UserId;
-        if (userId <= 0)
+        if (userId == Guid.Empty)
         {
             return new List<MenuItemDto>();
         }

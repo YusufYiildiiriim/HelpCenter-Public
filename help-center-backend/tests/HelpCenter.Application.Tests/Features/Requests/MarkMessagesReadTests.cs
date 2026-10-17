@@ -22,13 +22,13 @@ public class MarkMessagesReadTests : HandlerTestBase
     public MarkMessagesReadTests()
     {
         _user.IsAuthenticated.Returns(true);
-        _user.UserId.Returns(7);
+        _user.UserId.Returns(TestIds.FromInt(7));
         _user.IsCustomer.Returns(true);
     }
 
     private CustomerRequest Seed(bool conversation = true)
     {
-        var request = CustomerRequest.Create(7, null, null, "Read test", RequestPriority.Low);
+        var request = CustomerRequest.Create(TestIds.FromInt(7), null, null, "Read test", RequestPriority.Low);
         if (conversation) request.Conversation = new Conversation { Title = "Read test" };
         Db.CustomerRequests.Add(request);
         Db.SaveChanges();
@@ -51,7 +51,7 @@ public class MarkMessagesReadTests : HandlerTestBase
     public async Task Another_customers_request_is_not_mutated()
     {
         var request = Seed();
-        _user.UserId.Returns(8);
+        _user.UserId.Returns(TestIds.FromInt(8));
         await Handler().Invoking(h => h.Handle(new() { RequestPublicId = request.PublicId }, default))
             .Should().ThrowAsync<RequestNotBelongToCustomerException>();
         _read.ReceivedCalls().Should().BeEmpty();
@@ -91,7 +91,7 @@ public class MarkMessagesReadTests : HandlerTestBase
         var request = Seed();
         _read.MarkMessagesAsReadAsync(request.ConversationId!.Value, false, default).Returns(count);
         (await Handler().Handle(new() { RequestPublicId = request.PublicId }, default)).Should().BeTrue();
-        await _hub.Received(notifications).NotifyMessagesRead(request.PublicId.ToString(), 0, default);
+        await _hub.Received(notifications).NotifyMessagesRead(request.PublicId.ToString(), false, default);
     }
 
     [Theory]
@@ -102,7 +102,7 @@ public class MarkMessagesReadTests : HandlerTestBase
         var request = Seed();
         _user.IsCustomer.Returns(false);
         _scope.HasPermissionAsync(AppResources.AssignedRequests, PermissionActions.Read, default).Returns(true);
-        request.CurrentExpertId = assigned ? 7 : 8;
+        request.CurrentExpertId = assigned ? TestIds.FromInt(7) : TestIds.FromInt(8);
         await Db.SaveChangesAsync();
         var action = () => Handler().Handle(new() { RequestPublicId = request.PublicId, IsAgent = true, OnlyAssignedToCurrentUser = true }, default);
         if (allowed) (await action()).Should().BeTrue();
@@ -124,8 +124,8 @@ public class MarkMessagesReadTests : HandlerTestBase
     {
         var request = Seed();
         var conversation = request.Conversation!;
-        var staff = conversation.AddParticipant(null, 9, ParticipantType.Agent);
-        var customer = conversation.AddParticipant(7, null, ParticipantType.Customer);
+        var staff = conversation.AddParticipant(null, TestIds.FromInt(9), ParticipantType.Agent);
+        var customer = conversation.AddParticipant(TestIds.FromInt(7), null, ParticipantType.Customer);
         var publicMessage = new CustomerRequestMessage { SenderParticipant = staff, Type = MessageType.Public, MessageText = "Public" };
         var internalNote = new CustomerRequestMessage { SenderParticipant = staff, Type = MessageType.InternalNote, MessageText = "Internal" };
         var ownMessage = new CustomerRequestMessage { SenderParticipant = customer, MessageText = "Own" };
@@ -144,6 +144,6 @@ public class MarkMessagesReadTests : HandlerTestBase
         Db.CustomerRequestMessages.Find(publicId)!.IsRead.Should().BeTrue();
         Db.CustomerRequestMessages.Find(noteId)!.IsRead.Should().BeFalse();
         Db.CustomerRequestMessages.Find(ownId)!.IsRead.Should().BeFalse();
-        await _hub.Received(1).NotifyMessagesRead(request.PublicId.ToString(), 0, default);
+        await _hub.Received(1).NotifyMessagesRead(request.PublicId.ToString(), false, default);
     }
 }

@@ -23,7 +23,7 @@ public static class SendMessageRules
     /// <summary>
     /// Verifies that the request belongs to the given customer.
     /// </summary>
-    public static void RequestShouldBelongToCustomer(CustomerRequest customerRequest, int customerId)
+    public static void RequestShouldBelongToCustomer(CustomerRequest customerRequest, Guid customerId)
     {
         if (customerRequest.CustomerId != customerId)
         {

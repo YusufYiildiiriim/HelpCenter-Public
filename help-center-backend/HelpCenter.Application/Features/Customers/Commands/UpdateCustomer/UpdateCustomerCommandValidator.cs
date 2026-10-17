@@ -13,6 +13,6 @@ public class UpdateCustomerCommandValidator : AbstractValidator<UpdateCustomerCo
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("E-posta alanı boş bırakılamaz.")
             .ValidEmail().WithMessage("Geçerli bir e-posta giriniz.");
-        RuleFor(x => x.CompanyId).GreaterThan(0).WithMessage("Geçersiz firma.");
+        RuleFor(x => x.CompanyId).NotEmpty().WithMessage("Geçersiz firma.");
     }
 }

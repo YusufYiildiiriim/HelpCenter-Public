@@ -7,12 +7,12 @@ namespace HelpCenter.Domain.Entities;
 /// </summary>
 public class RefreshToken
 {
-    public long Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-    public int? UserId { get; set; }
+    public Guid? UserId { get; set; }
     public virtual User? User { get; set; }
 
-    public int? CustomerId { get; set; }
+    public Guid? CustomerId { get; set; }
     public virtual Customer? Customer { get; set; }
 
     /// <summary>Base64(SHA-256(raw token)) — the plain token is never stored.</summary>

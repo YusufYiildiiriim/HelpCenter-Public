@@ -6,7 +6,7 @@ public class UpdateRolePermissionsCommandValidator : AbstractValidator<UpdateRol
 {
     public UpdateRolePermissionsCommandValidator()
     {
-        RuleFor(x => x.RoleId).GreaterThan(0).WithMessage("Geçersiz rol ID.");
+        RuleFor(x => x.RoleId).NotEmpty().WithMessage("Geçersiz rol ID.");
         // An empty list is a valid request: it means removing all permissions from the role
         // (see UpdateRolePermissionDto). That's why NotNull is used instead of NotEmpty.
         RuleFor(x => x.Permissions).NotNull().WithMessage("İzin listesi gönderilmelidir.");

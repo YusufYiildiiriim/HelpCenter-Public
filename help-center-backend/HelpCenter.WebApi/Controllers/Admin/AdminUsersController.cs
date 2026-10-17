@@ -44,7 +44,7 @@ public class AdminUsersController : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(AppResources.Users, PermissionActions.Update)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserCommand command)
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserCommand command)
     {
         command.Id = id;
         var response = await _mediator.Send(command);
@@ -54,7 +54,7 @@ public class AdminUsersController : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(AppResources.Users, PermissionActions.Delete)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> DeleteUser(int id)
+    public async Task<IActionResult> DeleteUser(Guid id)
     {
         var response = await _mediator.Send(new DeleteUserCommand(id));
         return Ok(response);

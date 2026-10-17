@@ -12,7 +12,7 @@ public interface IRolePermissionSyncService
     /// "not found"). If the role exists, syncs and saves its permissions, then returns `true`.
     /// </summary>
     Task<bool> SyncPermissionsAsync(
-        int roleId,
+        Guid roleId,
         IEnumerable<(string ResourceKey, IReadOnlyList<string> Actions, string? AllowedFieldsJson)> permissions,
         CancellationToken cancellationToken = default);
 }

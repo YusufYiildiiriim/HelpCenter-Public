@@ -9,9 +9,9 @@ public class CreateRequestCommand : IRequest<CreateRequestResponse>, IInvalidate
 {
     public string Title { get; set; } = string.Empty;
     public string MessageText { get; set; } = string.Empty;
-    public int CustomerId { get; set; }
-    public int? ModuleId { get; set; }
-    public int? RequestSubjectId { get; set; }
+    public Guid CustomerId { get; set; }
+    public Guid? ModuleId { get; set; }
+    public Guid? RequestSubjectId { get; set; }
     public RequestPriority Priority { get; set; } = RequestPriority.Medium;
     public List<FileUpload>? Files { get; set; }
 }

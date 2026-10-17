@@ -10,7 +10,7 @@ public class UpdateCustomerCommand : IRequest<bool>, IInvalidatesMessageCache
     public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public int CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
     public bool IsActive { get; set; }
     public string? Password { get; set; }
     public string? Username { get; set; }

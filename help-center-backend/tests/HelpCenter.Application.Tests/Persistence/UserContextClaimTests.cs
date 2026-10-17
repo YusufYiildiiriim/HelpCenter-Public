@@ -15,15 +15,15 @@ public sealed class UserContextClaimTests
     public void Http_and_hub_contexts_read_existing_claim_names_consistently(bool hub)
     {
         // Literal names intentionally lock the external token contract across refactors.
-        var principal = Principal(new Claim("UserId", "42"), new Claim("CompanyId", "7"),
-            new Claim("RoleId", "3"), new Claim("RoleId", "invalid"), new Claim("RoleId", "-1"),
+        var principal = Principal(new Claim("UserId", TestIds.FromInt(42).ToString()), new Claim("CompanyId", TestIds.FromInt(7).ToString()),
+            new Claim("RoleId", TestIds.FromInt(3).ToString()), new Claim("RoleId", "invalid"), new Claim("RoleId", Guid.Empty.ToString()),
             new Claim(ClaimTypes.Role, "Customer"));
         var context = Context(principal, hub);
 
         Assert.True(context.IsAuthenticated);
-        Assert.Equal(42, context.UserId);
-        Assert.Equal(7, context.CompanyId);
-        Assert.Equal(new[] { 3 }, context.RoleIds);
+        Assert.Equal(TestIds.FromInt(42), context.UserId);
+        Assert.Equal(TestIds.FromInt(7), context.CompanyId);
+        Assert.Equal(new[] { TestIds.FromInt(3) }, context.RoleIds);
         Assert.True(context.IsCustomer);
     }
 
@@ -44,9 +44,9 @@ public sealed class UserContextClaimTests
     [InlineData(true)]
     public void Staff_identity_falls_back_to_name_identifier_without_inventing_company_scope(bool hub)
     {
-        var context = Context(Principal(new Claim(ClaimTypes.NameIdentifier, "17"), new Claim(ClaimTypes.Role, "Admin")), hub);
+        var context = Context(Principal(new Claim(ClaimTypes.NameIdentifier, TestIds.FromInt(17).ToString()), new Claim(ClaimTypes.Role, "Admin")), hub);
 
-        Assert.Equal(17, context.UserId);
+        Assert.Equal(TestIds.FromInt(17), context.UserId);
         Assert.Null(context.CompanyId);
         Assert.False(context.IsCustomer);
     }
@@ -57,7 +57,7 @@ public sealed class UserContextClaimTests
         foreach (var context in new IUserContext[] { new HttpBasedUserContext(new HttpContextAccessor()), new HubUserContext(null) })
         {
             Assert.False(context.IsAuthenticated);
-            Assert.Equal(0, context.UserId);
+            Assert.Equal(Guid.Empty, context.UserId);
             Assert.Null(context.CompanyId);
             Assert.Empty(context.RoleIds);
         }

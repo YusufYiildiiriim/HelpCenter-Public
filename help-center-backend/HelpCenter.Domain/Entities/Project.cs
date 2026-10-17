@@ -17,7 +17,7 @@ public class Project : BaseEntity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SyncUsers(IEnumerable<int> userIds)
+    public void SyncUsers(IEnumerable<Guid> userIds)
     {
         var toRemove = UserProjects.Where(x => !userIds.Contains(x.UserId) && !x.IsDeleted).ToList();
         foreach (var userProject in toRemove)
@@ -41,7 +41,7 @@ public class Project : BaseEntity
         }
     }
 
-    public void AddUser(int userId)
+    public void AddUser(Guid userId)
     {
         if (!UserProjects.Any(x => x.UserId == userId && !x.IsDeleted))
         {
@@ -55,7 +55,7 @@ public class Project : BaseEntity
         }
     }
 
-    public void SyncModules(IEnumerable<int> moduleIds)
+    public void SyncModules(IEnumerable<Guid> moduleIds)
     {
         foreach (var existing in ProjectModules.Where(pm => !pm.IsDeleted))
         {

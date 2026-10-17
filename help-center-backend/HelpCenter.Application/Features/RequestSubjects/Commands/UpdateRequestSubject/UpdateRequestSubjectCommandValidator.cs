@@ -6,7 +6,7 @@ public class UpdateRequestSubjectCommandValidator : AbstractValidator<UpdateRequ
 {
     public UpdateRequestSubjectCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz talep konusu ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz talep konusu ID.");
         RuleFor(x => x.Name).NotEmpty().WithMessage("Konu adı boş bırakılamaz.");
         RuleFor(x => x.Description).NotEmpty().WithMessage("Açıklama boş bırakılamaz.");
     }

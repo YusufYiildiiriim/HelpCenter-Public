@@ -32,7 +32,7 @@ public sealed class PublicContentEndpointsTests(SqlServerWebApplicationFactory f
         var items = root.GetProperty("items");
         Assert.Equal(1, items.GetArrayLength());
         Assert.Equal("Smoke FAQ Filter Two", items[0].GetProperty("title").GetString());
-        Assert.Equal(seed.FaqModuleId, items[0].GetProperty("moduleId").GetInt32());
+        Assert.Equal(seed.FaqModuleId, Guid.Parse(items[0].GetProperty("moduleId").GetString()!));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public sealed class PublicContentEndpointsTests(SqlServerWebApplicationFactory f
         return new PublicContentSeed(project.Id, faqModule.Id, guideModule.Name);
     }
 
-    private static FAQ CreateFaq(string title, int moduleId, int projectId, bool isPublic = true, bool isActive = true) => new()
+    private static FAQ CreateFaq(string title, Guid moduleId, Guid projectId, bool isPublic = true, bool isActive = true) => new()
     {
         Title = title,
         Description = "smoke-faq-filter",
@@ -107,7 +107,7 @@ public sealed class PublicContentEndpointsTests(SqlServerWebApplicationFactory f
         CreatedAt = DateTime.UtcNow
     };
 
-    private static Guide CreateGuide(string title, string module, int? projectId, bool isPublic = true, bool isActive = true) => new()
+    private static Guide CreateGuide(string title, string module, Guid? projectId, bool isPublic = true, bool isActive = true) => new()
     {
         Title = title,
         Description = "smoke-guide-filter",
@@ -118,5 +118,5 @@ public sealed class PublicContentEndpointsTests(SqlServerWebApplicationFactory f
         CreatedAt = DateTime.UtcNow
     };
 
-    private sealed record PublicContentSeed(int ProjectId, int FaqModuleId, string GuideModuleName);
+    private sealed record PublicContentSeed(Guid ProjectId, Guid FaqModuleId, string GuideModuleName);
 }

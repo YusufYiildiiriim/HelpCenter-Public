@@ -21,10 +21,10 @@ public class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyComm
         RuleFor(x => x.BranchCount)
             .GreaterThanOrEqualTo(0).WithMessage("Şube sayısı negatif olamaz.");
         RuleFor(x => x.ProjectId)
-            .GreaterThan(0).WithMessage("Geçersiz proje ID.")
+            .NotEmpty().WithMessage("Geçersiz proje ID.")
             .When(x => x.ProjectId.HasValue);
         RuleForEach(x => x.ModuleIds)
-            .GreaterThan(0).WithMessage("Geçersiz modül ID.")
+            .NotEmpty().WithMessage("Geçersiz modül ID.")
             .When(x => x.ModuleIds != null);
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Demo kullanıcısı için şifre zorunludur.")

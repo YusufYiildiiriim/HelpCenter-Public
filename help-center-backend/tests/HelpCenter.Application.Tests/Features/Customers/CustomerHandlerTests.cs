@@ -57,7 +57,7 @@ public class CustomerHandlerTests : HandlerTestBase
         var handler = new CreateCustomerCommandHandler(Uow, _passwordService, _auditLog);
         var command = new CreateCustomerCommand
         {
-            CompanyId = 1,
+            CompanyId = HelpCenter.Application.Tests.TestIds.FromInt(1),
             FirstName = "Alice",
             LastName = "Smith",
             Email = "alice@example.com",
@@ -111,7 +111,7 @@ public class CustomerHandlerTests : HandlerTestBase
         var handler = new CreateCustomerCommandHandler(Uow, _passwordService, _auditLog);
         var command = new CreateCustomerCommand
         {
-            CompanyId = 1,
+            CompanyId = HelpCenter.Application.Tests.TestIds.FromInt(1),
             FirstName = "Dup",
             LastName = "User",
             Email = "duplicate@example.com",

@@ -50,7 +50,7 @@ public class AdminRoleController : ControllerBase
 
     [HttpGet("get-permissions/{roleId}")]
     [HasPermission(AppResources.Roles, PermissionActions.Read)]
-    public async Task<IActionResult> GetPermissions(int roleId)
+    public async Task<IActionResult> GetPermissions(Guid roleId)
     {
         var result = await _mediator.Send(new GetRolePermissionsQuery(roleId));
         return Ok(result);
@@ -77,7 +77,7 @@ public class AdminRoleController : ControllerBase
     [HttpDelete("delete/{id}")]
     [HasPermission(AppResources.Roles, PermissionActions.Delete)]
     [EnableRateLimiting("rbac-mutation")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _mediator.Send(new DeleteRoleCommand(id));
         return Ok(result);

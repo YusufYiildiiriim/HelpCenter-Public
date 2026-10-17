@@ -30,7 +30,7 @@ public class CreateRequestRules
     /// <summary>
     /// Checks that the selected module is defined for the customer's company or its associated project.
     /// </summary>
-    public async Task ModuleShouldBeAllowedForCompanyAsync(int companyId, int moduleId, CancellationToken cancellationToken)
+    public async Task ModuleShouldBeAllowedForCompanyAsync(Guid companyId, Guid moduleId, CancellationToken cancellationToken)
     {
         var module = await _unitOfWork.Repository<Module>()
             .FirstOrDefaultAsync(m => m.Id == moduleId && m.IsActive, cancellationToken: cancellationToken);
@@ -64,7 +64,7 @@ public class CreateRequestRules
     /// <summary>
     /// Locks the selected request subject if it is not already locked.
     /// </summary>
-    public async Task LockSubjectIfUnlockedAsync(int? subjectId, CancellationToken cancellationToken)
+    public async Task LockSubjectIfUnlockedAsync(Guid? subjectId, CancellationToken cancellationToken)
     {
         if (subjectId.HasValue)
         {
@@ -80,7 +80,7 @@ public class CreateRequestRules
     /// <summary>
     /// Locks the selected module if it is not already locked.
     /// </summary>
-    public async Task LockModuleIfUnlockedAsync(int moduleId, CancellationToken cancellationToken)
+    public async Task LockModuleIfUnlockedAsync(Guid moduleId, CancellationToken cancellationToken)
     {
         var module = await _unitOfWork.Repository<Module>().GetAsync(moduleId, cancellationToken);
         if (module == null)

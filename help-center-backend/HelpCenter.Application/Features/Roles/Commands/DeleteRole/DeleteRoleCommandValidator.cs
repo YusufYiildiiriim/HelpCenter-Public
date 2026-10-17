@@ -6,6 +6,6 @@ public class DeleteRoleCommandValidator : AbstractValidator<DeleteRoleCommand>
 {
     public DeleteRoleCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz rol ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz rol ID.");
     }
 }

@@ -1,0 +1,1578 @@
+[
+  {
+    "Name": "Account",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Email": "admin@helpcenter.com",
+      "FirstName": "Admin",
+      "IsActive": true,
+      "IsDeleted": false,
+      "IsPasswordChangeRequired": false,
+      "LastModifiedByAccountId": null,
+      "LastName": "User",
+      "Password": "$2a$11$pCDJIRu1tH/Ir19q7P0fv.1oiPQ4SLP6vOEYU5LjinQtMzn5eL3f2",
+      "PhoneNumber": "\u002B90 000 000 0000",
+      "ProfilePicture": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Username": "admin.user",
+      "Customer": null,
+      "User": null
+    }
+  },
+  {
+    "Name": "CustomerRequestStatus",
+    "Values": {
+      "Id": "10000000-0000-4000-8000-000000000001",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Kullan\u0131c\u0131dan gelen talep cevaplanmay\u0131 bekliyor.",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Cevap Bekliyor",
+      "ProjectId": null,
+      "PublicId": "10000000-0000-4000-8000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Project": null
+    }
+  },
+  {
+    "Name": "CustomerRequestStatus",
+    "Values": {
+      "Id": "10000000-0000-4000-8000-000000000002",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Talep bir temsilci taraf\u0131ndan cevapland\u0131.",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Cevapland\u0131",
+      "ProjectId": null,
+      "PublicId": "10000000-0000-4000-8000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Project": null
+    }
+  },
+  {
+    "Name": "CustomerRequestStatus",
+    "Values": {
+      "Id": "10000000-0000-4000-8000-000000000003",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Talep ba\u015Far\u0131yla kapat\u0131ld\u0131.",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Tamamland\u0131",
+      "ProjectId": null,
+      "PublicId": "10000000-0000-4000-8000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Project": null
+    }
+  },
+  {
+    "Name": "CustomerRequestStatus",
+    "Values": {
+      "Id": "10000000-0000-4000-8000-000000000004",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Talep bir uzman taraf\u0131ndan inceleniyor.",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Teknik \u0130ncelemede",
+      "ProjectId": null,
+      "PublicId": "10000000-0000-4000-8000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Project": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000015",
+      "CreatedAt": "2026-10-16T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "ClipboardList",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Denetim Kay\u0131tlar\u0131",
+      "LastModifiedByAccountId": null,
+      "Order": 15,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000015",
+      "ResourceKey": "AuditLogs",
+      "Route": "/admin/settings/audit-logs",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": "Talep Takip",
+      "Icon": "BarChart3",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "\u0130statistikler",
+      "LastModifiedByAccountId": null,
+      "Order": 1,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "ResourceKey": "Dashboard",
+      "Route": "/admin",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "ClipboardList",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Talepler",
+      "LastModifiedByAccountId": null,
+      "Order": 2,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000002",
+      "ResourceKey": "Requests",
+      "Route": "/admin/requests",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000003",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "Inbox",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Bana Atananlar",
+      "LastModifiedByAccountId": null,
+      "Order": 3,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000003",
+      "ResourceKey": "AssignedRequests",
+      "Route": "/admin/requests/assigned",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": "Tan\u0131mlamalar",
+      "Icon": "Building2",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Firmalar",
+      "LastModifiedByAccountId": null,
+      "Order": 4,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000004",
+      "ResourceKey": "Companies",
+      "Route": "/admin/companies",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000005",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "FolderKanban",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Projeler",
+      "LastModifiedByAccountId": null,
+      "Order": 5,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000005",
+      "ResourceKey": "Projects",
+      "Route": "/admin/projects",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000006",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "Users",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Kullan\u0131c\u0131lar",
+      "LastModifiedByAccountId": null,
+      "Order": 6,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000006",
+      "ResourceKey": "Users",
+      "Route": "/admin/users",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000007",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "HelpCircle",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "SSS Y\u00F6netimi",
+      "LastModifiedByAccountId": null,
+      "Order": 7,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000007",
+      "ResourceKey": "FAQ",
+      "Route": "/admin/ss",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000008",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "BookOpen",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Kullan\u0131m K\u0131lavuzu",
+      "LastModifiedByAccountId": null,
+      "Order": 8,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000008",
+      "ResourceKey": "Guide",
+      "Route": "/admin/guide",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000010",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": "Sistem Ayarlar\u0131",
+      "Icon": "ShieldCheck",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Rol ve Yetkiler",
+      "LastModifiedByAccountId": null,
+      "Order": 10,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000010",
+      "ResourceKey": "Roles",
+      "Route": "/admin/settings/roles",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000011",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "LayoutGrid",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Departman Mod\u00FClleri",
+      "LastModifiedByAccountId": null,
+      "Order": 11,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000011",
+      "ResourceKey": "Modules",
+      "Route": "/admin/modules",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000012",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "MessageSquare",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Talep Konular\u0131",
+      "LastModifiedByAccountId": null,
+      "Order": 12,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000012",
+      "ResourceKey": "Subjects",
+      "Route": "/admin/subjects",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000013",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "LayoutList",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Talep Durumlar\u0131",
+      "LastModifiedByAccountId": null,
+      "Order": 13,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000013",
+      "ResourceKey": "Statuses",
+      "Route": "/admin/statuses",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "MenuItem",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000014",
+      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedByAccountId": null,
+      "GroupTitle": null,
+      "Icon": "Building2",
+      "IsActive": true,
+      "IsDeleted": false,
+      "Label": "Kurum Bilgileri",
+      "LastModifiedByAccountId": null,
+      "Order": 14,
+      "ParentId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000014",
+      "ResourceKey": "OrganizationSettings",
+      "Route": "/admin/settings/organization",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Children": [],
+      "Parent": null
+    }
+  },
+  {
+    "Name": "OrganizationInfo",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "Address": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Email": "info@helpcenter.com",
+      "FooterText": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "LogoUrl": null,
+      "OrganizationName": "Help Center",
+      "Phone": "\u002B90 (212) 555 0100",
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "TaxNumber": "1234567890",
+      "TaxOffice": "Maslak V.D.",
+      "UpdatedAt": null,
+      "Website": "https://helpcenter.com"
+    }
+  },
+  {
+    "Name": "Role",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "S\u00FCper Admin - Tam yetki",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Admin",
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermissions": [],
+      "UserRoles": []
+    }
+  },
+  {
+    "Name": "Role",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "M\u00FC\u015Fteri Temsilcisi - Talep ve firma okuma/y\u00F6netme",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Agent",
+      "PublicId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermissions": [],
+      "UserRoles": []
+    }
+  },
+  {
+    "Name": "Role",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000003",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Son Kullan\u0131c\u0131 - Talep olu\u015Fturma ve mesajla\u015Fma",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Customer",
+      "PublicId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermissions": [],
+      "UserRoles": []
+    }
+  },
+  {
+    "Name": "Role",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "Description": "Yetkili Ki\u015Fi - Mod\u00FCl uzman\u0131, yaln\u0131zca atanan talepleri inceler",
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "Name": "Expert",
+      "PublicId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermissions": [],
+      "UserRoles": []
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "ResourceKey": "Dashboard",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000002",
+      "ResourceKey": "Requests",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000003",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000003",
+      "ResourceKey": "Companies",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000004",
+      "ResourceKey": "Users",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000005",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000005",
+      "ResourceKey": "FAQ",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000006",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000006",
+      "ResourceKey": "Guide",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000008",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000008",
+      "ResourceKey": "Roles",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000009",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000009",
+      "ResourceKey": "Modules",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000010",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000010",
+      "ResourceKey": "Subjects",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000011",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000011",
+      "ResourceKey": "Statuses",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000012",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000012",
+      "ResourceKey": "AssignedRequests",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000013",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000013",
+      "ResourceKey": "Customers",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000014",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000014",
+      "ResourceKey": "CustomerRequests",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000015",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000015",
+      "ResourceKey": "Projects",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000016",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000016",
+      "ResourceKey": "OrganizationSettings",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000020",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000020",
+      "ResourceKey": "Requests",
+      "RoleId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000021",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000021",
+      "ResourceKey": "AssignedRequests",
+      "RoleId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000022",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000022",
+      "ResourceKey": "Companies",
+      "RoleId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000023",
+      "AllowedFieldsJson": "[\u0022statusDistribution\u0022,\u0022dailyTrend\u0022]",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000023",
+      "ResourceKey": "Dashboard",
+      "RoleId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000030",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000030",
+      "ResourceKey": "CustomerRequests",
+      "RoleId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermission",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000040",
+      "AllowedFieldsJson": null,
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000040",
+      "ResourceKey": "AssignedRequests",
+      "RoleId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Actions": [],
+      "Role": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000002",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000003",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000003",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000004",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000005",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000005",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000002",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000006",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000006",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000007",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000007",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000008",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000008",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000009",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000009",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000003",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000010",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000010",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000011",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000011",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000012",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000012",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000013",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000013",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000004",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000014",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000014",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000008",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000015",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000015",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000008",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000016",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000016",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000008",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000017",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000017",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000008",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000018",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000018",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000009",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000019",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000019",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000009",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000020",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000020",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000009",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000021",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000021",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000009",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000022",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000022",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000015",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000023",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000023",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000015",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000024",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000024",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000015",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000025",
+      "Action": "Delete",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000025",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000015",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000026",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000026",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000016",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000027",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000027",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000016",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000050",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000050",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000020",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000051",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000051",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000020",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000052",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000052",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000021",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000053",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000053",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000022",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000054",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000054",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000023",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000070",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000070",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000030",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000071",
+      "Action": "Create",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000071",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000030",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000072",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000072",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000030",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000080",
+      "Action": "Read",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000080",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000040",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "RolePermissionAction",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000081",
+      "Action": "Update",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000081",
+      "RolePermissionId": "00000000-0000-0000-0000-000000000040",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "RolePermission": null
+    }
+  },
+  {
+    "Name": "User",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "AccountId": "00000000-0000-0000-0000-000000000001",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "Account": null,
+      "UserRoles": []
+    }
+  },
+  {
+    "Name": "UserRole",
+    "Values": {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedByAccountId": null,
+      "IsActive": true,
+      "IsDeleted": false,
+      "LastModifiedByAccountId": null,
+      "PublicId": "00000000-0000-0000-0000-000000000001",
+      "RoleId": "00000000-0000-0000-0000-000000000001",
+      "RowVersion": "AAAAAAAAAAA=",
+      "UpdatedAt": null,
+      "UserId": "00000000-0000-0000-0000-000000000001",
+      "Role": null,
+      "User": null
+    }
+  }
+]

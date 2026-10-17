@@ -55,7 +55,7 @@ public class AdminGuidesController : ControllerBase
     [HttpDelete("delete/{id}")]
     [HasPermission(AppResources.Guide, PermissionActions.Delete)]
     [EnableRateLimiting("admin-write")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var response = await _mediator.Send(new DeleteGuideCommand(id));
         return Ok(response);

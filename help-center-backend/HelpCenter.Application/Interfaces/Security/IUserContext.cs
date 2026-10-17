@@ -7,10 +7,10 @@ namespace HelpCenter.Application.Interfaces;
 /// </summary>
 public interface IUserContext
 {
-    int UserId { get; }
+    Guid UserId { get; }
     /// <summary>Internal company ID from a customer token; null if missing or invalid. Not a PublicId.</summary>
-    int? CompanyId { get; }
-    IReadOnlyList<int> RoleIds { get; }
+    Guid? CompanyId { get; }
+    IReadOnlyList<Guid> RoleIds { get; }
     bool IsAuthenticated { get; }
 
     /// <summary>Display name or email; null if unknown.</summary>

@@ -4,10 +4,10 @@ namespace HelpCenter.Domain.Entities
 {
     public class RequestHistory : BaseEntity
     {
-        public int RequestId { get; set; }
+        public Guid RequestId { get; set; }
         public virtual CustomerRequest Request { get; set; } = null!;
 
-        public int ActorAccountId { get; set; }
+        public Guid ActorAccountId { get; set; }
         public virtual Account ActorAccount { get; set; } = null!;
 
         public RequestActionType Action { get; set; }

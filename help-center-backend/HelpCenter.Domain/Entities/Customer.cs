@@ -2,10 +2,10 @@ namespace HelpCenter.Domain.Entities
 {
     public class Customer : BaseEntity
     {
-        public int AccountId { get; set; }
+        public Guid AccountId { get; set; }
         public virtual Account Account { get; set; } = null!;
 
-        public int CompanyId { get; set; }
+        public Guid CompanyId { get; set; }
         public virtual Company Company { get; set; } = null!;
         public virtual ICollection<CustomerRequest> CustomerRequests { get; set; } = new HashSet<CustomerRequest>();
 
@@ -49,7 +49,7 @@ namespace HelpCenter.Domain.Entities
         public string FullName => Account?.FullName ?? string.Empty;
 
         // Rich Domain Logic
-        public static Customer Create(int companyId, string firstName, string lastName, string email, string phone, string hashedPassword, string username)
+        public static Customer Create(Guid companyId, string firstName, string lastName, string email, string phone, string hashedPassword, string username)
         {
             return new Customer
             {
@@ -69,7 +69,7 @@ namespace HelpCenter.Domain.Entities
             };
         }
 
-        public void UpdateCompany(int companyId)
+        public void UpdateCompany(Guid companyId)
         {
             CompanyId = companyId;
             UpdatedAt = DateTime.UtcNow;

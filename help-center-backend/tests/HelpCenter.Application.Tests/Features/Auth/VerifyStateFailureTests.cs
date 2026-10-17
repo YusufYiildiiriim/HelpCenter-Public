@@ -42,19 +42,19 @@ public sealed class VerifyStateFailureTests : HandlerTestBase
         var permission = new RolePermission { ResourceKey = "Dashboard", Role = role };
         permission.Actions.Add(new RolePermissionAction { Action = "Read" });
         role.RolePermissions.Add(permission);
-        Db.UserRoles.Add(new UserRole { UserId = 42, Role = role });
+        Db.UserRoles.Add(new UserRole { UserId = HelpCenter.Application.Tests.TestIds.FromInt(42), Role = role });
         await Db.SaveChangesAsync();
         var logger = new RecordingLogger();
         var handler = new GetVerifyStateQueryHandler(uow, new UserPermissionsReader(uow), logger);
 
-        var result = await handler.Handle(new GetVerifyStateQuery(42), CancellationToken.None);
+        var result = await handler.Handle(new GetVerifyStateQuery(TestIds.FromInt(42)), CancellationToken.None);
 
         Assert.Equal("Dashboard", Assert.Single(result.Permissions.Modules).ResourceKey);
         Assert.False(result.IsPasswordChangeRequired);
-        AssertFailure(logger, "VerifyPasswordStateReadFailed", failure, 42);
+        AssertFailure(logger, "VerifyPasswordStateReadFailed", failure, TestIds.FromInt(42));
     }
 
-    private static void AssertFailure(RecordingLogger logger, string eventName, Exception failure, int userId)
+    private static void AssertFailure(RecordingLogger logger, string eventName, Exception failure, Guid userId)
     {
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);

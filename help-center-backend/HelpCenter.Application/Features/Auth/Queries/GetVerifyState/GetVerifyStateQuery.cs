@@ -2,4 +2,4 @@ using MediatR;
 
 namespace HelpCenter.Application.Features.Auth.Queries.GetVerifyState;
 
-public record GetVerifyStateQuery(int UserId) : IRequest<GetVerifyStateResponse>;
+public record GetVerifyStateQuery(Guid UserId) : IRequest<GetVerifyStateResponse>;

@@ -6,6 +6,6 @@ public class DeleteRequestSubjectCommandValidator : AbstractValidator<DeleteRequ
 {
     public DeleteRequestSubjectCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("Geçersiz talep konusu ID.");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Geçersiz talep konusu ID.");
     }
 }

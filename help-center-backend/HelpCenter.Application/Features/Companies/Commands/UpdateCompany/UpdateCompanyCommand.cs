@@ -15,10 +15,10 @@ public class UpdateCompanyCommand : IRequest<bool>
     public string ContactPersonPhone { get; set; } = string.Empty;
     public bool IsDemoActive { get; set; }
     public int BranchCount { get; set; }
-    public List<int> ModuleIds { get; set; } = new();
+    public List<Guid> ModuleIds { get; set; } = new();
     public string PreviousSystem { get; set; } = string.Empty;
     public byte[]? RowVersion { get; set; }
     public string? Password { get; set; }
     public string? ContactPersonUsername { get; set; }
-    public int? ProjectId { get; set; }
+    public Guid? ProjectId { get; set; }
 }

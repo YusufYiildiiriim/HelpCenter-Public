@@ -35,12 +35,12 @@ public class GetCustomerGuidesQueryHandler : IRequestHandler<GetCustomerGuidesQu
                 g => new { g.Id, g.PublicId },
                 cancellationToken: cancellationToken))
               .ToDictionary(x => x.Id, x => x.PublicId)
-            : new Dictionary<int, Guid>();
+            : new Dictionary<Guid, Guid>();
 
         for (int i = 0; i < guides.Count; i++)
         {
             dtos[i].PublicId = guides[i].PublicId;
-            dtos[i].PreviousGuidePublicId = guides[i].PreviousGuideId is int prevId
+            dtos[i].PreviousGuidePublicId = guides[i].PreviousGuideId is Guid prevId
                 && previousGuidePublicIds.TryGetValue(prevId, out var prevPublicId)
                 ? prevPublicId
                 : null;

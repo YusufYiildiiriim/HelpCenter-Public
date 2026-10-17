@@ -22,10 +22,11 @@ public class PublicGuideHandlerTests : HandlerTestBase
     // short within test scope; the GC is sufficient.
     private static ICacheService Cache => new MemoryCacheService(new MemoryCache(new MemoryCacheOptions()));
 
-    private Guide SeedGuide(string title, string module, bool isPublic = true, bool isActive = true, int? previousGuideId = null)
+    private Guide SeedGuide(string title, string module, bool isPublic = true, bool isActive = true, Guid? previousGuideId = null, Guid? id = null)
     {
         var guide = new Guide
         {
+            Id = id ?? Guid.NewGuid(),
             Title = title,
             Description = $"{title} açıklaması",
             Module = module,
@@ -59,9 +60,9 @@ public class PublicGuideHandlerTests : HandlerTestBase
     [Fact]
     public async Task Handle_should_resolve_previous_guide_chain_across_page_boundary()
     {
-        var a = SeedGuide("A - Kurulum", "Modül A");
-        var b = SeedGuide("B - Yapılandırma", "Modül A", previousGuideId: a.Id);
-        var c = SeedGuide("C - Test", "Modül A", previousGuideId: b.Id);
+        var a = SeedGuide("A - Kurulum", "Modül A", id: Guid.Parse("00000000-0000-0000-0000-000000000001"));
+        var b = SeedGuide("B - Yapılandırma", "Modül A", previousGuideId: a.Id, id: Guid.Parse("00000000-0000-0000-0000-000000000002"));
+        var c = SeedGuide("C - Test", "Modül A", previousGuideId: b.Id, id: Guid.Parse("00000000-0000-0000-0000-000000000003"));
         Db.ChangeTracker.Clear();
 
         var handler = new GetPublicGuidesQueryHandler(Uow, Mapper, Cache);

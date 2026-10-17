@@ -4,15 +4,21 @@ namespace HelpCenter.Domain.Entities;
 
 public abstract class BaseEntity : IAuditable, ISoftDelete
 {
-    public int Id { get; set; }
-    public Guid PublicId { get; set; } = Guid.NewGuid();
+    protected BaseEntity()
+    {
+        Id = Guid.NewGuid();
+        PublicId = Id;
+    }
+
+    public Guid Id { get; set; }
+    public Guid PublicId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public int? CreatedByAccountId { get; set; }
-    public int? LastModifiedByAccountId { get; set; }
+    public Guid? CreatedByAccountId { get; set; }
+    public Guid? LastModifiedByAccountId { get; set; }
 
     public byte[] RowVersion { get; set; } = new byte[8];
 

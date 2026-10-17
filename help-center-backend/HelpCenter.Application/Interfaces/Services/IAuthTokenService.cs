@@ -10,10 +10,10 @@ namespace HelpCenter.Application.Interfaces;
 public interface IAuthTokenService
 {
     /// <summary>Issues a new access+refresh token pair after login.</summary>
-    Task<AuthTokens> IssueTokensAsync(int userId, string role, string email, string? ipAddress, string? userAgent, CancellationToken ct = default);
+    Task<AuthTokens> IssueTokensAsync(Guid userId, string role, string email, string? ipAddress, string? userAgent, CancellationToken ct = default);
 
     /// <summary>Issues a customer access+refresh token pair after customer login.</summary>
-    Task<AuthTokens> IssueCustomerTokensAsync(int customerId, int companyId, string email, string? ipAddress, string? userAgent, CancellationToken ct = default);
+    Task<AuthTokens> IssueCustomerTokensAsync(Guid customerId, Guid companyId, string email, string? ipAddress, string? userAgent, CancellationToken ct = default);
 
     /// <summary>Rotates the refresh token: invalidates the old one, issues a new one. Revokes the chain if reuse is detected.</summary>
     Task<AuthTokens> RefreshAsync(string rawRefreshToken, string? ipAddress, string? userAgent, CancellationToken ct = default);
