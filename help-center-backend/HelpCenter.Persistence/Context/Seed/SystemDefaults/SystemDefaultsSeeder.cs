@@ -30,8 +30,7 @@ public static class SystemDefaultsSeeder
             var sourceId = (Guid)(entityType.GetProperty(nameof(BaseEntity.Id))?.GetValue(entity)
                 ?? throw new InvalidOperationException($"System seed {row.Name} has no Id."));
             RewriteSeedForeignKeys(entity, entityType, ids);
-            var existing = await FindMappedLegacyRowAsync(context, row.Name, sourceId, entityType, cancellationToken)
-                ?? await FindExistingAsync(context, entity, entityType, cancellationToken);
+            var existing = await FindExistingAsync(context, entity, entityType, cancellationToken);
             if (existing is null)
             {
                 context.Add(entity);
@@ -44,44 +43,6 @@ public static class SystemDefaultsSeeder
         }
 
         return inserted;
-    }
-
-    private static async Task<object?> FindMappedLegacyRowAsync(
-        EfContext context, string entityName, Guid seedId, Type entityType, CancellationToken ct)
-    {
-        // Old HasData IDs were positive ints. Their deterministic seed Guid uses the same value
-        // in its final segment, letting migrated installations find rows even if admins renamed
-        // roles or edited permissions. SQLite/InMemory test databases have no mapping table.
-        if (!context.Database.IsSqlServer() || seedId == Guid.Empty || entityType == typeof(CustomerRequestStatus)) return null;
-        var legacyId = seedId.ToString("N");
-        if (!long.TryParse(legacyId.AsSpan(24), out var oldId) || oldId <= 0) return null;
-
-        await context.Database.OpenConnectionAsync(ct);
-        try
-        {
-            await using var command = context.Database.GetDbConnection().CreateCommand();
-            command.CommandText = "SELECT NewId FROM dbo.GuidIdentityMap WHERE EntityName = @entityName AND LegacyId = @legacyId";
-            var entityParam = command.CreateParameter();
-            entityParam.ParameterName = "@entityName";
-            entityParam.Value = context.Model.FindEntityType(entityType)?.GetTableName() ?? entityName;
-            command.Parameters.Add(entityParam);
-            var idParam = command.CreateParameter();
-            idParam.ParameterName = "@legacyId";
-            idParam.Value = oldId;
-            command.Parameters.Add(idParam);
-            var result = await command.ExecuteScalarAsync(ct);
-            if (result is not Guid mappedId) return null;
-            return await context.FindAsync(entityType, [mappedId], ct);
-        }
-        catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 208)
-        {
-            // A brand-new database before cutover has no mapping table yet.
-            return null;
-        }
-        finally
-        {
-            await context.Database.CloseConnectionAsync();
-        }
     }
 
     private static Type ResolveEntityType(string name) => name switch

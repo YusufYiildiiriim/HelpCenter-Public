@@ -3,7 +3,7 @@ namespace HelpCenter.Persistence.Migrations;
 /// <summary>Validates the prepared snapshot and records a gate for the later, separately reviewed cutover.</summary>
 internal static class GuidIdentityValidateSql
 {
-    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityValidateGate;";
+    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityValidateSchemaSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateModuleSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateForeignKeySnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateTextReferenceSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateReferenceSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateRowCountSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateMapSnapshot; DROP TABLE IF EXISTS dbo.GuidIdentityValidateGate;";
 
     internal static string FinalizerRefresh => Up.Replace(
         "DECLARE @isFinalizer bit=0;",
@@ -51,6 +51,32 @@ BEGIN
     IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityValidateGate)<>1
        OR NOT EXISTS(SELECT 1 FROM dbo.GuidIdentityValidateGate WHERE GateId=1 AND DatabaseName=DB_NAME() AND EntityCount=30)
         THROW 51000, 'The existing GUID validation gate is malformed or belongs to a different database.', 1;
+    IF OBJECT_ID(N'dbo.GuidIdentityValidateMapSnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateRowCountSnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateReferenceSnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateTextReferenceSnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateForeignKeySnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateModuleSnapshot',N'U') IS NULL
+       OR OBJECT_ID(N'dbo.GuidIdentityValidateSchemaSnapshot',N'U') IS NULL
+        THROW 51000, 'The exact validated GUID staging snapshot is incomplete.', 1;
+    IF EXISTS(SELECT EntityName,LegacyId,GuidId,OriginalPublicId FROM dbo.GuidIdentityPrepareMap EXCEPT SELECT EntityName,LegacyId,GuidId,OriginalPublicId FROM dbo.GuidIdentityValidateMapSnapshot)
+       OR EXISTS(SELECT EntityName,LegacyId,GuidId,OriginalPublicId FROM dbo.GuidIdentityValidateMapSnapshot EXCEPT SELECT EntityName,LegacyId,GuidId,OriginalPublicId FROM dbo.GuidIdentityPrepareMap)
+        THROW 51000, 'Prepared entity mapping changed after Validate; cutover is aborted.', 1;
+    IF EXISTS(SELECT EntityName,SourceRowCount,PreparedRowCount FROM dbo.GuidIdentityPrepareRowCounts EXCEPT SELECT EntityName,SourceRowCount,PreparedRowCount FROM dbo.GuidIdentityValidateRowCountSnapshot)
+       OR EXISTS(SELECT EntityName,SourceRowCount,PreparedRowCount FROM dbo.GuidIdentityValidateRowCountSnapshot EXCEPT SELECT EntityName,SourceRowCount,PreparedRowCount FROM dbo.GuidIdentityPrepareRowCounts)
+        THROW 51000, 'Prepared row-count inventory changed after Validate; cutover is aborted.', 1;
+    IF EXISTS(SELECT ParentEntityName,ParentLegacyId,ColumnName,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityPrepareReferenceMap EXCEPT SELECT ParentEntityName,ParentLegacyId,ColumnName,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityValidateReferenceSnapshot)
+       OR EXISTS(SELECT ParentEntityName,ParentLegacyId,ColumnName,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityValidateReferenceSnapshot EXCEPT SELECT ParentEntityName,ParentLegacyId,ColumnName,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityPrepareReferenceMap)
+        THROW 51000, 'Prepared identity references changed after Validate; cutover is aborted.', 1;
+    IF EXISTS(SELECT ParentLegacyId,ColumnName,OriginalValue,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityPrepareTextReferenceMap EXCEPT SELECT ParentLegacyId,ColumnName,OriginalValue,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityValidateTextReferenceSnapshot)
+       OR EXISTS(SELECT ParentLegacyId,ColumnName,OriginalValue,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityValidateTextReferenceSnapshot EXCEPT SELECT ParentLegacyId,ColumnName,OriginalValue,ReferencedEntityName,ReferencedLegacyId,GuidId FROM dbo.GuidIdentityPrepareTextReferenceMap)
+        THROW 51000, 'Prepared text references changed after Validate; cutover is aborted.', 1;
+    IF EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityValidateForeignKeySnapshot)
+       OR EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityValidateForeignKeySnapshot EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory)
+        THROW 51000, 'Prepared foreign-key inventory changed after Validate; cutover is aborted.', 1;
+    IF EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityValidateModuleSnapshot)
+       OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityValidateModuleSnapshot EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency)
+        THROW 51000, 'Prepared SQL-module inventory changed after Validate; cutover is aborted.', 1;
     SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
            ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
     INTO #PreviousGuidIdentityGate FROM dbo.GuidIdentityValidateGate;
@@ -58,6 +84,15 @@ BEGIN
 END
 ELSE IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
     THROW 51000, 'A Guid identity validation gate already exists; inspect migration history before retrying.', 1;
+IF @isFinalizer=0 AND
+   (OBJECT_ID(N'dbo.GuidIdentityValidateMapSnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateRowCountSnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateReferenceSnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateTextReferenceSnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateForeignKeySnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateModuleSnapshot',N'U') IS NOT NULL
+    OR OBJECT_ID(N'dbo.GuidIdentityValidateSchemaSnapshot',N'U') IS NOT NULL)
+    THROW 51000, 'GUID validation snapshot artifacts already exist; inspect migration history before retrying.', 1;
 
 CREATE TABLE dbo.GuidIdentityValidateGate
 (
@@ -309,6 +344,22 @@ FROM dbo.GuidIdentityPrepareModuleDependency;
 DECLARE @SchemaJson nvarchar(max),@SchemaFingerprint varbinary(32),@PreparedFingerprint varbinary(32);
 SELECT @SchemaJson=(SELECT EntityName,ItemKind,ItemName,Definition FROM #SchemaRows ORDER BY EntityName,ItemKind,ItemName,Definition FOR JSON PATH,INCLUDE_NULL_VALUES);
 SET @SchemaFingerprint=HASHBYTES('SHA2_256',CONVERT(varbinary(max),ISNULL(@SchemaJson,N'[]')));
+IF @isFinalizer=1
+BEGIN
+    IF EXISTS(SELECT EntityName,ItemKind,ItemName,Definition FROM #SchemaRows EXCEPT SELECT EntityName,ItemKind,ItemName,Definition FROM dbo.GuidIdentityValidateSchemaSnapshot)
+       OR EXISTS(SELECT EntityName,ItemKind,ItemName,Definition FROM dbo.GuidIdentityValidateSchemaSnapshot EXCEPT SELECT EntityName,ItemKind,ItemName,Definition FROM #SchemaRows)
+        THROW 51000, 'Converted-table schema, FK, trigger, or module inventory changed after Validate; cutover is aborted.', 1;
+END
+ELSE
+BEGIN
+    SELECT EntityName,ItemKind,ItemName,Definition INTO dbo.GuidIdentityValidateSchemaSnapshot FROM #SchemaRows;
+    SELECT EntityName,LegacyId,GuidId,OriginalPublicId INTO dbo.GuidIdentityValidateMapSnapshot FROM dbo.GuidIdentityPrepareMap;
+    SELECT EntityName,SourceRowCount,PreparedRowCount INTO dbo.GuidIdentityValidateRowCountSnapshot FROM dbo.GuidIdentityPrepareRowCounts;
+    SELECT ParentEntityName,ParentLegacyId,ColumnName,ReferencedEntityName,ReferencedLegacyId,GuidId INTO dbo.GuidIdentityValidateReferenceSnapshot FROM dbo.GuidIdentityPrepareReferenceMap;
+    SELECT ParentLegacyId,ColumnName,OriginalValue,ReferencedEntityName,ReferencedLegacyId,GuidId INTO dbo.GuidIdentityValidateTextReferenceSnapshot FROM dbo.GuidIdentityPrepareTextReferenceMap;
+    SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition INTO dbo.GuidIdentityValidateForeignKeySnapshot FROM dbo.GuidIdentityPrepareForeignKeyInventory;
+    SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition INTO dbo.GuidIdentityValidateModuleSnapshot FROM dbo.GuidIdentityPrepareModuleDependency;
+END;
 DECLARE @PreparedSummary nvarchar(max);
 SELECT @PreparedSummary=(SELECT
   (SELECT EntityName,SourceRowCount,PreparedRowCount FROM dbo.GuidIdentityPrepareRowCounts ORDER BY EntityName FOR JSON PATH) AS EntityCounts,

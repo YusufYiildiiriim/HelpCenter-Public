@@ -4,6 +4,17 @@ internal static class GuidIdentityCutoverSql
 {
     internal const string Down = "THROW 51000, 'Guid identity cutover Down is disabled; restore the verified pre-cutover backup to roll back.', 1;";
 
+    internal const string AcquireCutoverLock = """
+DECLARE @cutoverLockResult int;
+EXEC @cutoverLockResult=sys.sp_getapplock
+    @Resource=N'HelpCenter.GuidIdentityCutover',
+    @LockMode=N'Exclusive',
+    @LockOwner=N'Transaction',
+    @LockTimeout=60000;
+IF @cutoverLockResult<0
+    THROW 51000, 'Could not acquire the exclusive GUID cutover application lock.', 1;
+""";
+
     internal const string SpDashboardStats = """
 CREATE OR ALTER PROCEDURE dbo.Sp_DashboardStats
 AS
@@ -34,6 +45,49 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT COUNT(*) FROM dbo.CustomerRequests WHERE StatusId IN ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000004') AND IsDeleted=0;
+END;
+""";
+
+    internal const string SpStatusDistribution = """
+CREATE OR ALTER PROCEDURE dbo.Sp_StatusDistribution
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT s.Id AS StatusId,s.Name AS Name,COUNT(cr.Id) AS Count
+    FROM dbo.CustomerRequestStatuses s
+    LEFT JOIN dbo.CustomerRequests cr ON cr.StatusId=s.Id AND cr.IsDeleted=0
+    WHERE s.IsDeleted=0
+    GROUP BY s.Id,s.Name
+    ORDER BY Count DESC;
+END;
+""";
+
+    internal const string SpModuleDistribution = """
+CREATE OR ALTER PROCEDURE dbo.Sp_ModuleDistribution
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT m.Id AS ModuleId,m.Name AS Name,COUNT(cr.Id) AS Count
+    FROM dbo.Modules m
+    LEFT JOIN dbo.CustomerRequests cr ON cr.ModuleId=m.Id AND cr.IsDeleted=0
+    WHERE m.IsDeleted=0
+    GROUP BY m.Id,m.Name
+    ORDER BY Count DESC;
+END;
+""";
+
+    internal const string SpCompanyTopN = """
+CREATE OR ALTER PROCEDURE dbo.Sp_CompanyTopN @Top int=10
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT TOP (@Top) co.Id AS CompanyId,co.Name AS Name,COUNT(cr.Id) AS Count
+    FROM dbo.Companies co
+    LEFT JOIN dbo.Customers cu ON cu.CompanyId=co.Id AND cu.IsDeleted=0
+    LEFT JOIN dbo.CustomerRequests cr ON cr.CustomerId=cu.Id AND cr.IsDeleted=0
+    WHERE co.IsDeleted=0
+    GROUP BY co.Id,co.Name
+    ORDER BY COUNT(cr.Id) DESC,co.Name ASC;
 END;
 """;
 
@@ -91,6 +145,9 @@ END;
 SET XACT_ABORT ON;
 IF OBJECT_ID(N'dbo.GuidIdentityMap', N'U') IS NOT NULL
     THROW 51000, 'GuidIdentityMap already exists; migration is not safe to rerun.', 1;
+IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NULL
+   OR NOT EXISTS(SELECT 1 FROM dbo.GuidIdentityValidateGate WHERE GateId=1 AND DatabaseName=DB_NAME() AND EntityCount=30)
+    THROW 51000, 'The cutover requires the gate-bound, freshly revalidated staging snapshot.', 1;
 
 CREATE TABLE dbo.GuidIdentityMap
 (
@@ -101,6 +158,12 @@ CREATE TABLE dbo.GuidIdentityMap
     CONSTRAINT PK_GuidIdentityMap PRIMARY KEY (EntityName, LegacyId),
     CONSTRAINT UQ_GuidIdentityMap_Entity_NewId UNIQUE (EntityName, NewId)
 );
+-- This legacy-key map exists only inside the cutover transaction. Its values are copied from the
+-- exact gate-bound Prepare snapshot; it is never independently regenerated or retained at runtime.
+INSERT dbo.GuidIdentityMap(EntityName,LegacyId,NewId,OriginalPublicId)
+SELECT EntityName,LegacyId,GuidId,OriginalPublicId FROM dbo.GuidIdentityPrepareMap;
+IF @@ROWCOUNT <> (SELECT PreparedIds FROM dbo.GuidIdentityValidateGate WHERE GateId=1)
+    THROW 51000, 'Prepared identity map no longer matches the validated gate.', 1;
 CREATE TABLE dbo.GuidIdentityColumnMap
 (
     EntityName sysname NOT NULL,
@@ -127,6 +190,8 @@ CREATE TABLE dbo.GuidIdentityForeignKeyMap
     DeleteAction nvarchar(60) NOT NULL,
     UpdateAction nvarchar(60) NOT NULL,
     IsNotForReplication bit NOT NULL,
+    IsDisabled bit NOT NULL,
+    IsNotTrusted bit NOT NULL,
     CONSTRAINT PK_GuidIdentityForeignKeyMap PRIMARY KEY (ParentEntityName, ConstraintName)
 );
 CREATE TABLE dbo.GuidIdentityIndexMap
@@ -137,6 +202,19 @@ CREATE TABLE dbo.GuidIdentityIndexMap
     CreateSql nvarchar(max) NOT NULL,
     CONSTRAINT PK_GuidIdentityIndexMap PRIMARY KEY (EntityName, IndexName)
 );
+CREATE TABLE dbo.GuidIdentityTriggerState
+(
+    TriggerSchema sysname NOT NULL,
+    TriggerName sysname NOT NULL,
+    ParentSchema sysname NOT NULL,
+    ParentName sysname NOT NULL,
+    IsDisabled bit NOT NULL,
+    IsNotForReplication bit NOT NULL,
+    IsInsteadOfTrigger bit NOT NULL,
+    DefinitionHash varbinary(32) NULL,
+    EventList nvarchar(max) NOT NULL,
+    CONSTRAINT PK_GuidIdentityTriggerState PRIMARY KEY(TriggerSchema,TriggerName)
+);
 
 DECLARE @Entities table (EntityName sysname PRIMARY KEY);
 INSERT @Entities(EntityName) VALUES
@@ -146,6 +224,15 @@ INSERT @Entities(EntityName) VALUES
 (N'ModuleExperts'),(N'Modules'),(N'OrganizationInfos'),(N'ProjectModule'),(N'Projects'),(N'RequestHistories'),
 (N'RequestSubjects'),(N'RolePermissionActions'),(N'RolePermissions'),(N'Roles'),(N'UserProjects'),(N'UserRoles'),
 (N'Users'),(N'AuditLogs'),(N'RefreshTokens');
+
+INSERT dbo.GuidIdentityTriggerState(TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList)
+SELECT SCHEMA_NAME(triggerObject.schema_id),tr.name,SCHEMA_NAME(parent.schema_id),parent.name,tr.is_disabled,tr.is_not_for_replication,tr.is_instead_of_trigger,
+       CASE WHEN sm.definition IS NULL THEN NULL ELSE HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition)) END,ISNULL(ev.EventList,N'')
+FROM sys.triggers tr JOIN sys.objects triggerObject ON triggerObject.object_id=tr.object_id
+JOIN sys.tables parent ON parent.object_id=tr.parent_id JOIN @Entities e ON e.EntityName=parent.name
+LEFT JOIN sys.sql_modules sm ON sm.object_id=tr.object_id
+OUTER APPLY(SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(te.type_desc,N':',te.event_group_type_desc,N':',te.is_first,N':',te.is_last)),N'|') WITHIN GROUP(ORDER BY te.type_desc) AS EventList FROM sys.trigger_events te WHERE te.object_id=tr.object_id) ev
+WHERE SCHEMA_NAME(parent.schema_id)=N'dbo';
 
 -- Only known legacy system seed identities may synthesize a deterministic ID when PublicId was absent.
 CREATE TABLE #KnownSeedRows(EntityName sysname NOT NULL, LegacyId bigint NOT NULL, PRIMARY KEY(EntityName,LegacyId));
@@ -186,18 +273,33 @@ IF EXISTS (
     WHERE ri.is_unique=1 AND ri.is_primary_key=0
 )
     THROW 51000, 'A foreign key references an alternate unique constraint; this manifest only migrates primary identity FKs.', 1;
-IF EXISTS (
-    SELECT 1 FROM sys.foreign_keys fk JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities e ON e.EntityName=rt.name
-    JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
-    WHERE rc.name=N'Id' AND (fk.is_disabled=1 OR fk.is_not_trusted=1)
+IF EXISTS(
+    SELECT 1 FROM sys.default_constraints dc JOIN sys.columns c ON c.object_id=dc.parent_object_id AND c.column_id=dc.parent_column_id
+    JOIN sys.tables t ON t.object_id=c.object_id JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE (c.name=N'Id' OR c.name LIKE N'%Id') AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
 )
-    THROW 51000, 'Disabled or untrusted identity FK found; reconcile it before cutover.', 1;
+ OR EXISTS(
+    SELECT 1 FROM sys.check_constraints cc JOIN sys.tables t ON t.object_id=cc.parent_object_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE CHARINDEX(N'Id',cc.definition COLLATE Latin1_General_100_CI_AS)>0
+)
+ OR EXISTS(
+    SELECT 1 FROM sys.computed_columns cc JOIN sys.tables t ON t.object_id=cc.object_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE CHARINDEX(N'Id',cc.definition COLLATE Latin1_General_100_CI_AS)>0
+)
+    THROW 51000, 'A default, check, or computed-column dependency may reference a numeric identity; the cutover fails closed.', 1;
 IF EXISTS (
     SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
     JOIN sys.partitions p ON p.object_id=i.object_id AND p.index_id=i.index_id
     WHERE i.index_id>0 AND i.is_primary_key=0 AND i.is_disabled=0 AND p.data_compression<>0
 )
     THROW 51000, 'Compressed rowstore indexes are unsupported by this cutover manifest.', 1;
+IF EXISTS (
+    SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.partitions p ON p.object_id=i.object_id AND p.index_id=i.index_id
+    WHERE i.index_id>0 AND p.data_compression<>0
+)
+    THROW 51000, 'Compressed index metadata is unsupported; cutover is fail-closed before the first drop.', 1;
 IF EXISTS (
     SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
     WHERE i.index_id>0 AND i.is_primary_key=0 AND i.is_disabled=1 AND SCHEMA_NAME(t.schema_id)=N'dbo'
@@ -261,23 +363,11 @@ BEGIN
     INSERT dbo.GuidIdentityColumnMap VALUES(@entity,N'Id',NULL,@idType,0,1);
     SELECT @sql=N'ALTER TABLE dbo.'+QUOTENAME(@entity)+N' ADD [__Guid_Id] uniqueidentifier NULL;';
     EXEC sys.sp_executesql @sql;
-    IF @entity IN (N'AuditLogs',N'RefreshTokens')
-        SET @sql=N'UPDATE dbo.'+QUOTENAME(@entity)+N' SET [__Guid_Id]=NEWID();';
-    ELSE IF @entity=N'CustomerRequestStatuses'
-        SET @sql=N'UPDATE dbo.CustomerRequestStatuses SET [__Guid_Id]=CASE CONVERT(bigint,[Id]) WHEN 1 THEN ''10000000-0000-4000-8000-000000000001'' WHEN 2 THEN ''10000000-0000-4000-8000-000000000002'' WHEN 3 THEN ''10000000-0000-4000-8000-000000000003'' WHEN 4 THEN ''10000000-0000-4000-8000-000000000004'' ELSE [PublicId] END;';
-    ELSE
-        SET @sql=N'UPDATE dbo.'+QUOTENAME(@entity)+N' SET [__Guid_Id]=CASE WHEN [PublicId] IS NULL OR [PublicId]=''00000000-0000-0000-0000-000000000000'' THEN (SELECT CONVERT(uniqueidentifier,''00000000-0000-0000-0000-''+RIGHT(REPLICATE(''0'',12)+CONVERT(varchar(12),CONVERT(bigint,[Id])),12)) FROM #KnownSeedRows s WHERE s.EntityName=@n AND s.LegacyId=CONVERT(bigint,[Id])) ELSE [PublicId] END;';
+    SET @sql=N'UPDATE x SET [__Guid_Id]=m.NewId FROM dbo.'+QUOTENAME(@entity)+N' x JOIN dbo.GuidIdentityMap m ON m.EntityName=@n AND m.LegacyId=CONVERT(bigint,x.Id);';
     EXEC sys.sp_executesql @sql,N'@n sysname',@n=@entity;
     SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@entity)+N' ALTER COLUMN [__Guid_Id] uniqueidentifier NOT NULL;';
     EXEC sys.sp_executesql @sql;
-    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id=@obj AND name=N'PublicId')
-    BEGIN
-        SET @sql=N'INSERT dbo.GuidIdentityMap(EntityName,LegacyId,NewId,OriginalPublicId) SELECT @n,CONVERT(bigint,[Id]),[__Guid_Id],[PublicId] FROM dbo.'+QUOTENAME(@entity)+N';';
-    END
-    ELSE
-    BEGIN
-        SET @sql=N'INSERT dbo.GuidIdentityMap(EntityName,LegacyId,NewId,OriginalPublicId) SELECT @n,CONVERT(bigint,[Id]),[__Guid_Id],NULL FROM dbo.'+QUOTENAME(@entity)+N';';
-    END
+    SET @sql=N'IF EXISTS(SELECT 1 FROM dbo.'+QUOTENAME(@entity)+N' x LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@n AND m.LegacyId=CONVERT(bigint,x.Id) WHERE m.LegacyId IS NULL OR x.__Guid_Id<>m.NewId) THROW 51000, ''Entity shadow differs from its gate-bound Prepare mapping.'', 1; IF EXISTS(SELECT 1 FROM dbo.GuidIdentityMap m LEFT JOIN dbo.'+QUOTENAME(@entity)+N' x ON CONVERT(bigint,x.Id)=m.LegacyId WHERE m.EntityName=@n AND (x.Id IS NULL OR x.__Guid_Id<>m.NewId)) THROW 51000, ''Prepared entity mapping has no matching source shadow.'', 1;';
     EXEC sys.sp_executesql @sql,N'@n sysname',@n=@entity;
     IF EXISTS (SELECT 1 FROM dbo.GuidIdentityMap WHERE EntityName=@entity GROUP BY NewId HAVING COUNT(*)>1)
         THROW 51000, 'PublicId collision found within an entity table; stop before cutover.', 1;
@@ -294,9 +384,9 @@ IF EXISTS (
     GROUP BY fkc.constraint_object_id HAVING COUNT(*)<>1
 )
     THROW 51000, 'Composite FK to an entity identity is unsupported by this migration manifest.', 1;
-DECLARE @parent sysname,@column sysname,@referenced sysname,@nullable bit,@type sysname,@fk sysname,@delete nvarchar(60),@update nvarchar(60),@nfr bit;
+DECLARE @parent sysname,@column sysname,@referenced sysname,@nullable bit,@type sysname,@fk sysname,@delete nvarchar(60),@update nvarchar(60),@nfr bit,@fkDisabled bit,@fkUntrusted bit;
 DECLARE fk_cursor CURSOR LOCAL FAST_FORWARD FOR
-SELECT pt.name,pc.name,rt.name,pc.is_nullable,ty.name,fk.name,fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_not_for_replication
+SELECT pt.name,pc.name,rt.name,pc.is_nullable,ty.name,fk.name,fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_not_for_replication,fk.is_disabled,fk.is_not_trusted
 FROM sys.foreign_key_columns fkc
 JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
 JOIN sys.tables pt ON pt.object_id=fk.parent_object_id
@@ -307,12 +397,12 @@ JOIN sys.types ty ON ty.user_type_id=pc.user_type_id
 JOIN @Entities ep ON ep.EntityName=pt.name
 JOIN @Entities er ON er.EntityName=rt.name
 WHERE SCHEMA_NAME(pt.schema_id)=N'dbo' AND SCHEMA_NAME(rt.schema_id)=N'dbo' AND rc.name=N'Id';
-OPEN fk_cursor; FETCH NEXT FROM fk_cursor INTO @parent,@column,@referenced,@nullable,@type,@fk,@delete,@update,@nfr;
+OPEN fk_cursor; FETCH NEXT FROM fk_cursor INTO @parent,@column,@referenced,@nullable,@type,@fk,@delete,@update,@nfr,@fkDisabled,@fkUntrusted;
 WHILE @@FETCH_STATUS=0
 BEGIN
     IF @type NOT IN (N'int',N'bigint') THROW 51000, 'Unsupported FK column type.', 1;
     INSERT dbo.GuidIdentityColumnMap VALUES(@parent,@column,@referenced,@type,@nullable,0);
-    INSERT dbo.GuidIdentityForeignKeyMap VALUES(@parent,@fk,@column,@referenced,N'Id',@delete,@update,@nfr);
+    INSERT dbo.GuidIdentityForeignKeyMap VALUES(@parent,@fk,@column,@referenced,N'Id',@delete,@update,@nfr,@fkDisabled,@fkUntrusted);
     SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ADD '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NULL; UPDATE p SET '+QUOTENAME(N'__Guid_'+@column)+N'=m.NewId FROM dbo.'+QUOTENAME(@parent)+N' p LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@target AND m.LegacyId=CONVERT(bigint,p.'+QUOTENAME(@column)+N') WHERE p.'+QUOTENAME(@column)+N' IS NOT NULL;';
     EXEC sys.sp_executesql @sql,N'@target sysname',@target=@referenced;
     IF @nullable=0 BEGIN
@@ -321,17 +411,34 @@ BEGIN
     END
     SET @sql=N'IF EXISTS(SELECT 1 FROM dbo.'+QUOTENAME(@parent)+N' WHERE '+QUOTENAME(@column)+N' IS NOT NULL AND '+QUOTENAME(N'__Guid_'+@column)+N' IS NULL) THROW 51000, ''Orphan FK value found; stop before cutover.'', 1;';
     EXEC sys.sp_executesql @sql;
-    FETCH NEXT FROM fk_cursor INTO @parent,@column,@referenced,@nullable,@type,@fk,@delete,@update,@nfr;
+    FETCH NEXT FROM fk_cursor INTO @parent,@column,@referenced,@nullable,@type,@fk,@delete,@update,@nfr,@fkDisabled,@fkUntrusted;
 END
 CLOSE fk_cursor; DEALLOCATE fk_cursor;
 
 -- Explicit scalar references not represented by SQL FK constraints.
+DECLARE @ScalarRefs table(ParentEntityName sysname NOT NULL,ColumnName sysname NOT NULL,ReferencedEntityName sysname NOT NULL,PRIMARY KEY(ParentEntityName,ColumnName));
+INSERT @ScalarRefs SELECT e.EntityName,v.ColumnName,N'Accounts' FROM @Entities e CROSS JOIN(VALUES(N'CreatedByAccountId'),(N'LastModifiedByAccountId')) v(ColumnName) WHERE e.EntityName NOT IN(N'AuditLogs',N'RefreshTokens');
+INSERT @ScalarRefs VALUES
+(N'Companies',N'ProjectId',N'Projects'),(N'CompanyModule',N'CompanyId',N'Companies'),(N'CompanyModule',N'ModuleId',N'Modules'),
+(N'ConversationParticipants',N'ConversationId',N'Conversations'),(N'ConversationParticipants',N'UserId',N'Users'),(N'ConversationParticipants',N'CustomerId',N'Customers'),
+(N'CustomerRequestDocuments',N'CustomerRequestId',N'CustomerRequests'),(N'CustomerRequestDocuments',N'CustomerRequestMessageId',N'CustomerRequestMessages'),
+(N'CustomerRequestEvaluations',N'CustomerRequestId',N'CustomerRequests'),(N'CustomerRequestEvaluations',N'CustomerUserId',N'Customers'),
+(N'CustomerRequestMessages',N'ConversationId',N'Conversations'),(N'CustomerRequestMessages',N'SenderParticipantId',N'ConversationParticipants'),
+(N'CustomerRequests',N'CustomerId',N'Customers'),(N'CustomerRequests',N'RequestSubjectId',N'RequestSubjects'),(N'CustomerRequests',N'ModuleId',N'Modules'),
+(N'CustomerRequests',N'AssignedUserId',N'Users'),(N'CustomerRequests',N'CurrentExpertId',N'Users'),(N'CustomerRequests',N'ConversationId',N'Conversations'),(N'CustomerRequests',N'StatusId',N'CustomerRequestStatuses'),
+(N'CustomerRequestStatuses',N'ProjectId',N'Projects'),(N'Customers',N'AccountId',N'Accounts'),(N'Customers',N'CompanyId',N'Companies'),
+(N'Documents',N'GuideId',N'Guides'),(N'FAQs',N'ProjectId',N'Projects'),(N'FAQs',N'ModuleId',N'Modules'),
+(N'Guides',N'PreviousGuideId',N'Guides'),(N'Guides',N'ModuleId',N'Modules'),(N'Guides',N'ProjectId',N'Projects'),
+(N'ModuleExperts',N'ModuleId',N'Modules'),(N'ModuleExperts',N'UserId',N'Users'),(N'RequestHistories',N'RequestId',N'CustomerRequests'),(N'RequestHistories',N'ActorAccountId',N'Accounts'),
+(N'RequestSubjects',N'ModuleId',N'Modules'),(N'RequestSubjects',N'ProjectId',N'Projects'),(N'RolePermissionActions',N'RolePermissionId',N'RolePermissions'),
+(N'RolePermissions',N'RoleId',N'Roles'),(N'UserProjects',N'ProjectId',N'Projects'),(N'UserProjects',N'UserId',N'Users'),
+(N'UserRoles',N'UserId',N'Users'),(N'UserRoles',N'RoleId',N'Roles'),(N'Users',N'AccountId',N'Accounts'),(N'MenuItems',N'ParentId',N'MenuItems'),
+(N'AuditLogs',N'ActorUserId',N'Users'),(N'RefreshTokens',N'UserId',N'Users'),(N'RefreshTokens',N'CustomerId',N'Customers');
 DECLARE scalar_cursor CURSOR LOCAL FAST_FORWARD FOR
-SELECT t.name,c.name,CASE c.name WHEN N'ActorUserId' THEN N'Users' ELSE N'Accounts' END,c.is_nullable,ty.name
-FROM sys.tables t JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
-JOIN @Entities e ON e.EntityName=t.name
-WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND c.name IN (N'CreatedByAccountId',N'LastModifiedByAccountId',N'ActorUserId')
-AND ty.name IN (N'int',N'bigint')
+SELECT t.name,c.name,s.ReferencedEntityName,c.is_nullable,ty.name
+FROM @ScalarRefs s JOIN sys.tables t ON t.name=s.ParentEntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
+JOIN sys.columns c ON c.object_id=t.object_id AND c.name=s.ColumnName JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+WHERE ty.name IN(N'int',N'bigint')
 AND NOT EXISTS(SELECT 1 FROM dbo.GuidIdentityColumnMap m WHERE m.EntityName=t.name AND m.ColumnName=c.name);
 OPEN scalar_cursor; FETCH NEXT FROM scalar_cursor INTO @parent,@column,@referenced,@nullable,@type;
 WHILE @@FETCH_STATUS=0
@@ -418,6 +525,61 @@ BEGIN
 END
 CLOSE index_cursor; DEALLOCATE index_cursor;
 
+-- Exact bidirectional identity/reference/text parity is the authorization boundary before the
+-- first application constraint or numeric column is dropped. Validate holds ordered X locks.
+IF EXISTS
+(
+    SELECT 1 FROM dbo.GuidIdentityMap m
+    LEFT JOIN dbo.GuidIdentityPrepareMap p ON p.EntityName=m.EntityName AND p.LegacyId=m.LegacyId
+    WHERE p.LegacyId IS NULL OR p.GuidId<>m.NewId OR ISNULL(p.OriginalPublicId,'00000000-0000-0000-0000-000000000000')<>ISNULL(m.OriginalPublicId,'00000000-0000-0000-0000-000000000000')
+)
+ OR EXISTS
+(
+    SELECT 1 FROM dbo.GuidIdentityPrepareMap p
+    LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=p.EntityName AND m.LegacyId=p.LegacyId
+    WHERE m.LegacyId IS NULL OR m.NewId<>p.GuidId OR ISNULL(m.OriginalPublicId,'00000000-0000-0000-0000-000000000000')<>ISNULL(p.OriginalPublicId,'00000000-0000-0000-0000-000000000000')
+)
+    THROW 51000, 'Temporary cutover identity map is not exactly equal to the validated Prepare map.', 1;
+
+DECLARE @parityParent sysname,@parityColumn sysname,@paritySql nvarchar(max);
+DECLARE reference_parity CURSOR LOCAL FAST_FORWARD FOR
+SELECT EntityName,ColumnName FROM dbo.GuidIdentityColumnMap WHERE IsPrimaryKey=0 ORDER BY EntityName,ColumnName;
+OPEN reference_parity; FETCH NEXT FROM reference_parity INTO @parityParent,@parityColumn;
+WHILE @@FETCH_STATUS=0
+BEGIN
+    SET @paritySql=N'IF (SELECT COUNT_BIG(*) FROM dbo.'+QUOTENAME(@parityParent)+N' WHERE '+QUOTENAME(@parityColumn)+N' IS NOT NULL)<>(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareReferenceMap WHERE ParentEntityName=@p AND ColumnName=@c) THROW 51000, ''Reference count differs from exact prepared snapshot.'', 1;'
+      +N' IF EXISTS(SELECT 1 FROM dbo.'+QUOTENAME(@parityParent)+N' x LEFT JOIN dbo.GuidIdentityPrepareReferenceMap r ON r.ParentEntityName=@p AND r.ParentLegacyId=CONVERT(bigint,x.Id) AND r.ColumnName=@c LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=r.ReferencedEntityName AND m.LegacyId=r.ReferencedLegacyId WHERE x.'+QUOTENAME(@parityColumn)+N' IS NOT NULL AND (r.ParentLegacyId IS NULL OR CONVERT(bigint,x.'+QUOTENAME(@parityColumn)+N')<>r.ReferencedLegacyId OR m.NewId IS NULL OR r.GuidId<>m.NewId OR x.'+QUOTENAME(N'__Guid_'+@parityColumn)+N'<>r.GuidId)) THROW 51000, ''Current reference or shadow differs from its gate-bound mapping.'', 1;'
+      +N' IF EXISTS(SELECT 1 FROM dbo.GuidIdentityPrepareReferenceMap r LEFT JOIN dbo.'+QUOTENAME(@parityParent)+N' x ON CONVERT(bigint,x.Id)=r.ParentLegacyId WHERE r.ParentEntityName=@p AND r.ColumnName=@c AND (x.Id IS NULL OR x.'+QUOTENAME(@parityColumn)+N' IS NULL OR CONVERT(bigint,x.'+QUOTENAME(@parityColumn)+N')<>r.ReferencedLegacyId OR x.'+QUOTENAME(N'__Guid_'+@parityColumn)+N'<>r.GuidId)) THROW 51000, ''Prepared reference has no exact current source/shadow row.'', 1;';
+    EXEC sys.sp_executesql @paritySql,N'@p sysname,@c sysname',@p=@parityParent,@c=@parityColumn;
+    FETCH NEXT FROM reference_parity INTO @parityParent,@parityColumn;
+END;
+CLOSE reference_parity; DEALLOCATE reference_parity;
+IF (SELECT COUNT_BIG(*) FROM dbo.RequestHistories h CROSS APPLY(VALUES(h.OldValue),(h.NewValue)) v(OriginalValue)
+    WHERE h.Action=2 AND NULLIF(LTRIM(RTRIM(v.OriginalValue)),N'') IS NOT NULL)
+   <>(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareTextReferenceMap)
+ OR EXISTS(SELECT 1 FROM dbo.RequestHistories h CROSS APPLY(VALUES(N'OldValue',h.OldValue),(N'NewValue',h.NewValue)) v(ColumnName,OriginalValue)
+          LEFT JOIN dbo.GuidIdentityPrepareTextReferenceMap r ON r.ParentLegacyId=CONVERT(bigint,h.Id) AND r.ColumnName=v.ColumnName AND r.OriginalValue=v.OriginalValue
+          WHERE h.Action=2 AND NULLIF(LTRIM(RTRIM(v.OriginalValue)),N'') IS NOT NULL AND r.ParentLegacyId IS NULL)
+ OR EXISTS(SELECT 1 FROM dbo.GuidIdentityPrepareTextReferenceMap r LEFT JOIN dbo.RequestHistories h ON CONVERT(bigint,h.Id)=r.ParentLegacyId
+          AND ((r.ColumnName=N'OldValue' AND h.OldValue=r.OriginalValue) OR (r.ColumnName=N'NewValue' AND h.NewValue=r.OriginalValue))
+          WHERE h.Id IS NULL OR h.Action<>2)
+    THROW 51000, 'Status-history text references changed from the exact validated snapshot.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id')
+      AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
+      AND NOT EXISTS(SELECT 1 FROM dbo.GuidIdentityColumnMap cm WHERE cm.EntityName=t.name AND cm.ColumnName=c.name)
+)
+    THROW 51000, 'A numeric Id-like reference has no cutover shadow column; abort before the first drop.', 1;
+UPDATE h SET OldValue=CONVERT(nvarchar(36),r.GuidId)
+FROM dbo.RequestHistories h JOIN dbo.GuidIdentityPrepareTextReferenceMap r
+  ON r.ParentLegacyId=CONVERT(bigint,h.Id) AND r.ColumnName=N'OldValue' AND r.OriginalValue=h.OldValue;
+UPDATE h SET NewValue=CONVERT(nvarchar(36),r.GuidId)
+FROM dbo.RequestHistories h JOIN dbo.GuidIdentityPrepareTextReferenceMap r
+  ON r.ParentLegacyId=CONVERT(bigint,h.Id) AND r.ColumnName=N'NewValue' AND r.OriginalValue=h.NewValue;
+
 -- All legacy FK metadata is now durable. Drop FK constraints before dropping their numeric columns.
 DECLARE @constraint sysname,@parentColumn sysname,@refColumn sysname,@parentObject int;
 DECLARE drop_fk CURSOR LOCAL FAST_FORWARD FOR SELECT ParentEntityName,ConstraintName FROM dbo.GuidIdentityForeignKeyMap;
@@ -476,13 +638,13 @@ OPEN index_add; FETCH NEXT FROM index_add INTO @create;
 WHILE @@FETCH_STATUS=0 BEGIN EXEC sys.sp_executesql @create; FETCH NEXT FROM index_add INTO @create; END
 CLOSE index_add; DEALLOCATE index_add;
 DECLARE fk_add CURSOR LOCAL FAST_FORWARD FOR
-SELECT ParentEntityName,ConstraintName,ParentColumnName,ReferencedEntityName,ReferencedColumnName,DeleteAction,UpdateAction,IsNotForReplication FROM dbo.GuidIdentityForeignKeyMap;
-OPEN fk_add; FETCH NEXT FROM fk_add INTO @parent,@fk,@column,@referenced,@refColumn,@delete,@update,@nfr;
+SELECT ParentEntityName,ConstraintName,ParentColumnName,ReferencedEntityName,ReferencedColumnName,DeleteAction,UpdateAction,IsNotForReplication,IsDisabled,IsNotTrusted FROM dbo.GuidIdentityForeignKeyMap;
+OPEN fk_add; FETCH NEXT FROM fk_add INTO @parent,@fk,@column,@referenced,@refColumn,@delete,@update,@nfr,@fkDisabled,@fkUntrusted;
 WHILE @@FETCH_STATUS=0
 BEGIN
-    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' WITH CHECK ADD CONSTRAINT '+QUOTENAME(@fk)+N' FOREIGN KEY ('+QUOTENAME(@column)+N') REFERENCES dbo.'+QUOTENAME(@referenced)+N' ('+QUOTENAME(@refColumn)+N')'+CASE WHEN @delete=N'CASCADE' THEN N' ON DELETE CASCADE' WHEN @delete=N'SET_NULL' THEN N' ON DELETE SET NULL' WHEN @delete=N'SET_DEFAULT' THEN N' ON DELETE SET DEFAULT' ELSE N'' END+CASE WHEN @update=N'CASCADE' THEN N' ON UPDATE CASCADE' WHEN @update=N'SET_NULL' THEN N' ON UPDATE SET NULL' WHEN @update=N'SET_DEFAULT' THEN N' ON UPDATE SET DEFAULT' ELSE N'' END+CASE WHEN @nfr=1 THEN N' NOT FOR REPLICATION' ELSE N'' END+N'; ALTER TABLE dbo.'+QUOTENAME(@parent)+N' CHECK CONSTRAINT '+QUOTENAME(@fk)+N';';
+    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' WITH '+CASE WHEN @fkUntrusted=1 THEN N'NOCHECK' ELSE N'CHECK' END+N' ADD CONSTRAINT '+QUOTENAME(@fk)+N' FOREIGN KEY ('+QUOTENAME(@column)+N') REFERENCES dbo.'+QUOTENAME(@referenced)+N' ('+QUOTENAME(@refColumn)+N')'+CASE WHEN @delete=N'CASCADE' THEN N' ON DELETE CASCADE' WHEN @delete=N'SET_NULL' THEN N' ON DELETE SET NULL' WHEN @delete=N'SET_DEFAULT' THEN N' ON DELETE SET DEFAULT' ELSE N'' END+CASE WHEN @update=N'CASCADE' THEN N' ON UPDATE CASCADE' WHEN @update=N'SET_NULL' THEN N' ON UPDATE SET NULL' WHEN @update=N'SET_DEFAULT' THEN N' ON UPDATE SET DEFAULT' ELSE N'' END+CASE WHEN @nfr=1 THEN N' NOT FOR REPLICATION' ELSE N'' END+N'; ALTER TABLE dbo.'+QUOTENAME(@parent)+CASE WHEN @fkDisabled=1 THEN N' NOCHECK CONSTRAINT ' ELSE N' CHECK CONSTRAINT ' END+QUOTENAME(@fk)+N';';
     EXEC sys.sp_executesql @sql;
-    FETCH NEXT FROM fk_add INTO @parent,@fk,@column,@referenced,@refColumn,@delete,@update,@nfr;
+    FETCH NEXT FROM fk_add INTO @parent,@fk,@column,@referenced,@refColumn,@delete,@update,@nfr,@fkDisabled,@fkUntrusted;
 END
 CLOSE fk_add; DEALLOCATE fk_add;
 
@@ -515,14 +677,159 @@ UPDATE e SET PublicId=Id FROM dbo.Roles e;
 UPDATE e SET PublicId=Id FROM dbo.UserProjects e;
 UPDATE e SET PublicId=Id FROM dbo.UserRoles e;
 UPDATE e SET PublicId=Id FROM dbo.Users e;
-UPDATE dbo.RequestHistories SET OldValue='10000000-0000-4000-8000-000000000001' WHERE Action=2 AND OldValue='1';
-UPDATE dbo.RequestHistories SET OldValue='10000000-0000-4000-8000-000000000002' WHERE Action=2 AND OldValue='2';
-UPDATE dbo.RequestHistories SET OldValue='10000000-0000-4000-8000-000000000003' WHERE Action=2 AND OldValue='3';
-UPDATE dbo.RequestHistories SET OldValue='10000000-0000-4000-8000-000000000004' WHERE Action=2 AND OldValue='4';
-UPDATE dbo.RequestHistories SET NewValue='10000000-0000-4000-8000-000000000001' WHERE Action=2 AND NewValue='1';
-UPDATE dbo.RequestHistories SET NewValue='10000000-0000-4000-8000-000000000002' WHERE Action=2 AND NewValue='2';
-UPDATE dbo.RequestHistories SET NewValue='10000000-0000-4000-8000-000000000003' WHERE Action=2 AND NewValue='3';
-UPDATE dbo.RequestHistories SET NewValue='10000000-0000-4000-8000-000000000004' WHERE Action=2 AND NewValue='4';
-IF OBJECT_ID(N'dbo.TR_AuditLogs_AppendOnly', N'TR') IS NOT NULL ENABLE TRIGGER dbo.TR_AuditLogs_AppendOnly ON dbo.AuditLogs;
+IF OBJECT_ID(N'dbo.TR_AuditLogs_AppendOnly', N'TR') IS NOT NULL AND EXISTS(SELECT 1 FROM dbo.GuidIdentityTriggerState WHERE TriggerName=N'TR_AuditLogs_AppendOnly' AND IsDisabled=0) ENABLE TRIGGER dbo.TR_AuditLogs_AppendOnly ON dbo.AuditLogs;
+""";
+
+    internal const string Postcondition = """
+SET XACT_ABORT ON;
+DECLARE @Entities table(EntityName sysname PRIMARY KEY);
+INSERT @Entities VALUES
+(N'Accounts'),(N'Companies'),(N'CompanyModule'),(N'ConversationParticipants'),(N'Conversations'),
+(N'CustomerRequestDocuments'),(N'CustomerRequestEvaluations'),(N'CustomerRequestMessages'),(N'CustomerRequests'),
+(N'CustomerRequestStatuses'),(N'Customers'),(N'Documents'),(N'FAQs'),(N'Guides'),(N'MenuItems'),
+(N'ModuleExperts'),(N'Modules'),(N'OrganizationInfos'),(N'ProjectModule'),(N'Projects'),(N'RequestHistories'),
+(N'RequestSubjects'),(N'RolePermissionActions'),(N'RolePermissions'),(N'Roles'),(N'UserProjects'),(N'UserRoles'),
+(N'Users'),(N'AuditLogs'),(N'RefreshTokens');
+
+IF EXISTS
+(
+    SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id')
+      AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
+)
+    THROW 51000, 'Numeric identity/reference columns remain in converted entities; finalization is aborted.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN @Entities e ON e.EntityName=rt.name
+    JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+    JOIN sys.types ty ON ty.user_type_id=rc.user_type_id
+    WHERE rc.name=N'Id' AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
+)
+    THROW 51000, 'A foreign key still targets a removed numeric identity.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.sql_expression_dependencies sed JOIN sys.tables t ON t.object_id=sed.referenced_id JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.columns c ON c.object_id=t.object_id AND c.column_id=sed.referenced_minor_id
+    JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE (c.name=N'Id' OR c.name LIKE N'%Id') AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
+)
+    THROW 51000, 'A SQL module still depends on a removed numeric identity column.', 1;
+
+DECLARE @RequiredProcedures table(ProcedureName sysname PRIMARY KEY);
+INSERT @RequiredProcedures VALUES
+(N'Sp_StatusDistribution'),(N'Sp_ModuleDistribution'),(N'Sp_CompanyTopN'),(N'Sp_AgentPerformance'),
+(N'Sp_DailyTrend'),(N'Sp_AvgResolutionMinutes'),(N'Sp_ReopenStats'),(N'Sp_CompletedRequests'),
+(N'Sp_ActiveRequests'),(N'Sp_DashboardStats');
+IF EXISTS(SELECT 1 FROM @RequiredProcedures r LEFT JOIN sys.procedures p ON p.name=r.ProcedureName AND SCHEMA_NAME(p.schema_id)=N'dbo' WHERE p.object_id IS NULL)
+    THROW 51000, 'A required GUID-compatible reporting procedure is missing after cutover.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM dbo.GuidIdentityPrepareModuleDependency md
+    LEFT JOIN sys.objects o ON o.name=md.ReferencingObject AND SCHEMA_NAME(o.schema_id)=md.ReferencingSchema AND o.type_desc=md.ReferencingType
+    LEFT JOIN sys.sql_modules sm ON sm.object_id=o.object_id
+    WHERE md.Disposition='PreserveUnchanged'
+      AND (o.object_id IS NULL OR sm.definition IS NULL OR md.DefinitionHash IS NULL OR HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition))<>md.DefinitionHash)
+)
+    THROW 51000, 'A PreserveUnchanged SQL module definition changed during cutover.', 1;
+
+IF EXISTS
+(
+    SELECT 1 FROM dbo.GuidIdentityForeignKeyMap m
+    LEFT JOIN sys.tables pt ON pt.name=m.ParentEntityName AND SCHEMA_NAME(pt.schema_id)=N'dbo'
+    LEFT JOIN sys.foreign_keys fk ON fk.parent_object_id=pt.object_id AND fk.name=m.ConstraintName
+    LEFT JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id
+    LEFT JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id
+    LEFT JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
+    LEFT JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
+    WHERE fk.object_id IS NULL OR rt.name<>m.ReferencedEntityName OR pc.name<>m.ParentColumnName OR rc.name<>m.ReferencedColumnName
+       OR fk.delete_referential_action_desc<>m.DeleteAction OR fk.update_referential_action_desc<>m.UpdateAction
+       OR fk.is_not_for_replication<>m.IsNotForReplication OR fk.is_disabled<>m.IsDisabled OR fk.is_not_trusted<>m.IsNotTrusted
+)
+    THROW 51000, 'A rebuilt identity foreign key differs from its captured relation or state.', 1;
+IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityForeignKeyMap)<>
+   (SELECT COUNT_BIG(*) FROM sys.foreign_keys fk JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities e ON e.EntityName=pt.name
+     JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id
+     JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id WHERE rc.name=N'Id')
+    THROW 51000, 'The identity foreign-key count changed during reconstruction.', 1;
+
+DECLARE @ResultMetadata table(ProcedureName sysname,ColumnName sysname,SystemTypeName nvarchar(256),ErrorNumber int NULL);
+INSERT @ResultMetadata
+SELECT p.name,d.name,d.system_type_name,d.error_number
+FROM @RequiredProcedures r JOIN sys.procedures p ON p.name=r.ProcedureName AND SCHEMA_NAME(p.schema_id)=N'dbo'
+CROSS APPLY sys.dm_exec_describe_first_result_set_for_object(p.object_id,0) d;
+IF EXISTS(SELECT 1 FROM @ResultMetadata WHERE ErrorNumber IS NOT NULL)
+ OR EXISTS(SELECT 1 FROM @ResultMetadata WHERE (ProcedureName=N'Sp_StatusDistribution' AND ColumnName=N'StatusId' OR ProcedureName=N'Sp_ModuleDistribution' AND ColumnName=N'ModuleId' OR ProcedureName=N'Sp_CompanyTopN' AND ColumnName=N'CompanyId' OR ProcedureName=N'Sp_AgentPerformance' AND ColumnName=N'UserId') AND SystemTypeName<>N'uniqueidentifier')
+    THROW 51000, 'A GUID-returning dashboard procedure has invalid result metadata.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM (VALUES(N'Sp_StatusDistribution',N'StatusId'),(N'Sp_ModuleDistribution',N'ModuleId'),(N'Sp_CompanyTopN',N'CompanyId'),(N'Sp_AgentPerformance',N'UserId')) expected(ProcedureName,ColumnName)
+    LEFT JOIN @ResultMetadata actual ON actual.ProcedureName=expected.ProcedureName AND actual.ColumnName=expected.ColumnName
+    WHERE actual.ColumnName IS NULL OR actual.SystemTypeName<>N'uniqueidentifier'
+)
+    THROW 51000, 'A dashboard procedure does not expose the required uniqueidentifier result column.', 1;
+
+IF OBJECT_ID(N'dbo.GuidIdentityTriggerState',N'U') IS NULL
+    THROW 51000, 'The captured trigger state is missing before final verification.', 1;
+CREATE TABLE #CurrentTriggerState
+(
+    TriggerSchema sysname NOT NULL,TriggerName sysname NOT NULL,ParentSchema sysname NOT NULL,ParentName sysname NOT NULL,
+    IsDisabled bit NOT NULL,IsNotForReplication bit NOT NULL,IsInsteadOfTrigger bit NOT NULL,DefinitionHash varbinary(32) NULL,EventList nvarchar(max) NOT NULL
+);
+INSERT #CurrentTriggerState
+SELECT SCHEMA_NAME(triggerObject.schema_id),tr.name,SCHEMA_NAME(parent.schema_id),parent.name,tr.is_disabled,tr.is_not_for_replication,tr.is_instead_of_trigger,
+       CASE WHEN sm.definition IS NULL THEN NULL ELSE HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition)) END,ISNULL(ev.EventList,N'')
+FROM sys.triggers tr JOIN sys.objects triggerObject ON triggerObject.object_id=tr.object_id
+JOIN sys.tables parent ON parent.object_id=tr.parent_id JOIN @Entities e ON e.EntityName=parent.name
+LEFT JOIN sys.sql_modules sm ON sm.object_id=tr.object_id
+OUTER APPLY(SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(te.type_desc,N':',te.event_group_type_desc,N':',te.is_first,N':',te.is_last)),N'|') WITHIN GROUP(ORDER BY te.type_desc) AS EventList FROM sys.trigger_events te WHERE te.object_id=tr.object_id) ev
+WHERE SCHEMA_NAME(parent.schema_id)=N'dbo';
+IF EXISTS(SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM dbo.GuidIdentityTriggerState EXCEPT SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM #CurrentTriggerState)
+   OR EXISTS(SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM #CurrentTriggerState EXCEPT SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM dbo.GuidIdentityTriggerState)
+    THROW 51000, 'Trigger definition, parent, enabled state, replication state, or event list changed during cutover.', 1;
+
+DROP TABLE dbo.GuidIdentityTriggerState;
+DROP TABLE dbo.GuidIdentityIndexMap;
+DROP TABLE dbo.GuidIdentityForeignKeyMap;
+DROP TABLE dbo.GuidIdentityPrimaryKeyMap;
+DROP TABLE dbo.GuidIdentityColumnMap;
+DROP TABLE dbo.GuidIdentityMap;
+DROP TABLE dbo.GuidIdentityPrepareModuleDependency;
+DROP TABLE dbo.GuidIdentityPrepareTextReferenceMap;
+DROP TABLE dbo.GuidIdentityPrepareForeignKeyInventory;
+DROP TABLE dbo.GuidIdentityPrepareReferenceMap;
+DROP TABLE dbo.GuidIdentityPrepareRowCounts;
+DROP TABLE dbo.GuidIdentityPrepareMap;
+DROP TABLE dbo.GuidIdentityValidateSchemaSnapshot;
+DROP TABLE dbo.GuidIdentityValidateModuleSnapshot;
+DROP TABLE dbo.GuidIdentityValidateForeignKeySnapshot;
+DROP TABLE dbo.GuidIdentityValidateTextReferenceSnapshot;
+DROP TABLE dbo.GuidIdentityValidateReferenceSnapshot;
+DROP TABLE dbo.GuidIdentityValidateRowCountSnapshot;
+DROP TABLE dbo.GuidIdentityValidateMapSnapshot;
+DROP TABLE dbo.GuidIdentityValidateGate;
+
+IF OBJECT_ID(N'dbo.GuidIdentityMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityColumnMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrimaryKeyMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityForeignKeyMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityIndexMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityTriggerState',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareTextReferenceMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareForeignKeyInventory',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareReferenceMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareRowCounts',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateSchemaSnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateModuleSnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateForeignKeySnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateTextReferenceSnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateReferenceSnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateRowCountSnapshot',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityValidateMapSnapshot',N'U') IS NOT NULL
+    THROW 51000, 'Migration-only numeric identity maps or validation artifacts remain after cutover.', 1;
 """;
 }
