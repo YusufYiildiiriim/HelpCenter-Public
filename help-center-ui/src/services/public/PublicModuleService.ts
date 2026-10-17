@@ -1,13 +1,13 @@
 import api from "@/lib/axios";
 
 export interface PublicModule {
-  id: number;
+  id: string;
   name: string;
   description: string;
 }
 
 export const PublicModuleService = {
-  getAll: async (projectId?: number | null): Promise<PublicModule[]> => {
+  getAll: async (projectId?: string | null): Promise<PublicModule[]> => {
     const response = await api.get("/api/public/modules", {
       params: projectId ? { projectId } : undefined,
     });

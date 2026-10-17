@@ -23,8 +23,8 @@ export interface HeroSectionProps {
   setSortBy?: (sort: "newest" | "az" | "za") => void;
   // Compatibility props for existing usage
   projects?: PublicProject[];
-  selectedProjectId?: number | null;
-  onProjectChange?: (projectId: number) => void;
+  selectedProjectId?: string | null;
+  onProjectChange?: (projectId: string) => void;
   modulesCount?: number;
   placeholder?: string;
 }

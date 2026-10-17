@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface RequestSubject {
-  id: number;
+  id: string;
   publicId: string;
   name: string;
   description: string;
@@ -38,12 +38,12 @@ export const AdminRequestSubjectService = {
     return response.data;
   },
 
-  update: async (id: number, name: string, description: string, isActive: boolean): Promise<boolean> => {
+  update: async (id: string, name: string, description: string, isActive: boolean): Promise<boolean> => {
     const response = await api.put("/api/admin/subjects/update", { id, name, description, isActive });
     return response.data;
   },
 
-  delete: async (id: number): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await api.delete(`/api/admin/subjects/delete/${id}`);
     return response.data;
   },

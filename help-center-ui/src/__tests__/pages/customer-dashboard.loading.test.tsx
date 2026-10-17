@@ -28,7 +28,7 @@ vi.mock('@/app/dashboard/[companyId]/components/NewRequestModal', () => ({
 }));
 
 async function mountDashboard(strict = true) {
-  const params = Promise.resolve({ companyId: 'qa-company' });
+  const params = Promise.resolve({ companyId: '50000000-0000-4000-8000-000000000001' });
   let view!: ReturnType<typeof render>;
   await act(async () => {
     const page = <CompanyDashboardPage params={params} />;

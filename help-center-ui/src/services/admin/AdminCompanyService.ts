@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface Company {
-  id: number;
+  id: string;
   publicId: string;
   name: string;
   address: string;
@@ -14,10 +14,10 @@ export interface Company {
   contactPersonUsername?: string;
   isDemoActive: boolean;
   branchCount: number;
-  moduleIds: number[];
+  moduleIds: string[];
   previousSystem?: string;
   password?: string;
-  projectId?: number | null;
+  projectId?: string | null;
   projectName?: string;
   rowVersion?: string;
 }

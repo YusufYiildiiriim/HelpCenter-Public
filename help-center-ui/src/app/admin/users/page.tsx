@@ -48,13 +48,13 @@ export default function AdminUsersPage() {
 
     // Form States
     const [userData, setUserData] = useState<UserFormData>({
-        id: 0,
+        id: "",
         name: "",
         lastName: "",
         email: "",
         username: "",
         password: "",
-        roleIds: [] as number[],
+        roleIds: [] as string[],
         isActive: true
     });
 
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
         const normalizedData = { ...userData, email };
         setSubmitting(true);
         try {
-            if (userData.id > 0) {
+            if (userData.id) {
                 await UserService.update(userData.id, normalizedData);
                 setSuccessMessage("Kullanıcı başarıyla güncellendi.");
             } else {
@@ -162,7 +162,7 @@ export default function AdminUsersPage() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setSuccessMessage("");
-                setUserData({ id: 0, name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
+                setUserData({ id: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
                 fetchInitialData();
             }, 1800);
         } catch (err: unknown) {
@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
         }
     };
 
-    const handleDeleteUser = useCallback((id: number) => {
+    const handleDeleteUser = useCallback((id: string) => {
         setAlertConfig({
             isOpen: true,
             title: "Kullanıcıyı Sil",
@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
     }, []);
 
     const openAddModal = () => {
-        setUserData({ id: 0, name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
+        setUserData({ id: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
         setIsAddModalOpen(true);
     };
 
@@ -217,7 +217,7 @@ export default function AdminUsersPage() {
         setIsRoleModalOpen(true);
     }, []);
 
-    const handleSaveRoles = async (roleIds: number[]) => {
+    const handleSaveRoles = async (roleIds: string[]) => {
         if (!selectedUserForRoles) return;
         await UserService.update(selectedUserForRoles.id, {
             id: selectedUserForRoles.id,
@@ -270,7 +270,7 @@ export default function AdminUsersPage() {
             accessorKey: "userRoles",
             header: "Roller",
             cell: (info) => {
-                const roles = (info.getValue() as { id: number; roleName: string }[]) || [];
+                const roles = (info.getValue() as { id: string; roleName: string }[]) || [];
                 if (roles.length === 0) return <span className="text-[10px] text-slate-500 italic">Rol atanmamış</span>;
                 return (
                     <div className="flex flex-wrap gap-1.5 max-w-[240px]">

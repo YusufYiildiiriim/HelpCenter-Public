@@ -20,8 +20,8 @@ afterEach(cleanup);
 describe('FAQ card identity', () => {
   it('preserves each card and keyboard focus when sorting changes its position', () => {
     const faqs: PublicFaq[] = [
-      { publicId: 'faq-z', title: 'Zebra', description: 'Last alphabetically' },
-      { publicId: 'faq-a', title: 'Alpha', description: 'First alphabetically' },
+      { publicId: '60000000-0000-4000-8000-000000000002', title: 'Zebra', description: 'Last alphabetically' },
+      { publicId: '60000000-0000-4000-8000-000000000001', title: 'Alpha', description: 'First alphabetically' },
     ];
     const onSelectFaq = vi.fn();
     const props = {

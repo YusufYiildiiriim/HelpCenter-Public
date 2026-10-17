@@ -91,9 +91,9 @@ describe('axios instance', () => {
 
   describe('paramsSerializer', () => {
     it('serializes array values as repeated unbracketed keys', () => {
-      const params = buildQueryParams({ statusIds: [1, 2, 3] });
+      const params = buildQueryParams({ statusIds: ["10000000-0000-4000-8000-000000000001", "10000000-0000-4000-8000-000000000002", "10000000-0000-4000-8000-000000000003"] });
       const uri = api.getUri({ url: '/api/requests', params });
-      expect(uri).toContain('statusIds=1&statusIds=2&statusIds=3');
+      expect(uri).toContain('statusIds=10000000-0000-4000-8000-000000000001&statusIds=10000000-0000-4000-8000-000000000002&statusIds=10000000-0000-4000-8000-000000000003');
       expect(uri).not.toContain('statusIds[]');
     });
 

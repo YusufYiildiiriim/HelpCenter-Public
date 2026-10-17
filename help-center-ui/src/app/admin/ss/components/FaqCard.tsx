@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface FaqCardProps {
   faq: Faq;
   onEdit: (faq: Faq) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 export const FaqCard: React.FC<FaqCardProps> = ({ faq, onEdit, onDelete }) => {

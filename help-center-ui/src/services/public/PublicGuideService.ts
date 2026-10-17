@@ -19,7 +19,7 @@ export interface PaginatedPublicGuides {
 }
 
 type PublicGuideParams = {
-  projectId?: number | null;
+  projectId?: string | null;
   module?: string;
   search?: string;
   pageNumber?: number;
@@ -53,7 +53,7 @@ export const PublicGuideService = {
   },
 
   // Keeps modal and mind-map navigation independent from grid pagination.
-  getAllForChain: async (params: { projectId?: number | null; module?: string }): Promise<PublicGuide[]> => {
+  getAllForChain: async (params: { projectId?: string | null; module?: string }): Promise<PublicGuide[]> => {
     const result = await PublicGuideService.getPaginated({ ...params, pageSize: 0 });
     return result.items;
   },

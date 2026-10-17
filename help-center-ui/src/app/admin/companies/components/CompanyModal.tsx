@@ -21,8 +21,8 @@ export interface CompanyFormData {
   previousSystem?: string;
   password?: string;
   isDemoActive: boolean;
-  moduleIds: number[];
-  projectId: number | null;
+  moduleIds: string[];
+  projectId: string | null;
   rowVersion?: string;
 }
 
@@ -36,7 +36,7 @@ interface CompanyModalProps {
   modules: Module[];
   projects: Project[];
   loading: boolean;
-  toggleModule: (moduleId: number) => void;
+  toggleModule: (moduleId: string) => void;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
@@ -347,7 +347,7 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                   value={String(formData.projectId ?? "")}
                   options={[{ value: "", label: "Proje seçilmedi" }, ...projects.map(project => ({ value: String(project.id), label: project.name }))]}
                   onValueChange={(value) => {
-                    const newProjectId = value ? Number(value) : null;
+                    const newProjectId = value || null;
                     const newProject = projects.find(project => project.id === newProjectId);
                     setFormData({ ...formData, projectId: newProjectId,
                       moduleIds: (formData.moduleIds || []).filter(id => newProject?.moduleIds.includes(id)) });
@@ -375,7 +375,7 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                       disabled={selectableModules.length === 0}
                       options={[{ value: "", label: selectableModules.length === 0 ? "Tüm modüller eklendi" : "Modül seçip ekleyin..." }, ...selectableModules.map(module => ({ value: String(module.id), label: module.name }))]}
                       onValueChange={(value) => {
-                        const moduleId = Number(value);
+                        const moduleId = value;
                         if (!moduleId) return;
                         toggleModule(moduleId);
                         setModulePickerValue("");

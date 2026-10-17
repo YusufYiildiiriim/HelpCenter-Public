@@ -21,7 +21,7 @@ describe('AdminStatusesPage (entegrasyon)', () => {
     authenticated: true,
     role: 'Admin',
     username: 'test-admin',
-    userId: 1,
+    userId: "20000000-0000-4000-8000-000000000001",
     isPasswordChangeRequired: false,
     permissions: { modules: [{ resourceKey: 'Statuses', actions: ['Read', 'Export', 'Print'] }] },
   };
@@ -53,8 +53,8 @@ describe('AdminStatusesPage (entegrasyon)', () => {
   it('önce spinner gösterir, veri gelince tabloyu render eder', async () => {
     mock.onGet('/api/admin/statuses/get-all').reply(200, {
       items: [
-        { id: 1, name: 'Açık', description: 'Yeni oluşturulan talep', isActive: true },
-        { id: 2, name: 'Kapalı', description: 'Tamamlanmış talep', isActive: false },
+        { id: '10000000-0000-4000-8000-000000000001', name: 'Açık', description: 'Yeni oluşturulan talep', isActive: true },
+        { id: '10000000-0000-4000-8000-000000000003', name: 'Kapalı', description: 'Tamamlanmış talep', isActive: false },
       ],
       totalCount: 2,
       totalPages: 1,

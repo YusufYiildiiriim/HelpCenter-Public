@@ -8,8 +8,8 @@ import type { PublicProject as Project } from "@/services/public/PublicProjectSe
 
 interface HomeNavbarProps {
   projects?: Project[];
-  selectedProjectId?: number | null;
-  onProjectChange?: (projectId: number) => void;
+  selectedProjectId?: string | null;
+  onProjectChange?: (projectId: string) => void;
 }
 
 export const HomeNavbar: React.FC<HomeNavbarProps> = ({

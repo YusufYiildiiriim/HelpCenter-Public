@@ -22,8 +22,8 @@ vi.mock('framer-motion', () => ({
 }));
 
 const guides: PublicGuide[] = Array.from({ length: 100 }, (_, i) => ({
-  publicId: `guide-${i}`, title: `Guide ${i}`, description: '', module: 'Module',
-  previousGuidePublicId: i === 0 ? null : `guide-${Math.floor((i - 1) / 3)}`,
+  publicId: `60000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, title: `Guide ${i}`, description: '', module: 'Module',
+  previousGuidePublicId: i === 0 ? null : `60000000-0000-4000-8000-${String(Math.floor((i - 1) / 3) + 1).padStart(12, "0")}`,
 }));
 
 describe('MindMap interaction performance and graph invalidation', () => {

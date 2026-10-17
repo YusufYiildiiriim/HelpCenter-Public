@@ -52,13 +52,13 @@ export default function ModulesPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [selectedModulePublicId, setSelectedModulePublicId] = useState<string | null>(null);
   const [isExpertModalOpen, setIsExpertModalOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [currentExperts, setCurrentExperts] = useState<ModuleExpertDto[]>([]);
   const [expertLoading, setExpertLoading] = useState(false);
-  const [selectedExpertIds, setSelectedExpertIds] = useState<number[]>([]);
+  const [selectedExpertIds, setSelectedExpertIds] = useState<string[]>([]);
 
   const [alertConfig, setAlertConfig] = useState<{
     isOpen: boolean;
@@ -74,7 +74,7 @@ export default function ModulesPage() {
 
   // Shim adapting the minimal lookup response (id + full name) to the User shape
   // expected by the modals.
-  const mapLookupToUsers = (items: { id: number; name: string }[]): User[] =>
+  const mapLookupToUsers = (items: { id: string; name: string }[]): User[] =>
     items.map(item => {
       const parts = item.name.trim().split(/\s+/);
       return {
@@ -238,12 +238,12 @@ export default function ModulesPage() {
     }
   }, [hasExpertPerm]);
 
-  const handleAssignExpert = async (userId: number) => {
+  const handleAssignExpert = async (userId: string) => {
     if (!selectedModuleId) return;
     const user = allUsers.find(u => u.id === userId);
     if (!user) return;
 
-    const optimistic: ModuleExpertDto = { id: 0, userId, fullName: `${user.name} ${user.lastName}`, email: user.email };
+    const optimistic: ModuleExpertDto = { id: crypto.randomUUID(), userId, fullName: `${user.name} ${user.lastName}`, email: user.email };
     setCurrentExperts(prev => [...prev, optimistic]);
 
     try {
@@ -258,7 +258,7 @@ export default function ModulesPage() {
     }
   };
 
-  const handleRemoveExpert = async (expertId: number) => {
+  const handleRemoveExpert = async (expertId: string) => {
     setCurrentExperts(prev => prev.filter(e => e.id !== expertId));
 
     try {

@@ -38,7 +38,7 @@ export default function FaqPage() {
   const [fetchError, setFetchError] = useState<unknown>(null);
   const [isForbidden, setIsForbidden] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Pagination states
   const [pageIndex, setPageIndex] = useState(0);
@@ -145,7 +145,7 @@ export default function FaqPage() {
     setIsModalOpen(true);
   }, []);
 
-  const handleDelete = useCallback(async (id: number) => {
+  const handleDelete = useCallback(async (id: string) => {
     setAlertConfig({
       isOpen: true,
       title: "Soruyu Sil",

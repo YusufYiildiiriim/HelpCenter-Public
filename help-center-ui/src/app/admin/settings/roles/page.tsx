@@ -35,8 +35,8 @@ export default function RolesPage() {
     const [isPermModalOpen, setIsPermModalOpen] = useState(false);
     const [newRole, setNewRole] = useState({ name: "", description: "" });
     const [saving, setSaving] = useState(false);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
     const fetchRoles = useCallback(async () => {
         try {
@@ -59,7 +59,7 @@ export default function RolesPage() {
         fetchRoles();
     }, [fetchRoles]);
 
-    const refreshRoles = async (keepSelectedId?: number) => {
+    const refreshRoles = async (keepSelectedId?: string) => {
         const data = await RoleService.getAll();
         setRoles(data);
         if (keepSelectedId) {
@@ -88,7 +88,7 @@ export default function RolesPage() {
         }
     };
 
-    const requestDeleteRole = (id: number) => {
+    const requestDeleteRole = (id: string) => {
         const target = roles.find(r => r.id === id);
         if (target?.hasUsers) {
             toast.error(`"${target.name}" rolüne bağlı kullanıcılar var. Önce onları başka bir role taşıyın.`);

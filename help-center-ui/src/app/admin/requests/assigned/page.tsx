@@ -76,7 +76,7 @@ export default function AssignedRequestsPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- page change is triggered from a separate handler, only user/filter changes are observed here
     }, [userInfo?.userId, filter, fetchAssigned]);
 
-    const sortedRequests = useMemo(() => [...requests].sort((a, b) => b.id - a.id), [requests]);
+    const sortedRequests = useMemo(() => [...requests].sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [requests]);
 
     const handleFilterChange = (nextFilter: string) => {
         setFilter(nextFilter);

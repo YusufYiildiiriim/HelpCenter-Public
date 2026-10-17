@@ -25,7 +25,7 @@ describe('Admin lookup authorization', () => {
 
  for (const {Page, resource, loading, lookups, management} of cases) {
   function renderPage(actions: string[]) {
-   const userInfo: VerifyResponse = {authenticated: true, role: 'Viewer', username: 'viewer', userId: 2, isPasswordChangeRequired: false, permissions: {modules: [{resourceKey: resource, actions}]}};
+   const userInfo: VerifyResponse = {authenticated: true, role: 'Viewer', username: 'viewer', userId: "20000000-0000-4000-8000-000000000002", isPasswordChangeRequired: false, permissions: {modules: [{resourceKey: resource, actions}]}};
    return render(<AuthProvider userInfo={userInfo} permissions={userInfo.permissions}><OrganizationProvider initialOrgInfo={{organizationName:'Test'}}><Page /></OrganizationProvider></AuthProvider>);
   }
   it(`${resource}: read/update permissions do not request management lookups`, async () => {

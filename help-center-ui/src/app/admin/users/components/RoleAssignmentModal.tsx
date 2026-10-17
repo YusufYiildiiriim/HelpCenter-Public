@@ -10,9 +10,9 @@ interface RoleAssignmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   userName: string;
-  userRoles: { roleId: number; roleName: string }[];
+  userRoles: { roleId: string; roleName: string }[];
   allRoles: Role[];
-  onSave: (roleIds: number[]) => Promise<void>;
+  onSave: (roleIds: string[]) => Promise<void>;
 }
 
 export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
@@ -23,7 +23,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
   allRoles,
   onSave
 }) => {
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -48,7 +48,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
     );
   }, [allRoles, searchTerm]);
 
-  const toggleRole = (roleId: number) => {
+  const toggleRole = (roleId: string) => {
     setSelectedIds(prev =>
       prev.includes(roleId) ? prev.filter(id => id !== roleId) : [...prev, roleId]
     );

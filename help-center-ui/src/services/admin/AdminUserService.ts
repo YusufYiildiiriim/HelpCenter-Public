@@ -1,12 +1,12 @@
 import api from "@/lib/axios";
 
 export interface UserRole {
-  roleId: number;
+  roleId: string;
   roleName: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
   lastName: string;
@@ -22,18 +22,18 @@ export interface CreateUserRequest {
   name: string;
   lastName: string;
   password: string;
-  roleIds?: number[];
+  roleIds?: string[];
   isActive: boolean;
   username?: string;
 }
 
 export interface UpdateUserRequest {
-  id: number;
+  id: string;
   email: string;
   name: string;
   lastName: string;
   password?: string;
-  roleIds?: number[];
+  roleIds?: string[];
   isActive: boolean;
   username?: string;
 }
@@ -66,17 +66,17 @@ export const AdminUserService = {
     return response.data;
   },
 
-  update: async (id: number, data: UpdateUserRequest): Promise<boolean> => {
+  update: async (id: string, data: UpdateUserRequest): Promise<boolean> => {
     const response = await api.put(`/api/admin/users/${id}`, data);
     return response.data;
   },
 
-  delete: async (id: number): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await api.delete(`/api/admin/users/${id}`);
     return response.data;
   },
 
-  updateRoles: async (id: number, roleIds: number[]): Promise<boolean> => {
+  updateRoles: async (id: string, roleIds: string[]): Promise<boolean> => {
     const response = await api.put(`/api/admin/users/${id}`, { roleIds });
     return response.data;
   },

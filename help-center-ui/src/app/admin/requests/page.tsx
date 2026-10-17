@@ -102,7 +102,7 @@ export default function AdminRequestsPage() {
 
     const filteredRequests = useMemo(() => {
         const list = Array.isArray(requests) ? requests : [];
-        return [...list].sort((a, b) => b.id - a.id);
+        return [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }, [requests]);
 
     const handleCompanyChange = (id: string) => {

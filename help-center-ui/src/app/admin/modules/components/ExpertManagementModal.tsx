@@ -10,8 +10,8 @@ interface ExpertManagementModalProps {
   expertLoading: boolean;
   currentExperts: ModuleExpertDto[];
   allUsers: User[];
-  onAssignExpert: (userId: number) => void;
-  onRemoveExpert: (expertId: number) => void;
+  onAssignExpert: (userId: string) => void;
+  onRemoveExpert: (expertId: string) => void;
 }
 
 export const ExpertManagementModal: React.FC<ExpertManagementModalProps> = ({

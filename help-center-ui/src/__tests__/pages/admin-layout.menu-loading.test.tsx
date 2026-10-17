@@ -32,7 +32,7 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 const user: VerifyResponse = {
-  authenticated: true, role: 'Admin', username: 'admin', userId: 1,
+  authenticated: true, role: 'Admin', username: 'admin', userId: "20000000-0000-4000-8000-000000000001",
   isPasswordChangeRequired: false,
   permissions: { modules: [{ resourceKey: 'Dashboard', actions: ['Read'] }] },
 };

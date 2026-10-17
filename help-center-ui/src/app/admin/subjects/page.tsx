@@ -33,7 +33,7 @@ export default function AdminSubjectsPage() {
     const [isForbidden, setIsForbidden] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const [subjectData, setSubjectData] = useState({ name: "", description: "", isActive: true });
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -128,7 +128,7 @@ export default function AdminSubjectsPage() {
         }
     };
 
-    const handleDelete = useCallback((id: number) => {
+    const handleDelete = useCallback((id: string) => {
         setAlertConfig({
             isOpen: true,
             title: "Konuyu Sil",

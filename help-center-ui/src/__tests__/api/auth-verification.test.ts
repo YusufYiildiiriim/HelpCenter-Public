@@ -5,7 +5,7 @@ import { AuthService, type VerifyResponse } from '@/services/common/AuthService'
 import { getApiRetryAfterSeconds } from '@/lib/api/errors';
 
 const identity: VerifyResponse = {
-  authenticated: true, role: 'Admin', username: 'admin', userId: 1, isPasswordChangeRequired: false,
+  authenticated: true, role: 'Admin', username: 'admin', userId: "20000000-0000-4000-8000-000000000001", isPasswordChangeRequired: false,
 };
 afterEach(() => { clearAccessToken(); vi.restoreAllMocks(); });
 
@@ -40,11 +40,11 @@ describe('in-flight auth verification', () => {
   it('does not share verification across different access tokens', async () => {
     let resolve!: (value: { data: VerifyResponse }) => void;
     const get = vi.spyOn(api, 'get').mockImplementationOnce(() => new Promise((res) => { resolve = res; }))
-      .mockResolvedValueOnce({ data: { ...identity, userId: 2 } });
+      .mockResolvedValueOnce({ data: { ...identity, userId: "20000000-0000-4000-8000-000000000002" } });
     setAccessToken('session-a');
     const first = AuthService.verify();
     setAccessToken('session-b');
-    await expect(AuthService.verify()).resolves.toMatchObject({ userId: 2 });
+    await expect(AuthService.verify()).resolves.toMatchObject({ userId: "20000000-0000-4000-8000-000000000002" });
     resolve({ data: identity });
     await first;
     expect(get).toHaveBeenCalledTimes(2);

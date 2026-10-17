@@ -20,15 +20,15 @@ async function mockPublicApi(page: Page) {
     const payload = (() => {
       switch (url.pathname) {
         case "/api/public/projects":
-          return [{ id: 1, publicId: "demo", name: "Demo Projesi", description: "E2E fixture" }];
+          return [{ id: "30000000-0000-4000-8000-000000000001", publicId: "30000000-0000-4000-8000-000000000001", name: "Demo Projesi", description: "E2E fixture" }];
         case "/api/public/organization":
           return { organizationName: "HelpCenter", footerText: "E2E fixture" };
         case "/api/public/modules":
-          return [{ id: 1, name: "Genel", description: "E2E fixture" }];
+          return [{ id: "40000000-0000-4000-8000-000000000001", name: "Genel", description: "E2E fixture" }];
         case "/api/public/guides":
           return paginated([
             {
-              publicId: "baslangic",
+              publicId: "60000000-0000-4000-8000-000000000002",
               title: "Başlangıç Rehberi",
               description: "Demo yardım içeriği.",
               module: "Genel",

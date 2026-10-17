@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface PublicRequestSubject {
-  id: number;
+  id: string;
   name: string;
 }
 

@@ -1,19 +1,19 @@
 import api from "@/lib/axios";
 
 export interface LookupItem {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Project {
-  id: number;
+  id: string;
   publicId: string;
   name: string;
   description: string;
   isActive: boolean;
   companyCount: number;
   userCount: number;
-  moduleIds: number[];
+  moduleIds: string[];
 }
 
 export interface PaginatedResult<T> {
@@ -53,14 +53,14 @@ export const AdminProjectService = {
     };
   },
 
-  create: async (name: string, description: string, isActive: boolean = true, userIds: number[] = [], moduleIds: number[] = []): Promise<boolean> => {
+  create: async (name: string, description: string, isActive: boolean = true, userIds: string[] = [], moduleIds: string[] = []): Promise<boolean> => {
     const response = await api.post("/api/admin/projects/add-project", { name, description, isActive, userIds, moduleIds });
     return response.data;
   },
 
   // Note: Id is resolved on the server side from the publicId route parameter (see AdminProjectsController.Update);
   // there is no need to send the raw numeric id in the body.
-  update: async (publicId: string, name: string, description: string, isActive: boolean, userIds: number[] = [], moduleIds: number[] = []): Promise<boolean> => {
+  update: async (publicId: string, name: string, description: string, isActive: boolean, userIds: string[] = [], moduleIds: string[] = []): Promise<boolean> => {
     const response = await api.put(`/api/admin/projects/${publicId}`, { name, description, isActive, userIds, moduleIds });
     return response.data;
   },

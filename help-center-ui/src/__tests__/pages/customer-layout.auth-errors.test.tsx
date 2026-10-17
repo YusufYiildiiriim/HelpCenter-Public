@@ -18,7 +18,7 @@ describe('customer verification failures', () => {
     expect(screen.queryByText('Protected customer')).not.toBeInTheDocument();
     expect(mocks.logout).not.toHaveBeenCalled();
     expect(mocks.replace).not.toHaveBeenCalled();
-    mocks.verify.mockResolvedValueOnce({ authenticated: true, userId: 2, username: 'customer', role: 'Customer' });
+    mocks.verify.mockResolvedValueOnce({ authenticated: true, userId: "20000000-0000-4000-8000-000000000002", username: 'customer', role: 'Customer' });
     await act(async () => fireEvent.click(screen.getByRole('button')));
     expect(screen.getByText('Protected customer')).toBeInTheDocument();
   });

@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface PublicProject {
-  id: number;
+  id: string;
   publicId: string;
   name: string;
   description: string;

@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface Module {
-  id: number;
+  id: string;
   publicId: string;
   name: string;
   description: string;
@@ -33,14 +33,14 @@ export const AdminModuleService = {
     };
   },
 
-  create: async (name: string, description: string, isActive: boolean = true, expertUserIds: number[] = []): Promise<boolean> => {
+  create: async (name: string, description: string, isActive: boolean = true, expertUserIds: string[] = []): Promise<boolean> => {
     const response = await api.post("/api/admin/modules/add-module", { name, description, isActive, expertUserIds });
     return response.data;
   },
 
   // Note: Id is resolved on the server side from the publicId route parameter (see AdminModulesController.Update);
   // there is no need to send the raw numeric id in the body.
-  update: async (publicId: string, name: string, description: string, isActive: boolean, expertUserIds: number[] = []): Promise<boolean> => {
+  update: async (publicId: string, name: string, description: string, isActive: boolean, expertUserIds: string[] = []): Promise<boolean> => {
     const response = await api.put(`/api/admin/modules/${publicId}`, { name, description, isActive, expertUserIds });
     return response.data;
   },
@@ -52,7 +52,7 @@ export const AdminModuleService = {
 
   // Lookup: minimal user list for module expert selector.
   // Requires Modules.ManageExperts permission; does not require Users.Read.
-  getAvailableExperts: async (): Promise<{ id: number; name: string }[]> => {
+  getAvailableExperts: async (): Promise<{ id: string; name: string }[]> => {
     const response = await api.get(`/api/admin/modules/available-experts`);
     return Array.isArray(response.data) ? response.data : [];
   },

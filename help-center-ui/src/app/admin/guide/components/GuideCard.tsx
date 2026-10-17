@@ -8,7 +8,7 @@ interface GuideCardProps {
   guide: Guide;
   index: number;
   onEdit: (guide: Guide) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 export const GuideCard: React.FC<GuideCardProps> = ({ guide, index, onEdit, onDelete }) => {

@@ -11,11 +11,11 @@ import { DataTable } from "@/components/common/DataTable";
 import { isForbiddenError } from "@/lib/api/errors";
 
 interface AuditRow {
-  id: number;
+  id: string;
   eventType: string;
-  actorUserId: number | null;
+  actorUserId: string | null;
   targetType: string | null;
-  targetId: number | null;
+  targetId: string | null;
   correlationId: string | null;
   occurredAt: string;
 }
@@ -50,7 +50,7 @@ export default function AuditLogsPage() {
   const filters = [
     { label: "Olay türü", value: eventType, set: setEventType, type: "text" },
     { label: "Hedef türü", value: targetType, set: setTargetType, type: "text" },
-    { label: "Kullanıcı kimliği", value: actor, set: setActor, type: "number" },
+    { label: "Kullanıcı kimliği", value: actor, set: setActor, type: "text" },
     { label: "Başlangıç", value: from, set: setFrom, type: "datetime-local" },
     { label: "Bitiş", value: to, set: setTo, type: "datetime-local" },
   ];

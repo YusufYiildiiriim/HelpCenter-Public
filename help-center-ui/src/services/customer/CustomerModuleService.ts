@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface CustomerModule {
-  id: number;
+  id: string;
   name: string;
 }
 

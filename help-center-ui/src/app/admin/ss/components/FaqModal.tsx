@@ -40,7 +40,7 @@ export const FaqModal: React.FC<FaqModalProps> = ({
     moduleId: { label: "Modül", rules: { required: true } },
   });
 
-  const selectedProject = projects.find(p => p.id === Number(faq.projectId));
+  const selectedProject = projects.find(p => p.id === faq.projectId);
   const availableModules = useMemo(() => {
     if (!faq.projectId || !selectedProject) return [];
     const assignedModuleIds = selectedProject.moduleIds || [];
@@ -52,12 +52,12 @@ export const FaqModal: React.FC<FaqModalProps> = ({
   };
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const val = e.target.value ? parseInt(e.target.value) : null;
+    const val = e.target.value || null;
     onFaqChange({ ...faq, projectId: val, moduleId: null });
   };
 
   const handleModuleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const val = e.target.value ? parseInt(e.target.value) : null;
+    const val = e.target.value || null;
     onFaqChange({ ...faq, moduleId: val });
   };
 

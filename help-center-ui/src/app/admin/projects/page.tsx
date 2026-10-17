@@ -67,18 +67,18 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectPublicId, setSelectedProjectPublicId] = useState<string | null>(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [currentUsers, setCurrentUsers] = useState<ProjectUserDto[]>([]);
   const [userLoading, setUserLoading] = useState(false);
-  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [allModules, setAllModules] = useState<Module[]>([]);
-  const [selectedModuleIds, setSelectedModuleIds] = useState<number[]>([]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([]);
 
   // Lookup shims — adapt minimal (id + name) responses to the full shape expected by modals.
-  const mapLookupToUsers = (items: { id: number; name: string }[]): User[] =>
+  const mapLookupToUsers = (items: { id: string; name: string }[]): User[] =>
     items.map(item => {
       const parts = item.name.trim().split(/\s+/);
       return {
@@ -94,7 +94,7 @@ export default function ProjectsPage() {
       };
     });
 
-  const mapLookupToModules = (items: { id: number; name: string }[]): Module[] =>
+  const mapLookupToModules = (items: { id: string; name: string }[]): Module[] =>
     items.map(item => ({
       id: item.id,
       publicId: "",
@@ -259,12 +259,12 @@ export default function ProjectsPage() {
     }
   }, [hasMemberPerm]);
 
-  const handleAssignUser = async (userId: number) => {
+  const handleAssignUser = async (userId: string) => {
     if (!selectedProjectId) return;
     const user = allUsers.find(u => u.id === userId);
     if (!user) return;
 
-    const optimistic: ProjectUserDto = { id: 0, userId, fullName: `${user.name} ${user.lastName}`, email: user.email };
+    const optimistic: ProjectUserDto = { id: crypto.randomUUID(), userId, fullName: `${user.name} ${user.lastName}`, email: user.email };
     setCurrentUsers(prev => [...prev, optimistic]);
 
     try {
@@ -280,7 +280,7 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleRemoveUser = async (id: number) => {
+  const handleRemoveUser = async (id: string) => {
     setCurrentUsers(prev => prev.filter(u => u.id !== id));
 
     try {

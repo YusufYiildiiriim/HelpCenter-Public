@@ -1,35 +1,35 @@
 import api from "@/lib/axios";
 
 export interface AdminMessageDocument {
-  id: number;
+  id: string;
   fileName: string;
   path: string;
 }
 
 export interface AdminTicketMessage {
-  id: number;
+  id: string;
   messageText: string;
   isAgent: boolean;
   createdAt: string;
   senderName: string;
-  senderUserId: number;
+  senderUserId: string;
   isRead: boolean;
   type: number;
   documents?: AdminMessageDocument[];
 }
 
 export interface AdminRequest {
-  id: number;
+  id: string;
   publicId: string;
   ticketId: string;
   title: string;
   description: string;
   status: string;
-  statusId: number;
+  statusId: string;
   customerName: string;
   companyName: string;
   moduleName: string;
-  moduleId?: number;
+  moduleId?: string;
   documentCount: number;
   messageCount: number;
   priority: number;
@@ -58,7 +58,7 @@ type AdminRequestQueryParams = {
   companyPublicId?: string;
   status?: string;
   priority?: number;
-  assignedUserId?: number;
+  assignedUserId?: string;
   pageNumber?: number;
   pageSize?: number;
   search?: string;
@@ -126,7 +126,7 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  getMessages: async (requestPublicId: string, pageSize: number = 20, beforeId?: number, assignedOnly = false): Promise<AdminMessagesResponse> => {
+  getMessages: async (requestPublicId: string, pageSize: number = 20, beforeId?: string, assignedOnly = false): Promise<AdminMessagesResponse> => {
     const params = new URLSearchParams();
     params.append("pageSize", pageSize.toString());
     if (beforeId) params.append("beforeId", beforeId.toString());
@@ -137,7 +137,7 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  sendMessage: async (data: { requestPublicId: string; senderUserId: number; messageText: string; type?: number; files?: File[] }): Promise<boolean> => {
+  sendMessage: async (data: { requestPublicId: string; senderUserId: string; messageText: string; type?: number; files?: File[] }): Promise<boolean> => {
     const formData = new FormData();
     formData.append("requestPublicId", data.requestPublicId);
     formData.append("senderUserId", data.senderUserId.toString());
@@ -150,7 +150,7 @@ export const AdminRequestService = {
     return response.data;
   },
 
-  consultExpert: async (data: { requestPublicId: string; expertId: number; agentUserId: number; note: string }): Promise<boolean> => {
+  consultExpert: async (data: { requestPublicId: string; expertId: string; agentUserId: string; note: string }): Promise<boolean> => {
     const response = await api.post("/api/admin/requests/consult-expert", data);
     return response.data;
   },

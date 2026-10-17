@@ -1,7 +1,7 @@
 ﻿import api from "@/lib/axios";
 
 export interface OrganizationInfoDto {
-  id: number;
+  id: string;
   organizationName: string;
   logoUrl?: string;
   phone?: string;

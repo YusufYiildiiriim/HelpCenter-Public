@@ -3,7 +3,7 @@ import api from "@/lib/axios";
 export type Base64String = string;
 
 export interface Role {
-  id: number;
+  id: string;
   name: string;
   description: string;
   isActive: boolean;
@@ -13,8 +13,8 @@ export interface Role {
 }
 
 export interface RolePermissionDto {
-  id?: number;
-  roleId: number;
+  id?: string;
+  roleId: string;
   resourceKey: string;
   /**
    * Source of truth: action keys granted for this resource.
@@ -38,7 +38,7 @@ export const AdminRoleService = {
     return response.data;
   },
 
-  getPermissions: async (roleId: number): Promise<RolePermissionDto[]> => {
+  getPermissions: async (roleId: string): Promise<RolePermissionDto[]> => {
     const response = await api.get(`/api/admin/role/get-permissions/${roleId}`);
     if (Array.isArray(response.data)) return response.data;
     if (response.data && Array.isArray(response.data.items)) return response.data.items;
@@ -46,7 +46,7 @@ export const AdminRoleService = {
     return [];
   },
 
-  updatePermissions: async (roleId: number, permissions: RolePermissionDto[]): Promise<boolean> => {
+  updatePermissions: async (roleId: string, permissions: RolePermissionDto[]): Promise<boolean> => {
     const response = await api.post("/api/admin/role/update-permissions", { roleId, permissions });
     return response.data;
   },
@@ -56,7 +56,7 @@ export const AdminRoleService = {
     return response.data;
   },
 
-  delete: async (id: number): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await api.delete(`/api/admin/role/delete/${id}`);
     return response.data;
   },

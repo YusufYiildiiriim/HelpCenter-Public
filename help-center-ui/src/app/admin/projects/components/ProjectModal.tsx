@@ -17,11 +17,11 @@ interface ProjectModalProps {
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
   allUsers: User[];
-  selectedUserIds: number[];
-  setSelectedUserIds: (ids: number[]) => void;
+  selectedUserIds: string[];
+  setSelectedUserIds: (ids: string[]) => void;
   allModules: Module[];
-  selectedModuleIds: number[];
-  setSelectedModuleIds: (ids: number[]) => void;
+  selectedModuleIds: string[];
+  setSelectedModuleIds: (ids: string[]) => void;
   loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;

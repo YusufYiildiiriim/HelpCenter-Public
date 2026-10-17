@@ -10,17 +10,17 @@ function scenario() {
   const joined = new Set<string>();
   let completed = false;
   let detailsRead = 0;
-  const ticket = () => ({ id: 1, publicId: requestId, ticketId: "TKT-STATUS", title: "Live status test",
-    statusId: completed ? 3 : 1, status: completed ? "Tamamlandı" : "Cevap Bekliyor",
+  const ticket = () => ({ id: "60000000-0000-4000-8000-000000000001", publicId: requestId, ticketId: "TKT-STATUS", title: "Live status test",
+    statusId: completed ? "10000000-0000-4000-8000-000000000003" : "10000000-0000-4000-8000-000000000001", status: completed ? "Tamamlandı" : "Cevap Bekliyor",
     priority: 1, priorityName: "Medium", createdAt: "2026-10-16T00:00:00Z", moduleName: "Billing",
-    companyName: "Fixture Co", customerName: "Fixture Customer", moduleId: 1,
+    companyName: "Fixture Co", customerName: "Fixture Customer", moduleId: "40000000-0000-4000-8000-000000000001",
     messageCount: 0, documentCount: 0, description: "Test" });
   const emitClosed = (id = requestId) => {
     for (const peer of peers) peer.send(JSON.stringify({ type: 1, target: "RequestStatusChanged",
-      arguments: [{ requestPublicId: id, statusId: 3, status: "Tamamlandı" }] }) + "\u001e");
+      arguments: [{ requestPublicId: id, statusId: "10000000-0000-4000-8000-000000000003", status: "Tamamlandı" }] }) + "\u001e");
   };
   async function setup(page: Page, customer: boolean, expert = false) {
-    await page.context().addCookies([{ name: "refresh_token", value: "fixture", url: "http://127.0.0.1:3001" }]);
+    await page.context().addCookies([{ name: "refresh_token", value: "fixture", url: process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "3001"}` }]);
     await page.routeWebSocket(/\/requestHub(?:\?|$)/, peer => {
       peers.add(peer);
       peer.onMessage(raw => {
@@ -43,7 +43,7 @@ function scenario() {
       const path = new URL(route.request().url()).pathname;
       let body: unknown = [];
       if (path === "/api/auth/refresh") body = { accessToken: "fixture-token" };
-      else if (path === "/api/auth/verify") body = { authenticated: true, role: customer ? "Customer" : expert ? "Expert" : "Admin", userId: customer ? 7 : 1,
+      else if (path === "/api/auth/verify") body = { authenticated: true, role: customer ? "Customer" : expert ? "Expert" : "Admin", userId: customer ? "20000000-0000-4000-8000-000000000007" : "20000000-0000-4000-8000-000000000001",
         username: "fixture", companyId, isPasswordChangeRequired: false,
         permissions: { modules: [{ resourceKey: expert ? "AssignedRequests" : "Requests", actions: ["Read", "Update"] }] } };
       else if (path.includes("organization")) body = { organizationName: "Fixture" };
@@ -74,9 +74,9 @@ test("customer close updates the open admin session without reload or a fake mes
     const customer = await customerContext.newPage();
     await state.setup(admin, false);
     await state.setup(customer, true);
-    await admin.goto(`http://127.0.0.1:3001/admin/requests/${requestId}`);
+    await admin.goto(`/admin/requests/${requestId}`);
     await expect(admin.getByPlaceholder("Bir yanıt yazın...")).toBeVisible();
-    await customer.goto(`http://127.0.0.1:3001/dashboard/${companyId}/requests/${requestId}`);
+    await customer.goto(`/dashboard/${companyId}/requests/${requestId}`);
     await expect(customer.getByRole("button", { name: "Talebi Kapat", exact: true })).toBeVisible();
     await expect.poll(() => state.joined.size).toBe(2);
     const initialReads = state.detailsRead();
@@ -98,7 +98,7 @@ test("customer close updates the open admin session without reload or a fake mes
 test("a missed close event is recovered from the send rejection with a clear local message", async ({ page }) => {
   const state = scenario();
   await state.setup(page, false);
-  await page.goto(`http://127.0.0.1:3001/admin/requests/${requestId}`);
+  await page.goto(`/admin/requests/${requestId}`);
   await page.getByPlaceholder("Bir yanıt yazın...").fill("Draft reply");
   state.closeSilently();
   await page.getByPlaceholder("Bir yanıt yazın...").press("Enter");

@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface CustomerRequestSubject {
-  id: number;
+  id: string;
   name: string;
 }
 

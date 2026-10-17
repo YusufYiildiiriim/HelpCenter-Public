@@ -6,12 +6,12 @@ export interface GuideDocument {
 }
 
 export interface Guide {
-  id: number;
+  id: string;
   title: string;
   description: string;
   module: string;
-  moduleId?: number;
-  previousGuideId?: number | null;
+  moduleId?: string;
+  previousGuideId?: string | null;
   youtubeUrl?: string | null;
   documents?: GuideDocument[];
   isActive: boolean;
@@ -20,11 +20,11 @@ export interface Guide {
 }
 
 export interface CreateGuideRequest {
-  moduleId?: number;
+  moduleId?: string;
   title: string;
   description: string;
   module: string;
-  previousGuideId?: number | null;
+  previousGuideId?: string | null;
   youtubeUrl?: string | null;
   isActive: boolean;
   isPublic: boolean;
@@ -32,7 +32,7 @@ export interface CreateGuideRequest {
 }
 
 export interface UpdateGuideRequest extends CreateGuideRequest {
-  id: number;
+  id: string;
 }
 
 const buildGuideFormData = (data: CreateGuideRequest | UpdateGuideRequest): FormData => {
@@ -86,7 +86,7 @@ export const AdminGuideService = {
     return response.data;
   },
 
-  delete: async (id: number): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await api.delete(`/api/admin/guides/delete/${id}`);
     return response.data;
   },

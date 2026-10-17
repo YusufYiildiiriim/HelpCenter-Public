@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 export interface RequestStatus {
-  id: number;
+  id: string;
   name: string;
   description: string;
   isActive: boolean;

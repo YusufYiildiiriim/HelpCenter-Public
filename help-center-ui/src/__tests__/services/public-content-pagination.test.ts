@@ -17,11 +17,11 @@ describe('public content pagination services', () => {
 
   it('sends guide page parameters and preserves the paginated API response', async () => {
     mock.onGet('/api/public/guides').reply((config) => {
-      expect(config.params).toEqual({ projectId: 4, module: 'Billing', pageNumber: 2, pageSize: 12 });
-      return [200, { items: [{ publicId: 'guide-2', title: 'Step 2' }], totalCount: 25, totalPages: 3, currentPage: 2, pageSize: 12 }];
+      expect(config.params).toEqual({ projectId: "30000000-0000-4000-8000-000000000004", module: 'Billing', pageNumber: 2, pageSize: 12 });
+      return [200, { items: [{ publicId: '60000000-0000-4000-8000-000000000002', title: 'Step 2' }], totalCount: 25, totalPages: 3, currentPage: 2, pageSize: 12 }];
     });
 
-    const result = await PublicGuideService.getPaginated({ projectId: 4, module: 'Billing', pageNumber: 2, pageSize: 12 });
+    const result = await PublicGuideService.getPaginated({ projectId: "30000000-0000-4000-8000-000000000004", module: 'Billing', pageNumber: 2, pageSize: 12 });
 
     expect(result).toMatchObject({ totalCount: 25, totalPages: 3, currentPage: 2, pageSize: 12 });
     expect(result.items).toHaveLength(1);
@@ -29,20 +29,20 @@ describe('public content pagination services', () => {
 
   it('uses the explicit unlimited page size only for the guide reader chain', async () => {
     mock.onGet('/api/public/guides').reply((config) => {
-      expect(config.params).toEqual({ projectId: 4, pageSize: 0 });
-      return [200, { items: [{ publicId: 'guide-1', title: 'Step 1' }], totalCount: 1, totalPages: 1, currentPage: 1, pageSize: 0 }];
+      expect(config.params).toEqual({ projectId: "30000000-0000-4000-8000-000000000004", pageSize: 0 });
+      return [200, { items: [{ publicId: '60000000-0000-4000-8000-000000000001', title: 'Step 1' }], totalCount: 1, totalPages: 1, currentPage: 1, pageSize: 0 }];
     });
 
-    await expect(PublicGuideService.getAllForChain({ projectId: 4 })).resolves.toHaveLength(1);
+    await expect(PublicGuideService.getAllForChain({ projectId: "30000000-0000-4000-8000-000000000004" })).resolves.toHaveLength(1);
   });
 
   it('sends FAQ page parameters and preserves the paginated API response', async () => {
     mock.onGet('/api/public/faq').reply((config) => {
-      expect(config.params).toEqual({ projectId: 4, moduleId: 7, pageNumber: 3, pageSize: 24 });
+      expect(config.params).toEqual({ projectId: "30000000-0000-4000-8000-000000000004", moduleId: "30000000-0000-4000-8000-000000000007", pageNumber: 3, pageSize: 24 });
       return [200, { items: [{ title: 'FAQ 3', description: 'Answer' }], totalCount: 49, totalPages: 3, currentPage: 3, pageSize: 24 }];
     });
 
-    const result = await PublicFaqService.getPaginated({ projectId: 4, moduleId: 7, pageNumber: 3, pageSize: 24 });
+    const result = await PublicFaqService.getPaginated({ projectId: "30000000-0000-4000-8000-000000000004", moduleId: "30000000-0000-4000-8000-000000000007", pageNumber: 3, pageSize: 24 });
 
     expect(result).toMatchObject({ totalCount: 49, totalPages: 3, currentPage: 3, pageSize: 24 });
     expect(result.items).toHaveLength(1);

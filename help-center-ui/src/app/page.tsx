@@ -31,7 +31,7 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState<"sss" | "guide" | "flow">("guide");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModule, setSelectedModule] = useState<string>("");
 

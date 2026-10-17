@@ -65,7 +65,7 @@ export default function CompaniesPage() {
   const [fetchError, setFetchError] = useState<unknown>(null);
   const [isForbidden, setIsForbidden] = useState(false);
   const [filterType, setFilterType] = useState<"All" | "Active" | "Demo">("All");
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // State: Alert Modal
   const [alertConfig, setAlertConfig] = useState<{
@@ -104,8 +104,8 @@ export default function CompaniesPage() {
     previousSystem: "",
     password: "",
     isDemoActive: false,
-    moduleIds: [] as number[],
-    projectId: null as number | null,
+    moduleIds: [] as string[],
+    projectId: null as string | null,
     rowVersion: undefined as string | undefined,
   });
 
@@ -371,7 +371,7 @@ export default function CompaniesPage() {
   };
 
   // Helpers
-  const toggleModule = (moduleId: number) => {
+  const toggleModule = (moduleId: string) => {
     setFormData((prev) => ({
       ...prev,
       moduleIds: prev.moduleIds.includes(moduleId)

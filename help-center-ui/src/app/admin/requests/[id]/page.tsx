@@ -56,7 +56,7 @@ export default function AdminTicketChatPage() {
     const [messageType, setMessageType] = useState<number>(0);
     const [isConsultModalOpen, setIsConsultModalOpen] = useState(false);
     const [experts, setExperts] = useState<ModuleExpertDto[]>([]);
-    const [selectedExpertId, setSelectedExpertId] = useState<number | null>(null);
+    const [selectedExpertId, setSelectedExpertId] = useState<string | null>(null);
     const [consultNote, setConsultNote] = useState("");
     const [isConsulting, setIsConsulting] = useState(false);
     const isLoadingMoreRef = useRef(false);
@@ -161,7 +161,7 @@ export default function AdminTicketChatPage() {
             await signalRService.joinRequest(requestId);
 
             signalRService.onReceiveMessage((message: unknown) => {
-                const newMsg = message as (AdminTicketMessage & { statusId?: number });
+                const newMsg = message as (AdminTicketMessage & { statusId?: string });
                 const formattedMsg: AdminTicketMessage = {
                     id: newMsg.id,
                     messageText: newMsg.messageText,
@@ -193,8 +193,8 @@ export default function AdminTicketChatPage() {
                 setTimeout(() => scrollToBottom("smooth"), 100);
             });
 
-            signalRService.onMessagesRead((readerIsAgent: number) => {
-                if (readerIsAgent === 0) {
+            signalRService.onMessagesRead(({ requestId: readRequestId, isAgent }) => {
+                if (readRequestId === requestId && !isAgent) {
                     setMessages(prev => prev.map(m => m.isAgent ? { ...m, isRead: true } : m));
                 }
             });
@@ -235,7 +235,7 @@ export default function AdminTicketChatPage() {
         if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
         setSending(true);
         try {
-            const adminId = userInfo?.userId || 0;
+            const adminId = userInfo?.userId || "";
             await AdminRequestService.sendMessage({
                 requestPublicId: requestId,
                 senderUserId: adminId,
@@ -269,7 +269,7 @@ export default function AdminTicketChatPage() {
         }
         setIsConsulting(true);
         try {
-            const agentId = userInfo?.userId || 0;
+            const agentId = userInfo?.userId || ""
             await AdminRequestService.consultExpert({
                 requestPublicId: requestId, expertId: selectedExpertId, agentUserId: agentId, note: consultNote
             });

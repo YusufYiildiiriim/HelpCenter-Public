@@ -9,7 +9,7 @@ interface UserTableProps {
   canUpdate: boolean;
   canDelete: boolean;
   onEdit: (user: User) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   onManageRoles: (user: User) => void;
 }
 

@@ -19,7 +19,7 @@ export interface GuideFormData {
   title: string;
   description: string;
   module: string;
-  previousGuideId: number | null;
+  previousGuideId: string | null;
   youtubeUrl: string;
   files: FileList | null;
   existingDocuments: GuideDocument[];
@@ -36,7 +36,7 @@ interface GuideModalProps {
   setFormData: (data: GuideFormData) => void;
   modules: Module[];
   guides: Guide[];
-  editingId: number | null;
+  editingId: string | null;
   loading: boolean;
 }
 
@@ -146,7 +146,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                       label="Önceki Adım (Zincirleme)"
                       value={String(formData.previousGuideId ?? "")}
                       options={[{ value: "", label: "Bağlantı Yok (İlk Adım)" }, ...safeGuides.filter(g => g.module === formData.module && g.id !== editingId).map(g => ({ value: String(g.id), label: g.title }))]}
-                      onValueChange={(value) => setFormData({ ...formData, previousGuideId: value ? Number(value) : null })}
+                      onValueChange={(value) => setFormData({ ...formData, previousGuideId: value || null })}
                     />
                   </div>
                 </div>

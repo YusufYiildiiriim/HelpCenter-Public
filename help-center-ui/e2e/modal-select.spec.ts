@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 async function fixture(page: Page) {
   const authOrder: string[] = [];
-  await page.context().addCookies([{ name: "refresh_token", value: "fixture", url: "http://127.0.0.1:3001" }]);
+  await page.context().addCookies([{ name: "refresh_token", value: "fixture", url: process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "3001"}` }]);
   await page.route("**/api/**", async route => {
     const path = new URL(route.request().url()).pathname;
     let body: unknown = [];
@@ -12,14 +12,14 @@ async function fixture(page: Page) {
     } else if (path === "/api/auth/verify") {
       authOrder.push("verify");
       expect(route.request().headers().authorization).toBe("Bearer fixture-access");
-      body = { authenticated: true, role: "Admin", username: "fixture", userId: 1, isPasswordChangeRequired: false,
+      body = { authenticated: true, role: "Admin", username: "fixture", userId: "20000000-0000-4000-8000-000000000001", isPasswordChangeRequired: false,
         permissions: { modules: ["Companies", "Guide"].map(resourceKey => ({ resourceKey, actions: ["Read", "Create", "Update"] })) } };
     } else if (path.includes("organization")) body = { organizationName: "Fixture" };
-    else if (path.includes("modules/get-all")) body = [{ id: 1, name: "Billing", isActive: true }];
-    else if (path.includes("projects/get-all")) body = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `Project ${i + 1}`, moduleIds: [1], isActive: true }));
-    else if (path.includes("companies/get-all")) body = [{ id: 1, publicId: "fixture-company", name: "Fixture Co", mail: "co@example.test", phone: "02125551234", address: "Test address", branchCount: 1,
+    else if (path.includes("modules/get-all")) body = [{ id: "40000000-0000-4000-8000-000000000001", publicId: "40000000-0000-4000-8000-000000000001", name: "Billing", isActive: true }];
+    else if (path.includes("projects/get-all")) body = Array.from({ length: 30 }, (_, i) => ({ id: `30000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, name: `Project ${i + 1}`, moduleIds: ["40000000-0000-4000-8000-000000000001"], isActive: true }));
+    else if (path.includes("companies/get-all")) body = [{ id: "50000000-0000-4000-8000-000000000001", publicId: "50000000-0000-4000-8000-000000000001", name: "Fixture Co", mail: "co@example.test", phone: "02125551234", address: "Test address", branchCount: 1,
       contactPersonName: "Test", contactPersonSurname: "User", contactPersonEmail: "user@example.test", contactPersonPhone: "05325551234", moduleIds: [], projectId: null, isDemoActive: false }];
-    else if (path.includes("guides/get-all")) body = [{ id: 1, publicId: "fixture-guide", title: "First step", description: "<p>Fixture guide</p>", module: "Billing", isActive: true, isPublic: true, documents: [], createdAt: "2026-10-16T00:00:00Z" }];
+    else if (path.includes("guides/get-all")) body = [{ id: "60000000-0000-4000-8000-000000000001", publicId: "60000000-0000-4000-8000-000000000001", title: "First step", description: "<p>Fixture guide</p>", module: "Billing", isActive: true, isPublic: true, documents: [], createdAt: "2026-10-16T00:00:00Z" }];
     await route.fulfill({ json: body });
   });
   return authOrder;

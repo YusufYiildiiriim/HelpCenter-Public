@@ -10,7 +10,7 @@ interface SubjectCardProps {
   canUpdate: boolean;
   canDelete: boolean;
   onEdit: (subject: RequestSubject) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 export const SubjectCard: React.FC<SubjectCardProps> = ({ 

@@ -5,7 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function mockDashboard(page: Page, total: number | null = 3, statisticsGate?: Promise<void>) {
   let currentTotal = total;
   await page.context().addCookies([
-    { name: "refresh_token", value: "e2e-fixture", url: "http://127.0.0.1:3001" },
+    { name: "refresh_token", value: "e2e-fixture", url: process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "3001"}` },
   ]);
   await page.route("**/api/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
@@ -14,7 +14,7 @@ async function mockDashboard(page: Page, total: number | null = 3, statisticsGat
       case "/api/auth/refresh": body = { accessToken: "e2e-fixture-token" }; break;
       case "/api/auth/verify":
         body = {
-          authenticated: true, role: "Admin", username: "fixture", userId: 1,
+          authenticated: true, role: "Admin", username: "fixture", userId: "20000000-0000-4000-8000-000000000001",
           isPasswordChangeRequired: false,
           permissions: { modules: [{ resourceKey: "Dashboard", actions: ["Read"] }] },
         };

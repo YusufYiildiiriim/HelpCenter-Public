@@ -1,12 +1,12 @@
 import api from "@/lib/axios";
 
 export interface CustomerRequest {
-  id: number;
+  id: string;
   publicId: string;
   ticketId: string;
   title: string;
   status: string;
-  statusId: number;
+  statusId: string;
   priority: number;
   priorityName: string;
   moduleName: string;
@@ -19,15 +19,15 @@ export interface CustomerRequest {
 }
 
 export interface TicketMessage {
-  id: number;
+  id: string;
   messageText: string;
   isAgent: boolean;
   createdAt: string;
   senderName: string;
-  senderUserId: number;
+  senderUserId: string;
   isRead: boolean;
   type: number;
-  documents?: { id: number; fileName: string; path: string }[];
+  documents?: { id: string; fileName: string; path: string }[];
 }
 
 export const CustomerRequestService = {

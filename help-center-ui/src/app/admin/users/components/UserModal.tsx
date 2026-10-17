@@ -7,13 +7,13 @@ import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 
 export interface UserFormData {
-  id: number;
+  id: string;
   name: string;
   lastName: string;
   email: string;
   username: string;
   password?: string;
-  roleIds: number[];
+  roleIds: string[];
   isActive: boolean;
 }
 

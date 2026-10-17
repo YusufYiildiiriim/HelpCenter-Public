@@ -35,7 +35,7 @@ export default function GuidePage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -53,7 +53,7 @@ export default function GuidePage() {
     title: "",
     description: "",
     module: "",
-    previousGuideId: null as number | null,
+    previousGuideId: null as string | null,
     youtubeUrl: "",
     files: null as FileList | null,
     existingDocuments: [] as GuideDocument[],
@@ -214,7 +214,7 @@ export default function GuidePage() {
     });
   };
 
-  const handleDelete = useCallback(async (id: number) => {
+  const handleDelete = useCallback(async (id: string) => {
     setAlertConfig({
       isOpen: true,
       title: "Rehberi Sil",

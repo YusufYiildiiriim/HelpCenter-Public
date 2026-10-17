@@ -167,15 +167,15 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
             formData.append("title", newRequest.title);
             formData.append("messageText", newRequest.description);
             
-            const mId = Number(newRequest.moduleId);
-            const sId = Number(newRequest.requestSubjectId);
+            const mId = newRequest.moduleId;
+            const sId = newRequest.requestSubjectId;
 
-            if (!mId || isNaN(mId)) {
+            if (!mId) {
                 toast.error("Lütfen geçerli bir Modül seçiniz.");
                 setSubmitting(false);
                 return;
             }
-            if (!sId || isNaN(sId)) {
+            if (!sId) {
                 toast.error("Lütfen geçerli bir Talep Konusu seçiniz.");
                 setSubmitting(false);
                 return;

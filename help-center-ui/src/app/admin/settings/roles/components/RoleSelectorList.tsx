@@ -10,8 +10,8 @@ interface RoleSelectorListProps {
   roles: Role[];
   selectedRole: Role | null;
   onSelectRole: (role: Role) => void;
-  onDeleteRole: (id: number) => void;
-  deletingId: number | null;
+  onDeleteRole: (id: string) => void;
+  deletingId: string | null;
   canDelete: boolean;
 }
 

@@ -11,7 +11,7 @@ export interface AdminStatistics {
 }
 
 export interface NameCount {
-  id: number;
+  id: string;
   name: string;
   count: number;
 }
@@ -23,7 +23,7 @@ export interface DailyTrendPoint {
 }
 
 export interface AgentPerformance {
-  userId: number;
+  userId: string;
   fullName: string;
   assigned: number;
   completed: number;

@@ -28,7 +28,7 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
   const filteredRequests = (activeView === "requests" && requestFilter !== "Hepsi"
     ? baseRequests.filter(r => r.status === requestFilter)
     : baseRequests
-  ).sort((a, b) => b.id - a.id);
+  ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

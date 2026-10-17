@@ -37,8 +37,8 @@ describe("dashboard demo SSO bridge", () => {
     const token = "header.payload.signature";
     navigation.searchParams = new URLSearchParams({
       token,
-      companyId: "19",
-      userId: "42",
+      companyId: "50000000-0000-4000-8000-000000000019",
+      userId: "20000000-0000-4000-8000-000000000042",
     });
     const replaceState = vi.spyOn(window.history, "replaceState");
 
@@ -46,7 +46,7 @@ describe("dashboard demo SSO bridge", () => {
 
     await waitFor(() => {
       expect(getAccessToken()).toBe(token);
-      expect(navigation.replace).toHaveBeenCalledWith("/dashboard/19");
+      expect(navigation.replace).toHaveBeenCalledWith("/dashboard/50000000-0000-4000-8000-000000000019");
     });
     expect(replaceState).toHaveBeenCalledWith(null, "", "/dashboard/sso");
     expect(sessionStorage.getItem("auth_token")).toBeNull();
@@ -66,8 +66,8 @@ describe("dashboard demo SSO bridge", () => {
     vi.stubEnv("NEXT_PUBLIC_DEMO_SSO_ENABLED", "false");
     navigation.searchParams = new URLSearchParams({
       token: "header.payload.signature",
-      companyId: "19",
-      userId: "42",
+      companyId: "50000000-0000-4000-8000-000000000019",
+      userId: "20000000-0000-4000-8000-000000000042",
     });
 
     render(<SSOPage />);

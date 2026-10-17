@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 interface ConsultModalProps {
   onClose: () => void;
   experts: ModuleExpertDto[];
-  selectedExpertId: number | null;
-  setSelectedExpertId: (id: number) => void;
+  selectedExpertId: string | null;
+  setSelectedExpertId: (id: string) => void;
   consultNote: string;
   setConsultNote: (note: string) => void;
   onConsult: () => void;

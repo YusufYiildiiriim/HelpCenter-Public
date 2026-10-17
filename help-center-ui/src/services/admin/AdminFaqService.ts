@@ -1,13 +1,13 @@
 import api from "@/lib/axios";
 
 export interface Faq {
-  id?: number;
+  id?: string;
   publicId?: string;
   title: string;
   description: string;
-  projectId?: number | null;
+  projectId?: string | null;
   projectName?: string | null;
-  moduleId?: number | null;
+  moduleId?: string | null;
   moduleName?: string | null;
   isActive: boolean;
   isPublic: boolean;
@@ -15,14 +15,14 @@ export interface Faq {
 }
 
 export const AdminFaqService = {
-  getAll: async (params?: { pageNumber?: number; pageSize?: number; search?: string; projectId?: number | null; moduleId?: number | null }): Promise<Faq[]> => {
+  getAll: async (params?: { pageNumber?: number; pageSize?: number; search?: string; projectId?: string | null; moduleId?: string | null }): Promise<Faq[]> => {
     const response = await api.get("/api/admin/faq/get-all", { params: { pageSize: 0, ...params } });
     if (Array.isArray(response.data)) return response.data;
     if (response.data && Array.isArray(response.data.items)) return response.data.items;
     return [];
   },
 
-  getPaginated: async (params?: { pageNumber?: number; pageSize?: number; search?: string; projectId?: number | null; moduleId?: number | null }): Promise<{ items: Faq[]; totalCount: number; totalPages: number; currentPage: number; pageSize: number }> => {
+  getPaginated: async (params?: { pageNumber?: number; pageSize?: number; search?: string; projectId?: string | null; moduleId?: string | null }): Promise<{ items: Faq[]; totalCount: number; totalPages: number; currentPage: number; pageSize: number }> => {
     const response = await api.get("/api/admin/faq/get-all", { params });
     if (response.data && Array.isArray(response.data.items)) {
       return response.data;
@@ -47,7 +47,7 @@ export const AdminFaqService = {
     return response.data;
   },
 
-  delete: async (id: number): Promise<boolean> => {
+  delete: async (id: string): Promise<boolean> => {
     const response = await api.delete(`/api/admin/faq/delete-faq/${id}`);
     return response.data;
   },

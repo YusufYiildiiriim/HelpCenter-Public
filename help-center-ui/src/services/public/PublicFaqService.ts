@@ -4,9 +4,9 @@ export interface PublicFaq {
   publicId: string;
   title: string;
   description: string;
-  projectId?: number | null;
+  projectId?: string | null;
   projectName?: string | null;
-  moduleId?: number | null;
+  moduleId?: string | null;
   moduleName?: string | null;
 }
 
@@ -19,8 +19,8 @@ export interface PaginatedPublicFaqs {
 }
 
 type PublicFaqParams = {
-  projectId?: number | null;
-  moduleId?: number | null;
+  projectId?: string | null;
+  moduleId?: string | null;
   search?: string;
   pageNumber?: number;
   pageSize?: number;

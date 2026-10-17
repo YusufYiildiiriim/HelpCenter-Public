@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 
 interface RoleCardProps {
   role: Role;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   onManagePermissions: (role: Role) => void;
-  deletingId: number | null;
+  deletingId: string | null;
   canDelete: boolean;
   canUpdate: boolean;
 }

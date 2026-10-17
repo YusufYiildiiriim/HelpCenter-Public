@@ -17,8 +17,8 @@ interface ModuleModalProps {
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
   allUsers: User[];
-  selectedExpertIds: number[];
-  setSelectedExpertIds: (ids: number[]) => void;
+  selectedExpertIds: string[];
+  setSelectedExpertIds: (ids: string[]) => void;
   loading: boolean;
   onSave: () => void;
   onClose: () => void;

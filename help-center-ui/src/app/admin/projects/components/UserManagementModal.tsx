@@ -10,8 +10,8 @@ interface UserManagementModalProps {
   userLoading: boolean;
   currentUsers: ProjectUserDto[];
   allUsers: User[];
-  onAssignUser: (userId: number) => void;
-  onRemoveUser: (id: number) => void;
+  onAssignUser: (userId: string) => void;
+  onRemoveUser: (id: string) => void;
 }
 
 export const UserManagementModal: React.FC<UserManagementModalProps> = ({

@@ -35,8 +35,8 @@ describe('buildQueryParams', () => {
   it('dizi değerleri filtreleyip serileştirir (null/undefined elemanlar elenir)', () => {
     // The type signature constrains array elements to QueryParamPrimitive; type assertion
     // is required to prove that runtime defensive code also filters out null/undefined elements.
-    const input = { statusIds: [1, 2, null, undefined, 3] } as unknown as Record<string, QueryParamInput>;
-    expect(buildQueryParams(input)).toEqual({ statusIds: ['1', '2', '3'] });
+    const input = { statusIds: ["10000000-0000-4000-8000-000000000001", "10000000-0000-4000-8000-000000000002", null, undefined, "10000000-0000-4000-8000-000000000003"] } as unknown as Record<string, QueryParamInput>;
+    expect(buildQueryParams(input)).toEqual({ statusIds: ['10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000003'] });
   });
 
   it('boş dizi anahtarı sonuca dahil etmez', () => {

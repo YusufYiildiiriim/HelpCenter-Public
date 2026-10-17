@@ -33,7 +33,7 @@ export interface VerifyResponse {
   authenticated: boolean;
   role: string;
   username: string;
-  userId: number;
+  userId: string;
   isPasswordChangeRequired: boolean;
   companyId?: string;
   permissions?: {
@@ -69,7 +69,7 @@ export const AuthService = {
     return response.data;
   },
 
-  dashboardLogin: async (companyId: number) => {
+  dashboardLogin: async (companyId: string) => {
     const response = await api.post("/api/auth/dashboard-login", companyId);
     storeLoginAccessToken(response.data);
     return response.data;

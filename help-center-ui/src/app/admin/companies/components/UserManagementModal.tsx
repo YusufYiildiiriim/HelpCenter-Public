@@ -13,8 +13,8 @@ interface UserManagementModalProps {
   onAddUserClick: () => void;
   onEditUser: (user: Customer) => void;
   onDeleteUser: (user: Customer) => void;
-  copiedId: number | null;
-  setCopiedId: (id: number | null) => void;
+  copiedId: string | null;
+  setCopiedId: (id: string | null) => void;
 }
 
 export const UserManagementModal: React.FC<UserManagementModalProps> = ({

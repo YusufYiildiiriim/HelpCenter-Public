@@ -4,9 +4,14 @@ import { apiBaseUrl } from "@/lib/env";
 
 const BASE_URL = apiBaseUrl;
 
+export interface MessagesReadNotification {
+  requestId: string;
+  isAgent: boolean;
+}
+
 export interface RequestStatusChanged {
   requestPublicId: string;
-  statusId: number;
+  statusId: string;
   status: string;
 }
 
@@ -115,7 +120,7 @@ class SignalRService {
     this.hubConnection?.off("ReceiveMessage");
   }
 
-  public onMessagesRead(callback: (userId: number) => void): void {
+  public onMessagesRead(callback: (notification: MessagesReadNotification) => void): void {
     this.hubConnection?.on("MessagesRead", callback);
   }
 

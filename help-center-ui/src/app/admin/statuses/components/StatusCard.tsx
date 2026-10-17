@@ -2,35 +2,36 @@ import React from "react";
 import { Clock, MessageSquare, CheckCircle2, Info } from "lucide-react";
 import type { RequestStatus } from "@/services/admin/AdminStatusService";
 import { cn } from "@/lib/utils";
+import { RequestStatus as RequestStatusIds } from "@/lib/requestStatus";
 
 interface StatusCardProps {
   status: RequestStatus;
 }
 
 export const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
-  const getStatusIcon = (id: number) => {
+  const getStatusIcon = (id: string) => {
     switch (id) {
-        case 1: return <Clock className="text-amber-400" size={24} />;
-        case 2: return <MessageSquare className="text-indigo-400" size={24} />;
-        case 3: return <CheckCircle2 className="text-emerald-400" size={24} />;
+        case RequestStatusIds.WaitingForReply: return <Clock className="text-amber-400" size={24} />;
+        case RequestStatusIds.Replied: return <MessageSquare className="text-indigo-400" size={24} />;
+        case RequestStatusIds.Completed: return <CheckCircle2 className="text-emerald-400" size={24} />;
         default: return <Info className="text-slate-400" size={24} />;
     }
   };
 
-  const getStatusBg = (id: number) => {
+  const getStatusBg = (id: string) => {
     switch (id) {
-        case 1: return "bg-amber-500/15 border-amber-500/30";
-        case 2: return "bg-indigo-500/15 border-indigo-500/30";
-        case 3: return "bg-emerald-500/15 border-emerald-500/30";
+        case RequestStatusIds.WaitingForReply: return "bg-amber-500/15 border-amber-500/30";
+        case RequestStatusIds.Replied: return "bg-indigo-500/15 border-indigo-500/30";
+        case RequestStatusIds.Completed: return "bg-emerald-500/15 border-emerald-500/30";
         default: return "bg-slate-800 border-slate-700";
     }
   };
 
-  const getStatusBadge = (id: number) => {
+  const getStatusBadge = (id: string) => {
     switch (id) {
-        case 1: return "bg-amber-500/15 text-amber-300 border-amber-500/30";
-        case 2: return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
-        case 3: return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+        case RequestStatusIds.WaitingForReply: return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+        case RequestStatusIds.Replied: return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+        case RequestStatusIds.Completed: return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
         default: return "bg-slate-800 text-slate-400 border-slate-700";
     }
   };

@@ -49,7 +49,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
             await signalRService.joinRequest(requestId);
 
             signalRService.onReceiveMessage((message: unknown) => {
-                const newMsg = message as { id: number; messageText: string; isAgent?: boolean; createdAt: string; senderName?: string; senderUserId?: number; documents?: { id: number; path: string; fileName: string }[]; isRead?: boolean; type?: number; statusId?: number };
+                const newMsg = message as { id: string; messageText: string; isAgent?: boolean; createdAt: string; senderName?: string; senderUserId?: string; documents?: { id: string; path: string; fileName: string }[]; isRead?: boolean; type?: number; statusId?: string };
                 if (newMsg.type !== undefined && newMsg.type !== 0) return;
 
                 const formattedMsg: TicketMessage = {
@@ -58,7 +58,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     isAgent: newMsg.isAgent ?? false,
                     createdAt: newMsg.createdAt,
                     senderName: newMsg.senderName ?? "Müşteri",
-                    senderUserId: newMsg.senderUserId ?? 0,
+                    senderUserId: newMsg.senderUserId ?? "",
                     documents: newMsg.documents ?? [],
                     isRead: newMsg.isRead ?? false,
                     type: newMsg.type ?? 0
