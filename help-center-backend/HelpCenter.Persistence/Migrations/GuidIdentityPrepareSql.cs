@@ -6,15 +6,35 @@ namespace HelpCenter.Persistence.Migrations;
 /// </summary>
 internal static class GuidIdentityPrepareSql
 {
-    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityPrepareTextReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareForeignKeyInventory; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareRowCounts; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareMap;";
+    internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityPrepareModuleDependency; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareTextReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareForeignKeyInventory; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareReferenceMap; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareRowCounts; DROP TABLE IF EXISTS dbo.GuidIdentityPrepareMap;";
 
     internal const string Up = """
 SET XACT_ABORT ON;
+-- Take locks in stable order so all prepared source rows represent one write-frozen snapshot.
+DECLARE @lockEntity sysname,@lockSql nvarchar(max),@lockCursor CURSOR;
+DECLARE @LockEntities table(EntityName sysname PRIMARY KEY);
+INSERT @LockEntities VALUES
+(N'Accounts'),(N'Companies'),(N'CompanyModule'),(N'ConversationParticipants'),(N'Conversations'),
+(N'CustomerRequestDocuments'),(N'CustomerRequestEvaluations'),(N'CustomerRequestMessages'),(N'CustomerRequests'),
+(N'CustomerRequestStatuses'),(N'Customers'),(N'Documents'),(N'FAQs'),(N'Guides'),(N'MenuItems'),
+(N'ModuleExperts'),(N'Modules'),(N'OrganizationInfos'),(N'ProjectModule'),(N'Projects'),(N'RequestHistories'),
+(N'RequestSubjects'),(N'RolePermissionActions'),(N'RolePermissions'),(N'Roles'),(N'UserProjects'),(N'UserRoles'),
+(N'Users'),(N'AuditLogs'),(N'RefreshTokens');
+SET @lockCursor=CURSOR LOCAL FAST_FORWARD FOR SELECT EntityName FROM @LockEntities ORDER BY EntityName;
+OPEN @lockCursor; FETCH NEXT FROM @lockCursor INTO @lockEntity;
+WHILE @@FETCH_STATUS=0
+BEGIN
+    SET @lockSql=N'SELECT COUNT_BIG(*) FROM dbo.'+QUOTENAME(@lockEntity)+N' WITH(TABLOCKX,HOLDLOCK);';
+    EXEC(@lockSql);
+    FETCH NEXT FROM @lockCursor INTO @lockEntity;
+END;
+CLOSE @lockCursor; DEALLOCATE @lockCursor;
 IF OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareRowCounts',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareReferenceMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareTextReferenceMap',N'U') IS NOT NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareForeignKeyInventory',N'U') IS NOT NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NOT NULL
     THROW 51000, 'Guid identity preparation artifacts already exist; inspect the database before retrying.', 1;
 
 CREATE TABLE dbo.GuidIdentityPrepareMap
@@ -69,9 +89,23 @@ CREATE TABLE dbo.GuidIdentityPrepareForeignKeyInventory
     UpdateAction nvarchar(60) NOT NULL,
     IsDisabled bit NOT NULL,
     IsNotTrusted bit NOT NULL,
+    IsNotForReplication bit NOT NULL,
     Disposition varchar(24) NOT NULL,
     CONSTRAINT PK_GuidIdentityPrepareForeignKeyInventory PRIMARY KEY(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ReferencedColumnName),
     CONSTRAINT CK_GuidIdentityPrepareForeignKeyInventory_Disposition CHECK(Disposition IN('GuidIdentity','UnchangedExternal'))
+);
+CREATE TABLE dbo.GuidIdentityPrepareModuleDependency
+(
+    ReferencingSchema sysname NOT NULL,
+    ReferencingObject sysname NOT NULL,
+    ReferencingType nvarchar(60) NOT NULL,
+    ReferencedEntityName sysname NOT NULL,
+    ReferencedColumnName sysname NOT NULL,
+    DefinitionHash varbinary(32) NULL,
+    TriggerMetadata nvarchar(max) NULL,
+    DiscoveryMethod varchar(24) NOT NULL,
+    Disposition varchar(32) NOT NULL,
+    CONSTRAINT PK_GuidIdentityPrepareModuleDependency PRIMARY KEY(ReferencingSchema,ReferencingObject,ReferencedEntityName,ReferencedColumnName,DiscoveryMethod)
 );
 
 DECLARE @Entities table(EntityName sysname PRIMARY KEY, HasPublicId bit NOT NULL);
@@ -167,10 +201,18 @@ IF EXISTS(
     WHERE re.EntityName IS NOT NULL AND (SCHEMA_NAME(pt.schema_id)<>N'dbo' OR SCHEMA_NAME(rt.schema_id)<>N'dbo')
        OR (re.EntityName IS NOT NULL AND rc.name=N'Id' AND pty.name NOT IN(N'int',N'bigint')))
     THROW 51000, 'An identity FK is outside dbo or does not use a supported numeric parent column.', 1;
+IF EXISTS(
+    SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
+    JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities pe ON pe.EntityName=pt.name
+    JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
+    JOIN sys.types pty ON pty.user_type_id=pc.user_type_id
+    JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id LEFT JOIN @Entities re ON re.EntityName=rt.name
+    WHERE re.EntityName IS NULL AND (pc.name=N'Id' OR pc.name LIKE N'%Id') AND pty.name IN(N'int',N'bigint'))
+    THROW 51000, 'A converted entity has a numeric Id-like FK to a table outside the GUID manifest.', 1;
 
-INSERT dbo.GuidIdentityPrepareForeignKeyInventory(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition)
+INSERT dbo.GuidIdentityPrepareForeignKeyInventory(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition)
 SELECT SCHEMA_NAME(pt.schema_id),pt.name,fk.name,pc.name,pty.name,SCHEMA_NAME(rt.schema_id),rt.name,rc.name,rty.name,
-       fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_disabled,fk.is_not_trusted,
+       fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_disabled,fk.is_not_trusted,fk.is_not_for_replication,
        CASE WHEN re.EntityName IS NOT NULL AND rc.name=N'Id' THEN 'GuidIdentity' ELSE 'UnchangedExternal' END
 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
 JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
@@ -237,6 +279,43 @@ INSERT @ScalarRefs VALUES
 (N'UserRoles',N'UserId',N'Users'),(N'UserRoles',N'RoleId',N'Roles'),
 (N'Users',N'AccountId',N'Accounts'),(N'MenuItems',N'ParentId',N'MenuItems'),
 (N'AuditLogs',N'ActorUserId',N'Users'),(N'RefreshTokens',N'UserId',N'Users'),(N'RefreshTokens',N'CustomerId',N'Customers');
+
+-- Require an explicit disposition for every numeric identity-shaped field in converted tables.
+IF EXISTS
+(
+    SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id') AND ty.name IN(N'int',N'bigint')
+      AND NOT (c.name=N'Id' AND EXISTS(SELECT 1 FROM sys.indexes i JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE i.object_id=t.object_id AND i.is_primary_key=1 AND ic.column_id=c.column_id))
+      AND NOT EXISTS(SELECT 1 FROM sys.foreign_key_columns fkc WHERE fkc.parent_object_id=t.object_id AND fkc.parent_column_id=c.column_id)
+      AND NOT EXISTS(SELECT 1 FROM @ScalarRefs s WHERE s.ParentEntityName=t.name AND s.ColumnName=c.name)
+      AND NOT (t.name=N'AuditLogs' AND c.name=N'TargetId')
+)
+    THROW 51000, 'A numeric Id-like column in a converted entity is not covered by PK/FK/scalar/audit manifests.', 1;
+
+-- Inventory catalog dependencies and conservative dynamic-SQL name matches. Such modules are
+-- currently fail-closed until explicitly rewritten or reviewed for GUID-safe behavior.
+INSERT dbo.GuidIdentityPrepareModuleDependency(ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition)
+SELECT DISTINCT SCHEMA_NAME(o.schema_id),o.name,o.type_desc,t.name,COALESCE(rc.name,N'*'),
+       CASE WHEN sm.definition IS NULL THEN NULL ELSE HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition)) END,
+       CASE WHEN tr.object_id IS NULL THEN NULL ELSE CONCAT(tr.is_disabled,N'|',tr.is_not_for_replication,N'|',tr.is_instead_of_trigger,N'|',ISNULL(te.EventList,N'')) END,
+       CASE WHEN o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id) THEN 'AttachedTrigger'
+            WHEN sed.referenced_id=t.object_id THEN 'CatalogDependency' ELSE 'TextSearch' END,
+       CASE WHEN sm.definition IS NULL THEN 'Unclassified'
+            WHEN o.name IN(N'Sp_StatusDistribution',N'Sp_ModuleDistribution',N'Sp_CompanyTopN',N'Sp_AgentPerformance',N'Sp_DailyTrend',N'Sp_AvgResolutionMinutes',N'Sp_ReopenStats',N'Sp_CompletedRequests',N'Sp_ActiveRequests',N'Sp_DashboardStats') THEN 'RewriteForGuid'
+            WHEN o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies',N'TR_AuditLogs_AppendOnly') THEN 'PreserveUnchanged'
+            ELSE 'Unclassified' END
+FROM sys.objects o JOIN sys.sql_modules sm ON sm.object_id=o.object_id
+CROSS JOIN @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
+LEFT JOIN sys.sql_expression_dependencies sed ON sed.referencing_id=o.object_id AND sed.referenced_id=t.object_id
+LEFT JOIN sys.columns rc ON rc.object_id=t.object_id AND rc.column_id=sed.referenced_minor_id
+LEFT JOIN sys.triggers tr ON tr.object_id=o.object_id
+OUTER APPLY(SELECT STUFF((SELECT N','+CONCAT(tEvent.type_desc,N':',tEvent.event_group_type_desc,N':',tEvent.is_first,N':',tEvent.is_last) FROM sys.trigger_events tEvent WHERE tEvent.object_id=o.object_id ORDER BY tEvent.type_desc FOR XML PATH(''),TYPE).value(N'.',N'nvarchar(max)'),1,1,N'') AS EventList) te
+WHERE o.type IN(N'V',N'P',N'FN',N'IF',N'TF',N'TR')
+  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition LIKE N'%'+QUOTENAME(t.name)+N'%' OR sm.definition LIKE N'%dbo.'+t.name+N'%');
+IF EXISTS(SELECT 1 FROM dbo.GuidIdentityPrepareModuleDependency WHERE Disposition='Unclassified')
+    THROW 51000, 'An unclassified SQL module depends on a converted entity; add an explicit rewrite/preserve disposition before proceeding.', 1;
+
 IF EXISTS(
     SELECT 1 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
     JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @ScalarRefs sr ON sr.ParentEntityName=pt.name

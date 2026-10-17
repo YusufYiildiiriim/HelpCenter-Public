@@ -7,12 +7,32 @@ internal static class GuidIdentityValidateSql
 
     internal const string Up = """
 SET XACT_ABORT ON;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- Validation executes inside EF's migration transaction. Hold exclusive table locks through its
+-- completion so no ordinary writer can invalidate the snapshot between checks.
+DECLARE @lockEntity sysname,@lockSql nvarchar(max),@lockCursor CURSOR;
+DECLARE @LockEntities table(EntityName sysname PRIMARY KEY);
+INSERT @LockEntities VALUES
+(N'Accounts'),(N'Companies'),(N'CompanyModule'),(N'ConversationParticipants'),(N'Conversations'),
+(N'CustomerRequestDocuments'),(N'CustomerRequestEvaluations'),(N'CustomerRequestMessages'),(N'CustomerRequests'),
+(N'CustomerRequestStatuses'),(N'Customers'),(N'Documents'),(N'FAQs'),(N'Guides'),(N'MenuItems'),
+(N'ModuleExperts'),(N'Modules'),(N'OrganizationInfos'),(N'ProjectModule'),(N'Projects'),(N'RequestHistories'),
+(N'RequestSubjects'),(N'RolePermissionActions'),(N'RolePermissions'),(N'Roles'),(N'UserProjects'),(N'UserRoles'),
+(N'Users'),(N'AuditLogs'),(N'RefreshTokens');
+SET @lockCursor=CURSOR LOCAL FAST_FORWARD FOR SELECT EntityName FROM @LockEntities ORDER BY EntityName;
+OPEN @lockCursor; FETCH NEXT FROM @lockCursor INTO @lockEntity;
+WHILE @@FETCH_STATUS=0
+BEGIN
+    SET @lockSql=N'SELECT COUNT_BIG(*) FROM dbo.'+QUOTENAME(@lockEntity)+N' WITH(TABLOCKX,HOLDLOCK);';
+    EXEC(@lockSql);
+    FETCH NEXT FROM @lockCursor INTO @lockEntity;
+END;
+CLOSE @lockCursor; DEALLOCATE @lockCursor;
 IF OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareRowCounts',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareReferenceMap',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareTextReferenceMap',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareForeignKeyInventory',N'U') IS NULL
+   OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NULL
     THROW 51000, 'Guid identity preparation artifacts are incomplete; Validate cannot proceed.', 1;
 IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
     THROW 51000, 'A Guid identity validation gate already exists; inspect migration history before retrying.', 1;
@@ -28,6 +48,7 @@ CREATE TABLE dbo.GuidIdentityValidateGate
     PreparedReferences bigint NOT NULL,
     PreparedTextReferences bigint NOT NULL,
     ForeignKeyCount bigint NOT NULL,
+    ModuleDependencyCount bigint NOT NULL,
     SchemaFingerprint varbinary(32) NOT NULL,
     PreparedFingerprint varbinary(32) NOT NULL,
     CONSTRAINT CK_GuidIdentityValidateGate_Singleton CHECK(GateId=1)
@@ -98,6 +119,52 @@ INSERT @ReferenceColumns VALUES
 (N'UserRoles',N'RoleId',N'Roles'),(N'Users',N'AccountId',N'Accounts'),(N'MenuItems',N'ParentId',N'MenuItems'),
 (N'AuditLogs',N'ActorUserId',N'Users'),(N'RefreshTokens',N'UserId',N'Users'),(N'RefreshTokens',N'CustomerId',N'Customers');
 
+-- The suffix-based catalog scan fails closed for any numeric identity-shaped column not already
+-- covered by a PK, FK inventory, scalar reference or polymorphic/text-specific manifest.
+IF EXISTS
+(
+    SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
+    JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
+    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id') AND ty.name IN(N'int',N'bigint')
+      AND NOT (c.name=N'Id' AND EXISTS(SELECT 1 FROM sys.indexes i JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE i.object_id=t.object_id AND i.is_primary_key=1 AND ic.column_id=c.column_id))
+      AND NOT EXISTS(SELECT 1 FROM sys.foreign_key_columns fkc WHERE fkc.parent_object_id=t.object_id AND fkc.parent_column_id=c.column_id)
+      AND NOT EXISTS(SELECT 1 FROM @ReferenceColumns r WHERE r.ParentEntityName=t.name AND r.ColumnName=c.name)
+      AND NOT (t.name=N'AuditLogs' AND c.name=N'TargetId')
+)
+    THROW 51000, 'A numeric Id-like column in a converted entity is not covered by PK/FK/scalar/audit manifests.', 1;
+
+-- Compare the complete current module dependency inventory, including conservative text matches
+-- for dynamic SQL and attached triggers. Only known modules with explicit dispositions are allowed.
+CREATE TABLE #CurrentModules
+(
+    ReferencingSchema sysname NOT NULL,ReferencingObject sysname NOT NULL,ReferencingType nvarchar(60) NOT NULL,
+    ReferencedEntityName sysname NOT NULL,ReferencedColumnName sysname NOT NULL,DefinitionHash varbinary(32) NULL,TriggerMetadata nvarchar(max) NULL,
+    DiscoveryMethod varchar(24) NOT NULL,Disposition varchar(32) NOT NULL,
+    PRIMARY KEY(ReferencingSchema,ReferencingObject,ReferencedEntityName,ReferencedColumnName,DiscoveryMethod)
+);
+INSERT #CurrentModules
+SELECT DISTINCT SCHEMA_NAME(o.schema_id),o.name,o.type_desc,t.name,COALESCE(rc.name,N'*'),
+       CASE WHEN sm.definition IS NULL THEN NULL ELSE HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition)) END,
+       CASE WHEN tr.object_id IS NULL THEN NULL ELSE CONCAT(tr.is_disabled,N'|',tr.is_not_for_replication,N'|',tr.is_instead_of_trigger,N'|',ISNULL(te.EventList,N'')) END,
+       CASE WHEN o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id) THEN 'AttachedTrigger'
+            WHEN sed.referenced_id=t.object_id THEN 'CatalogDependency' ELSE 'TextSearch' END,
+       CASE WHEN sm.definition IS NULL THEN 'Unclassified'
+            WHEN o.name IN(N'Sp_StatusDistribution',N'Sp_ModuleDistribution',N'Sp_CompanyTopN',N'Sp_AgentPerformance',N'Sp_DailyTrend',N'Sp_AvgResolutionMinutes',N'Sp_ReopenStats',N'Sp_CompletedRequests',N'Sp_ActiveRequests',N'Sp_DashboardStats') THEN 'RewriteForGuid'
+            WHEN o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies',N'TR_AuditLogs_AppendOnly') THEN 'PreserveUnchanged'
+            ELSE 'Unclassified' END
+FROM sys.objects o JOIN sys.sql_modules sm ON sm.object_id=o.object_id
+CROSS JOIN @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
+LEFT JOIN sys.sql_expression_dependencies sed ON sed.referencing_id=o.object_id AND sed.referenced_id=t.object_id
+LEFT JOIN sys.columns rc ON rc.object_id=t.object_id AND rc.column_id=sed.referenced_minor_id
+LEFT JOIN sys.triggers tr ON tr.object_id=o.object_id
+OUTER APPLY(SELECT STUFF((SELECT N','+CONCAT(tEvent.type_desc,N':',tEvent.event_group_type_desc,N':',tEvent.is_first,N':',tEvent.is_last) FROM sys.trigger_events tEvent WHERE tEvent.object_id=o.object_id ORDER BY tEvent.type_desc FOR XML PATH(''),TYPE).value(N'.',N'nvarchar(max)'),1,1,N'') AS EventList) te
+WHERE o.type IN(N'V',N'P',N'FN',N'IF',N'TF',N'TR')
+  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition LIKE N'%'+QUOTENAME(t.name)+N'%' OR sm.definition LIKE N'%dbo.'+t.name+N'%');
+IF EXISTS(SELECT 1 FROM #CurrentModules WHERE Disposition='Unclassified')
+   OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency)
+   OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules)
+    THROW 51000, 'SQL module dependency inventory is unknown or changed after Prepare.', 1;
+
 DECLARE @parent sysname,@column sysname,@target sysname;
 IF EXISTS(SELECT ParentEntityName,ColumnName FROM @ReferenceColumns GROUP BY ParentEntityName,ColumnName HAVING COUNT(DISTINCT ReferencedEntityName)>1)
     THROW 51000, 'A scalar reference column has conflicting prepared targets.', 1;
@@ -148,12 +215,12 @@ CREATE TABLE #CurrentFks
 (
     ParentSchema sysname NOT NULL,ParentEntityName sysname NOT NULL,ConstraintName sysname NOT NULL,ParentColumnName sysname NOT NULL,ParentSqlType sysname NOT NULL,
     ReferencedSchema sysname NOT NULL,ReferencedEntityName sysname NOT NULL,ReferencedColumnName sysname NOT NULL,ReferencedSqlType sysname NOT NULL,
-    DeleteAction nvarchar(60) NOT NULL,UpdateAction nvarchar(60) NOT NULL,IsDisabled bit NOT NULL,IsNotTrusted bit NOT NULL,Disposition varchar(24) NOT NULL,
+    DeleteAction nvarchar(60) NOT NULL,UpdateAction nvarchar(60) NOT NULL,IsDisabled bit NOT NULL,IsNotTrusted bit NOT NULL,IsNotForReplication bit NOT NULL,Disposition varchar(24) NOT NULL,
     PRIMARY KEY(ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ReferencedColumnName)
 );
 INSERT #CurrentFks
 SELECT SCHEMA_NAME(pt.schema_id),pt.name,fk.name,pc.name,pty.name,SCHEMA_NAME(rt.schema_id),rt.name,rc.name,rty.name,
-       fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_disabled,fk.is_not_trusted,
+       fk.delete_referential_action_desc,fk.update_referential_action_desc,fk.is_disabled,fk.is_not_trusted,fk.is_not_for_replication,
        CASE WHEN re.EntityName IS NOT NULL AND rc.name=N'Id' THEN 'GuidIdentity' ELSE 'UnchangedExternal' END
 FROM sys.foreign_key_columns fkc JOIN sys.foreign_keys fk ON fk.object_id=fkc.constraint_object_id
 JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
@@ -162,10 +229,10 @@ JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id JOIN sys.columns rc O
 JOIN sys.types rty ON rty.user_type_id=rc.user_type_id
 LEFT JOIN @Entities pe ON pe.EntityName=pt.name LEFT JOIN @Entities re ON re.EntityName=rt.name
 WHERE pe.EntityName IS NOT NULL OR re.EntityName IS NOT NULL;
-IF EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition FROM #CurrentFks
-          EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory)
-   OR EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory
-          EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,Disposition FROM #CurrentFks)
+IF EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM #CurrentFks
+          EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory)
+   OR EXISTS(SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM dbo.GuidIdentityPrepareForeignKeyInventory
+          EXCEPT SELECT ParentSchema,ParentEntityName,ConstraintName,ParentColumnName,ParentSqlType,ReferencedSchema,ReferencedEntityName,ReferencedColumnName,ReferencedSqlType,DeleteAction,UpdateAction,IsDisabled,IsNotTrusted,IsNotForReplication,Disposition FROM #CurrentFks)
     THROW 51000, 'Foreign-key schema or metadata changed after Prepare.', 1;
 
 -- Fingerprint current table column/default/computed/index/check/trigger metadata for the later
@@ -196,8 +263,12 @@ FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name JOIN sys.triggers tr O
 LEFT JOIN sys.sql_modules sm ON sm.object_id=tr.object_id WHERE SCHEMA_NAME(t.schema_id)=N'dbo';
 INSERT #SchemaRows
 SELECT ParentEntityName,N'FOREIGN KEY',ConstraintName,
-       CONCAT(ParentSchema,N'|',ParentColumnName,N'|',ParentSqlType,N'|',ReferencedSchema,N'|',ReferencedEntityName,N'|',ReferencedColumnName,N'|',ReferencedSqlType,N'|',DeleteAction,N'|',UpdateAction,N'|',IsDisabled,N'|',IsNotTrusted,N'|',Disposition)
+       CONCAT(ParentSchema,N'|',ParentColumnName,N'|',ParentSqlType,N'|',ReferencedSchema,N'|',ReferencedEntityName,N'|',ReferencedColumnName,N'|',ReferencedSqlType,N'|',DeleteAction,N'|',UpdateAction,N'|',IsDisabled,N'|',IsNotTrusted,N'|',IsNotForReplication,N'|',Disposition)
 FROM dbo.GuidIdentityPrepareForeignKeyInventory;
+INSERT #SchemaRows
+SELECT ReferencingSchema,N'MODULE DEPENDENCY',CONCAT(ReferencingObject,N'|',ReferencedEntityName,N'|',ReferencedColumnName),
+       CONCAT(ReferencingType,N'|',CONVERT(varchar(64),DefinitionHash,2),N'|',ISNULL(TriggerMetadata,N''),N'|',DiscoveryMethod,N'|',Disposition)
+FROM dbo.GuidIdentityPrepareModuleDependency;
 DECLARE @SchemaJson nvarchar(max),@SchemaFingerprint varbinary(32),@PreparedFingerprint varbinary(32);
 SELECT @SchemaJson=(SELECT EntityName,ItemKind,ItemName,Definition FROM #SchemaRows ORDER BY EntityName,ItemKind,ItemName,Definition FOR JSON PATH,INCLUDE_NULL_VALUES);
 SET @SchemaFingerprint=HASHBYTES('SHA2_256',CONVERT(varbinary(max),ISNULL(@SchemaJson,N'[]')));
@@ -207,13 +278,14 @@ SELECT @PreparedSummary=(SELECT
   (SELECT EntityName,COUNT_BIG(*) AS MappingCount,CHECKSUM_AGG(BINARY_CHECKSUM(LegacyId,GuidId,OriginalPublicId)) AS MappingChecksum FROM dbo.GuidIdentityPrepareMap GROUP BY EntityName ORDER BY EntityName FOR JSON PATH) AS IdentityCounts,
   (SELECT ParentEntityName,ColumnName,COUNT_BIG(*) AS ReferenceCount,CHECKSUM_AGG(BINARY_CHECKSUM(ParentLegacyId,ReferencedEntityName,ReferencedLegacyId,GuidId)) AS ReferenceChecksum FROM dbo.GuidIdentityPrepareReferenceMap GROUP BY ParentEntityName,ColumnName ORDER BY ParentEntityName,ColumnName FOR JSON PATH) AS ReferenceCounts,
   (SELECT COUNT_BIG(*) AS TextReferenceCount FROM dbo.GuidIdentityPrepareTextReferenceMap FOR JSON PATH) AS TextReferences,
-  (SELECT COUNT_BIG(*) AS ForeignKeyCount FROM dbo.GuidIdentityPrepareForeignKeyInventory FOR JSON PATH) AS ForeignKeys
+  (SELECT COUNT_BIG(*) AS ForeignKeyCount FROM dbo.GuidIdentityPrepareForeignKeyInventory FOR JSON PATH) AS ForeignKeys,
+  (SELECT COUNT_BIG(*) AS ModuleDependencyCount FROM dbo.GuidIdentityPrepareModuleDependency FOR JSON PATH) AS ModuleDependencies
 FOR JSON PATH,WITHOUT_ARRAY_WRAPPER);
 SET @PreparedFingerprint=HASHBYTES('SHA2_256',CONVERT(varbinary(max),ISNULL(@PreparedSummary,N'{}')));
-INSERT dbo.GuidIdentityValidateGate(GateId,DatabaseName,ValidatedAtUtc,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,ForeignKeyCount,SchemaFingerprint,PreparedFingerprint)
+INSERT dbo.GuidIdentityValidateGate(GateId,DatabaseName,ValidatedAtUtc,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint)
 SELECT 1,DB_NAME(),SYSUTCDATETIME(),(SELECT COUNT(*) FROM @Entities),
        (SELECT SUM(SourceRowCount) FROM dbo.GuidIdentityPrepareRowCounts),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareMap),
        (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareReferenceMap),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareTextReferenceMap),
-       (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareForeignKeyInventory),@SchemaFingerprint,@PreparedFingerprint;
+       (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareForeignKeyInventory),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareModuleDependency),@SchemaFingerprint,@PreparedFingerprint;
 """;
 }
