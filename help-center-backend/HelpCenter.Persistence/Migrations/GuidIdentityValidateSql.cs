@@ -7,6 +7,8 @@ internal static class GuidIdentityValidateSql
 
     internal const string Up = """
 SET XACT_ABORT ON;
+IF ISNULL(TRY_CONVERT(int,SERVERPROPERTY('ProductMajorVersion')),0)<15
+    THROW 51000, 'GUID identity migration requires SQL Server 2019 (15.x) or later.', 1;
 -- Validation executes inside EF's migration transaction. Hold exclusive table locks through its
 -- completion so no ordinary writer can invalidate the snapshot between checks.
 DECLARE @lockEntity sysname,@lockSql nvarchar(max),@lockCursor CURSOR;
@@ -62,6 +64,18 @@ INSERT @Entities(EntityName,HasPublicId) VALUES
 (N'ModuleExperts',1),(N'Modules',1),(N'OrganizationInfos',1),(N'ProjectModule',1),(N'Projects',1),(N'RequestHistories',1),
 (N'RequestSubjects',1),(N'RolePermissionActions',1),(N'RolePermissions',1),(N'Roles',1),(N'UserProjects',1),(N'UserRoles',1),
 (N'Users',1),(N'AuditLogs',0),(N'RefreshTokens',0);
+IF EXISTS
+(
+    SELECT 1 FROM sys.synonyms s CROSS JOIN @Entities e
+    WHERE RIGHT(REPLACE(REPLACE(s.base_object_name,N'[',N''),N']',N''),LEN(e.EntityName))=e.EntityName
+)
+   OR EXISTS
+(
+    SELECT 1 FROM sys.sql_expression_dependencies sed JOIN sys.synonyms s ON s.object_id=sed.referenced_id
+    CROSS JOIN @Entities e
+    WHERE RIGHT(REPLACE(REPLACE(s.base_object_name,N'[',N''),N']',N''),LEN(e.EntityName))=e.EntityName
+)
+    THROW 51000, 'A SQL synonym or dependent module now targets a converted entity.', 1;
 IF (SELECT COUNT(*) FROM dbo.GuidIdentityPrepareRowCounts)<>(SELECT COUNT(*) FROM @Entities)
  OR EXISTS(SELECT e.EntityName FROM @Entities e LEFT JOIN dbo.GuidIdentityPrepareRowCounts c ON c.EntityName=e.EntityName WHERE c.EntityName IS NULL)
     THROW 51000, 'The prepared entity row-count manifest is incomplete.', 1;
@@ -125,11 +139,13 @@ IF EXISTS
 (
     SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
     JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
-    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id') AND ty.name IN(N'int',N'bigint')
-      AND NOT (c.name=N'Id' AND EXISTS(SELECT 1 FROM sys.indexes i JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE i.object_id=t.object_id AND i.is_primary_key=1 AND ic.column_id=c.column_id))
-      AND NOT EXISTS(SELECT 1 FROM sys.foreign_key_columns fkc WHERE fkc.parent_object_id=t.object_id AND fkc.parent_column_id=c.column_id)
-      AND NOT EXISTS(SELECT 1 FROM @ReferenceColumns r WHERE r.ParentEntityName=t.name AND r.ColumnName=c.name)
-      AND NOT (t.name=N'AuditLogs' AND c.name=N'TargetId')
+    WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id')
+      AND (ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104) OR ty.name=N'sql_variant')
+      AND (ty.name NOT IN(N'int',N'bigint') OR
+          (NOT (c.name=N'Id' AND EXISTS(SELECT 1 FROM sys.indexes i JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE i.object_id=t.object_id AND i.is_primary_key=1 AND ic.column_id=c.column_id))
+           AND NOT EXISTS(SELECT 1 FROM sys.foreign_key_columns fkc WHERE fkc.parent_object_id=t.object_id AND fkc.parent_column_id=c.column_id)
+           AND NOT EXISTS(SELECT 1 FROM @ReferenceColumns r WHERE r.ParentEntityName=t.name AND r.ColumnName=c.name)
+           AND NOT (t.name=N'AuditLogs' AND c.name=N'TargetId')))
 )
     THROW 51000, 'A numeric Id-like column in a converted entity is not covered by PK/FK/scalar/audit manifests.', 1;
 
@@ -148,9 +164,10 @@ SELECT DISTINCT SCHEMA_NAME(o.schema_id),o.name,o.type_desc,t.name,COALESCE(rc.n
        CASE WHEN tr.object_id IS NULL THEN NULL ELSE CONCAT(tr.is_disabled,N'|',tr.is_not_for_replication,N'|',tr.is_instead_of_trigger,N'|',ISNULL(te.EventList,N'')) END,
        CASE WHEN o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id) THEN 'AttachedTrigger'
             WHEN sed.referenced_id=t.object_id THEN 'CatalogDependency' ELSE 'TextSearch' END,
-       CASE WHEN sm.definition IS NULL THEN 'Unclassified'
-            WHEN o.name IN(N'Sp_StatusDistribution',N'Sp_ModuleDistribution',N'Sp_CompanyTopN',N'Sp_AgentPerformance',N'Sp_DailyTrend',N'Sp_AvgResolutionMinutes',N'Sp_ReopenStats',N'Sp_CompletedRequests',N'Sp_ActiveRequests',N'Sp_DashboardStats') THEN 'RewriteForGuid'
-            WHEN o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies',N'TR_AuditLogs_AppendOnly') THEN 'PreserveUnchanged'
+       CASE WHEN sm.definition IS NULL OR SCHEMA_NAME(o.schema_id)<>N'dbo' THEN 'Unclassified'
+            WHEN o.type=N'P' AND o.name IN(N'Sp_StatusDistribution',N'Sp_ModuleDistribution',N'Sp_CompanyTopN',N'Sp_AgentPerformance',N'Sp_DailyTrend',N'Sp_AvgResolutionMinutes',N'Sp_ReopenStats',N'Sp_CompletedRequests',N'Sp_ActiveRequests',N'Sp_DashboardStats') THEN 'RewriteForGuid'
+            WHEN o.type=N'P' AND o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies') AND CHARINDEX(N'Id',sm.definition)=0 AND sm.definition NOT LIKE N'%sp_executesql%' AND sm.definition NOT LIKE N'%EXEC(%' AND sm.definition NOT LIKE N'%EXEC (%' AND sm.definition NOT LIKE N'%EXECUTE(%' AND sm.definition NOT LIKE N'%EXECUTE (%' AND sm.definition NOT LIKE N'%EXEC @%' AND sm.definition NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
+            WHEN o.type=N'TR' AND o.name=N'TR_AuditLogs_AppendOnly' AND CHARINDEX(N'Id',sm.definition)=0 AND sm.definition NOT LIKE N'%sp_executesql%' AND sm.definition NOT LIKE N'%EXEC(%' AND sm.definition NOT LIKE N'%EXEC (%' AND sm.definition NOT LIKE N'%EXECUTE(%' AND sm.definition NOT LIKE N'%EXECUTE (%' AND sm.definition NOT LIKE N'%EXEC @%' AND sm.definition NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
             ELSE 'Unclassified' END
 FROM sys.objects o JOIN sys.sql_modules sm ON sm.object_id=o.object_id
 CROSS JOIN @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
@@ -159,7 +176,7 @@ LEFT JOIN sys.columns rc ON rc.object_id=t.object_id AND rc.column_id=sed.refere
 LEFT JOIN sys.triggers tr ON tr.object_id=o.object_id
 OUTER APPLY(SELECT STUFF((SELECT N','+CONCAT(tEvent.type_desc,N':',tEvent.event_group_type_desc,N':',tEvent.is_first,N':',tEvent.is_last) FROM sys.trigger_events tEvent WHERE tEvent.object_id=o.object_id ORDER BY tEvent.type_desc FOR XML PATH(''),TYPE).value(N'.',N'nvarchar(max)'),1,1,N'') AS EventList) te
 WHERE o.type IN(N'V',N'P',N'FN',N'IF',N'TF',N'TR')
-  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition LIKE N'%'+QUOTENAME(t.name)+N'%' OR sm.definition LIKE N'%dbo.'+t.name+N'%');
+  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition LIKE N'%'+t.name+N'%' OR sm.definition LIKE N'%sp_executesql%' OR sm.definition LIKE N'%EXEC(%' OR sm.definition LIKE N'%EXEC (%' OR sm.definition LIKE N'%EXECUTE(%' OR sm.definition LIKE N'%EXECUTE (%' OR sm.definition LIKE N'%EXEC @%' OR sm.definition LIKE N'%EXECUTE @%');
 IF EXISTS(SELECT 1 FROM #CurrentModules WHERE Disposition='Unclassified')
    OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency)
    OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules)
