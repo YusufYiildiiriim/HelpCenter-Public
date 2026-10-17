@@ -76,6 +76,13 @@ IF EXISTS
     WHERE RIGHT(REPLACE(REPLACE(s.base_object_name,N'[',N''),N']',N''),LEN(e.EntityName))=e.EntityName
 )
     THROW 51000, 'A SQL synonym or dependent module now targets a converted entity.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.objects o JOIN sys.sql_expression_dependencies sed ON sed.referencing_id=o.object_id
+    JOIN sys.tables t ON t.object_id=sed.referenced_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA') AND SCHEMA_NAME(t.schema_id)=N'dbo'
+)
+    THROW 51000, 'A CLR SQL module now has a catalog dependency on a converted entity.', 1;
 IF (SELECT COUNT(*) FROM dbo.GuidIdentityPrepareRowCounts)<>(SELECT COUNT(*) FROM @Entities)
  OR EXISTS(SELECT e.EntityName FROM @Entities e LEFT JOIN dbo.GuidIdentityPrepareRowCounts c ON c.EntityName=e.EntityName WHERE c.EntityName IS NULL)
     THROW 51000, 'The prepared entity row-count manifest is incomplete.', 1;
@@ -140,7 +147,7 @@ IF EXISTS
     SELECT 1 FROM sys.tables t JOIN @Entities e ON e.EntityName=t.name
     JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id
     WHERE SCHEMA_NAME(t.schema_id)=N'dbo' AND (c.name=N'Id' OR c.name LIKE N'%Id')
-      AND (ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104) OR ty.name=N'sql_variant')
+      AND ty.system_type_id IN(48,52,56,127,106,108,60,122,59,62,104,98)
       AND (ty.name NOT IN(N'int',N'bigint') OR
           (NOT (c.name=N'Id' AND EXISTS(SELECT 1 FROM sys.indexes i JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE i.object_id=t.object_id AND i.is_primary_key=1 AND ic.column_id=c.column_id))
            AND NOT EXISTS(SELECT 1 FROM sys.foreign_key_columns fkc WHERE fkc.parent_object_id=t.object_id AND fkc.parent_column_id=c.column_id)
@@ -166,8 +173,8 @@ SELECT DISTINCT SCHEMA_NAME(o.schema_id),o.name,o.type_desc,t.name,COALESCE(rc.n
             WHEN sed.referenced_id=t.object_id THEN 'CatalogDependency' ELSE 'TextSearch' END,
        CASE WHEN sm.definition IS NULL OR SCHEMA_NAME(o.schema_id)<>N'dbo' THEN 'Unclassified'
             WHEN o.type=N'P' AND o.name IN(N'Sp_StatusDistribution',N'Sp_ModuleDistribution',N'Sp_CompanyTopN',N'Sp_AgentPerformance',N'Sp_DailyTrend',N'Sp_AvgResolutionMinutes',N'Sp_ReopenStats',N'Sp_CompletedRequests',N'Sp_ActiveRequests',N'Sp_DashboardStats') THEN 'RewriteForGuid'
-            WHEN o.type=N'P' AND o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies') AND CHARINDEX(N'Id',sm.definition)=0 AND sm.definition NOT LIKE N'%sp_executesql%' AND sm.definition NOT LIKE N'%EXEC(%' AND sm.definition NOT LIKE N'%EXEC (%' AND sm.definition NOT LIKE N'%EXECUTE(%' AND sm.definition NOT LIKE N'%EXECUTE (%' AND sm.definition NOT LIKE N'%EXEC @%' AND sm.definition NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
-            WHEN o.type=N'TR' AND o.name=N'TR_AuditLogs_AppendOnly' AND CHARINDEX(N'Id',sm.definition)=0 AND sm.definition NOT LIKE N'%sp_executesql%' AND sm.definition NOT LIKE N'%EXEC(%' AND sm.definition NOT LIKE N'%EXEC (%' AND sm.definition NOT LIKE N'%EXECUTE(%' AND sm.definition NOT LIKE N'%EXECUTE (%' AND sm.definition NOT LIKE N'%EXEC @%' AND sm.definition NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
+            WHEN o.type=N'P' AND o.name IN(N'Sp_TotalRequest',N'Sp_TotalMessages',N'Sp_TotalCustomers',N'Sp_TotalCompanies') AND CHARINDEX(N'Id',sm.definition COLLATE Latin1_General_100_CI_AS)=0 AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%sp_executesql%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC(%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC (%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE(%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE (%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC @%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
+            WHEN o.type=N'TR' AND o.name=N'TR_AuditLogs_AppendOnly' AND CHARINDEX(N'Id',sm.definition COLLATE Latin1_General_100_CI_AS)=0 AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%sp_executesql%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC(%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC (%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE(%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE (%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXEC @%' AND sm.definition COLLATE Latin1_General_100_CI_AS NOT LIKE N'%EXECUTE @%' THEN 'PreserveUnchanged'
             ELSE 'Unclassified' END
 FROM sys.objects o JOIN sys.sql_modules sm ON sm.object_id=o.object_id
 CROSS JOIN @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
@@ -176,7 +183,7 @@ LEFT JOIN sys.columns rc ON rc.object_id=t.object_id AND rc.column_id=sed.refere
 LEFT JOIN sys.triggers tr ON tr.object_id=o.object_id
 OUTER APPLY(SELECT STUFF((SELECT N','+CONCAT(tEvent.type_desc,N':',tEvent.event_group_type_desc,N':',tEvent.is_first,N':',tEvent.is_last) FROM sys.trigger_events tEvent WHERE tEvent.object_id=o.object_id ORDER BY tEvent.type_desc FOR XML PATH(''),TYPE).value(N'.',N'nvarchar(max)'),1,1,N'') AS EventList) te
 WHERE o.type IN(N'V',N'P',N'FN',N'IF',N'TF',N'TR')
-  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition LIKE N'%'+t.name+N'%' OR sm.definition LIKE N'%sp_executesql%' OR sm.definition LIKE N'%EXEC(%' OR sm.definition LIKE N'%EXEC (%' OR sm.definition LIKE N'%EXECUTE(%' OR sm.definition LIKE N'%EXECUTE (%' OR sm.definition LIKE N'%EXEC @%' OR sm.definition LIKE N'%EXECUTE @%');
+  AND (sed.referenced_id=t.object_id OR (o.type=N'TR' AND EXISTS(SELECT 1 FROM sys.triggers tr WHERE tr.object_id=o.object_id AND tr.parent_id=t.object_id)) OR sm.definition IS NULL OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE (N'%'+t.name+N'%') COLLATE Latin1_General_100_CI_AS OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%sp_executesql%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXEC(%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXEC (%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXECUTE(%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXECUTE (%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXEC @%' OR sm.definition COLLATE Latin1_General_100_CI_AS LIKE N'%EXECUTE @%');
 IF EXISTS(SELECT 1 FROM #CurrentModules WHERE Disposition='Unclassified')
    OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency)
    OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM #CurrentModules)
