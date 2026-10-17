@@ -12,6 +12,8 @@ internal static class GuidIdentityPrepareSql
 SET XACT_ABORT ON;
 IF ISNULL(TRY_CONVERT(int,SERVERPROPERTY('ProductMajorVersion')),0)<15
     THROW 51000, 'GUID identity migration requires SQL Server 2019 (15.x) or later.', 1;
+IF EXISTS(SELECT 1 FROM sys.objects WHERE type IN(N'PC',N'FS',N'FT',N'AF',N'TA'))
+    THROW 51000, 'SQL CLR modules exist in this database; GUID identity migration is unsupported until they are removed or separately reviewed.', 1;
 -- Take locks in stable order so all prepared source rows represent one write-frozen snapshot.
 DECLARE @lockEntity sysname,@lockSql nvarchar(max),@lockCursor CURSOR;
 DECLARE @LockEntities table(EntityName sysname PRIMARY KEY);
@@ -133,12 +135,6 @@ IF EXISTS
     WHERE RIGHT(REPLACE(REPLACE(s.base_object_name,N'[',N''),N']',N''),LEN(e.EntityName))=e.EntityName
 )
     THROW 51000, 'A SQL synonym or dependent module targets a converted entity; synonym cutover is unsupported.', 1;
-IF EXISTS
-(
-    SELECT 1 FROM sys.objects o
-    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA')
-)
-    THROW 51000, 'SQL CLR modules exist in this database; GUID identity migration is unsupported until they are removed or separately reviewed.', 1;
 IF EXISTS(SELECT 1 FROM @Entities e JOIN sys.tables t ON t.name=e.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
           LEFT JOIN sys.columns c ON c.object_id=t.object_id AND c.name=N'Id'
           LEFT JOIN sys.types ty ON ty.user_type_id=c.user_type_id

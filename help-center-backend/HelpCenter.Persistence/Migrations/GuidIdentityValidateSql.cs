@@ -9,6 +9,8 @@ internal static class GuidIdentityValidateSql
 SET XACT_ABORT ON;
 IF ISNULL(TRY_CONVERT(int,SERVERPROPERTY('ProductMajorVersion')),0)<15
     THROW 51000, 'GUID identity migration requires SQL Server 2019 (15.x) or later.', 1;
+IF EXISTS(SELECT 1 FROM sys.objects WHERE type IN(N'PC',N'FS',N'FT',N'AF',N'TA'))
+    THROW 51000, 'SQL CLR modules exist in this database; GUID identity validation is unsupported until they are removed or separately reviewed.', 1;
 -- Validation executes inside EF's migration transaction. Hold exclusive table locks through its
 -- completion so no ordinary writer can invalidate the snapshot between checks.
 DECLARE @lockEntity sysname,@lockSql nvarchar(max),@lockCursor CURSOR;
@@ -76,12 +78,6 @@ IF EXISTS
     WHERE RIGHT(REPLACE(REPLACE(s.base_object_name,N'[',N''),N']',N''),LEN(e.EntityName))=e.EntityName
 )
     THROW 51000, 'A SQL synonym or dependent module now targets a converted entity.', 1;
-IF EXISTS
-(
-    SELECT 1 FROM sys.objects o
-    WHERE o.type IN(N'PC',N'FS',N'FT',N'AF',N'TA')
-)
-    THROW 51000, 'SQL CLR modules exist in this database; GUID identity validation is unsupported until they are removed or separately reviewed.', 1;
 IF (SELECT COUNT(*) FROM dbo.GuidIdentityPrepareRowCounts)<>(SELECT COUNT(*) FROM @Entities)
  OR EXISTS(SELECT e.EntityName FROM @Entities e LEFT JOIN dbo.GuidIdentityPrepareRowCounts c ON c.EntityName=e.EntityName WHERE c.EntityName IS NULL)
     THROW 51000, 'The prepared entity row-count manifest is incomplete.', 1;
