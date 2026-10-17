@@ -1,4 +1,12 @@
-﻿# Guid identity cutover notes
+# Guid identity cutover notes
+
+## Staged migration status
+
+`20261017090000_PrepareGuidIdentity` is ordered after `20261016194811_AddAuditLogMenu` and before `20261017122147_GuidIdentityCutover`. It writes only migration-owned `GuidIdentityPrepare*` tables: entity Guid mappings, source/prepared row counts, and identity references. It does not update application rows or alter existing keys, columns, indexes, triggers, defaults, or constraints. It captures database FK references and an explicit scalar-reference manifest including `RequestHistories.ActorAccountId` and polymorphic `AuditLogs.TargetId`. Unknown or empty identifiers, unresolved references, and unknown non-null audit target types fail the migration transaction.
+
+The prepared mapping is a point-in-time snapshot. Apply Prepare first, freeze writes before Validate, keep them frozen through Finalize, and recheck/catch up references immediately before key replacement. A future dual-write scheme is acceptable only if Validate proves catch-up complete. Finalize must recheck row counts and reference parity in its cutover transaction. Never finalize from a stale preparation snapshot.
+
+Repository evidence: the source branch contains the cutover locally and the only references found are generic EF migration commands and the integration-test migration runner. The existing runbook says no SQL Server was migrated or rehearsed; source status is local and unpushed. Repository inspection cannot prove external database history. Confirm no external application before changing the retained migration implementation.
 
 The `20261017122147_GuidIdentityCutover` migration uses a SQL Server shadow-column cutover. Review it against a restored production-like database before treating it as deployable.
 
