@@ -376,6 +376,15 @@ IF EXISTS
                  WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id)
 )
     THROW 51000, 'An affected index uses a partition scheme, non-default filegroup, unsupported padding/sequential-key option, or duplicate-key message option.', 1;
+IF EXISTS
+(
+    SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+    WHERE i.index_id>0 AND i.is_unique_constraint=1 AND (i.allow_row_locks=0 OR i.allow_page_locks=0)
+      AND EXISTS(SELECT 1 FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
+                 JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=c.name
+                 WHERE ic.object_id=i.object_id AND ic.index_id=i.index_id)
+)
+    THROW 51000, 'An affected unique constraint has row/page locks disabled; its lock options cannot be preserved by the supported constraint DDL.', 1;
 IF EXISTS (
     SELECT 1 FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
     JOIN sys.index_columns xc ON xc.object_id=i.object_id AND xc.index_id=i.index_id
