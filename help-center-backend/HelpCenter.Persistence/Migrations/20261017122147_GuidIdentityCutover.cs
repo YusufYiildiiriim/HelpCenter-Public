@@ -9,6 +9,9 @@ public partial class GuidIdentityCutover : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        // Refresh the full validation gate in this transaction. The Validate SQL acquires the
+        // ordered table X locks before reading source rows and retains them until cutover commits.
+        migrationBuilder.Sql(GuidIdentityValidateSql.FinalizerRefresh);
         migrationBuilder.Sql(GuidIdentityCutoverSql.Up);
         migrationBuilder.Sql(GuidIdentityCutoverSql.SpDashboardStats);
         migrationBuilder.Sql(GuidIdentityCutoverSql.SpDailyTrend);

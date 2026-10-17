@@ -5,6 +5,11 @@ internal static class GuidIdentityValidateSql
 {
     internal const string Down = "DROP TABLE IF EXISTS dbo.GuidIdentityValidateGate;";
 
+    internal static string FinalizerRefresh => Up.Replace(
+        "DECLARE @isFinalizer bit=0;",
+        "DECLARE @isFinalizer bit=1;",
+        StringComparison.Ordinal);
+
     internal const string Up = """
 SET XACT_ABORT ON;
 IF ISNULL(TRY_CONVERT(int,SERVERPROPERTY('ProductMajorVersion')),0)<15
@@ -38,7 +43,20 @@ IF OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareForeignKeyInventory',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NULL
     THROW 51000, 'Guid identity preparation artifacts are incomplete; Validate cannot proceed.', 1;
-IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
+DECLARE @isFinalizer bit=0;
+IF @isFinalizer=1
+BEGIN
+    IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NULL
+        THROW 51000, 'The finalizer requires a previously validated GUID identity gate.', 1;
+    IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityValidateGate)<>1
+       OR NOT EXISTS(SELECT 1 FROM dbo.GuidIdentityValidateGate WHERE GateId=1 AND DatabaseName=DB_NAME() AND EntityCount=30)
+        THROW 51000, 'The existing GUID validation gate is malformed or belongs to a different database.', 1;
+    SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
+    INTO #PreviousGuidIdentityGate FROM dbo.GuidIdentityValidateGate;
+    DROP TABLE dbo.GuidIdentityValidateGate;
+END
+ELSE IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
     THROW 51000, 'A Guid identity validation gate already exists; inspect migration history before retrying.', 1;
 
 CREATE TABLE dbo.GuidIdentityValidateGate
@@ -306,5 +324,27 @@ SELECT 1,DB_NAME(),SYSUTCDATETIME(),(SELECT COUNT(*) FROM @Entities),
        (SELECT SUM(SourceRowCount) FROM dbo.GuidIdentityPrepareRowCounts),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareMap),
        (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareReferenceMap),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareTextReferenceMap),
        (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareForeignKeyInventory),(SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrepareModuleDependency),@SchemaFingerprint,@PreparedFingerprint;
+IF @isFinalizer=1 AND EXISTS
+(
+    SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
+    FROM #PreviousGuidIdentityGate
+    EXCEPT
+    SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
+    FROM dbo.GuidIdentityValidateGate
+)
+    THROW 51000, 'The GUID validation snapshot changed after Validate; cutover is aborted.', 1;
+IF @isFinalizer=1 AND EXISTS
+(
+    SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
+    FROM dbo.GuidIdentityValidateGate
+    EXCEPT
+    SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
+    FROM #PreviousGuidIdentityGate
+)
+    THROW 51000, 'The GUID validation snapshot changed after Validate; cutover is aborted.', 1;
 """;
 }
