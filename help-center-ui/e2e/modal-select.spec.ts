@@ -70,6 +70,7 @@ for (const width of [320, 390, 1440]) {
     await page.goto("/admin/guide");
     await page.getByRole("button", { name: "Yeni Rehber Ekle" }).click();
     const moduleTrigger = page.getByRole("button", { name: "Kategori (Modül)", exact: true });
+    await expect(moduleTrigger).toContainText("Seçin");
     await positioned(page, moduleTrigger);
     await page.getByRole("menuitemradio", { name: "Billing", exact: true }).click();
     await expect(moduleTrigger).toHaveText("Billing");
