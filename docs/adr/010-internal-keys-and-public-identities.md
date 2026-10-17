@@ -1,27 +1,24 @@
-# ADR-010: Keep internal numeric keys alongside public UUID identities
+# ADR-010: Move internal keys to Guid
 
-- Date: 2026-10-16
-- Status: Proposed
+- Date: 2026-10-17
+- Status: Accepted (direction); implementation is a separate backlog item
 
 ## Context
 
-`BaseEntity` already creates a random `PublicId` before persistence. EF and SQL Server preserve that identity and enforce uniqueness. Internal relationships use integer foreign keys; audit records and refresh tokens use long keys. Several external routes use `PublicId`, while some administrative contracts still carry numeric identifiers.
+HelpCenter domain records use `int` for `BaseEntity.Id` and relational foreign keys. `BaseEntity.PublicId` is already a Guid used as the external identity in API/UI contracts. Auxiliary tables such as audit logs and refresh tokens also have independent `long` keys.
 
-The technical-debt review proposed replacing every internal numeric key with a UUID. No requirement for independently generated relational keys, cross-database merges or disconnected writes has been established. Public UUIDs already provide independently generated external identities. UUIDs do not replace authorization checks.
+Yusuf has decided to move the internal identity model to Guid. This records the direction; it does not mean the schema or application code has been converted.
 
 ## Decision
 
-Retain existing numeric primary/foreign keys and UUID `PublicId` identities. Do not perform a global key migration in this change. Keep public identity generation and uniqueness tests, and continue using explicit ownership and permission checks on every protected route.
+Domain entity primary keys and their corresponding relational foreign keys will use Guid. The conversion must preserve relationships for existing records; where feasible, existing `PublicId` Guid values should be evaluated as migration keys. API/UI identity contracts and token claims must remain compatible during the transition.
 
-This proposal does not claim that every route already uses UUIDs. Any remaining public identifier exposure should be reviewed at the API boundary separately.
+Before implementation, inventory all foreign keys, scalar ID consumers, DTOs, routes, JWT claims, audit targets, seeds and client usages. Explicitly decide the scope of audit target identifiers and refresh-token helper keys in the implementation design. Rehearse the migration against an isolated SQL Server with representative data. Do not apply it to a local/shared database until that rehearsal is verified.
 
 ## Consequences
 
-- No key conversion, data rewrite or rollback operation is required.
-- Existing foreign keys, JWT identity claims, audit targets and API consumers retain their current contracts.
-- A future UUID-key migration needs a demonstrated requirement, a full FK/consumer inventory, a shadow-key backfill, dual-read/write compatibility, isolated SQL rehearsal and a recoverable cutover. Randomly replacing existing IDs is not an acceptable migration.
-- Revisit this proposal if multi-writer ingestion or cross-database merging becomes a concrete requirement.
-
-## Validation
-
-Existing public identity lifecycle tests cover generation, persistence and explicit identity preservation. Repository pagination now supports model-defined primary keys, including long keys. No database schema change is introduced by this ADR.
+- Guid is the target type for internal domain identities in new work.
+- This ADR alone makes no code, migration, database or API change.
+- Reusing existing `PublicId` values as primary keys is a candidate data-preserving path; validate relationships and uniqueness in migration design.
+- The transition requires coordinated API/UI versioning, compatibility for existing JWT claims, seed updates and a database rollback plan.
+- Migration and database application are separately reviewable steps; no database was changed in this decision task.
