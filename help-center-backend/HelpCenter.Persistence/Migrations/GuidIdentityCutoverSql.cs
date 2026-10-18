@@ -180,7 +180,7 @@ CREATE TABLE dbo.GuidIdentityPrimaryKeyMap
     ConstraintName sysname NOT NULL,
     IndexType nvarchar(60) NOT NULL,
     IsDisabled bit NOT NULL,
-    FillFactor tinyint NOT NULL,
+    IndexFillFactor tinyint NOT NULL,
     IgnoreDuplicateKey bit NOT NULL,
     SuppressDuplicateKeyMessages bit NOT NULL,
     IsPadded bit NOT NULL,
@@ -221,7 +221,7 @@ CREATE TABLE dbo.GuidIdentityIndexSnapshot
     IsPrimaryKey bit NOT NULL,
     IsUniqueConstraint bit NOT NULL,
     IsDisabled bit NOT NULL,
-    FillFactor tinyint NOT NULL,
+    IndexFillFactor tinyint NOT NULL,
     IgnoreDuplicateKey bit NOT NULL,
     SuppressDuplicateKeyMessages bit NOT NULL,
     IsPadded bit NOT NULL,
@@ -476,7 +476,9 @@ BEGIN
     IF @type NOT IN (N'int',N'bigint') THROW 51000, 'Unsupported FK column type.', 1;
     INSERT dbo.GuidIdentityColumnMap VALUES(@parent,@column,@referenced,@type,@nullable,0);
     INSERT dbo.GuidIdentityForeignKeyMap VALUES(@parent,@fk,@column,@referenced,N'Id',@delete,@update,@nfr,@fkDisabled,@fkUntrusted);
-    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ADD '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NULL; UPDATE p SET '+QUOTENAME(N'__Guid_'+@column)+N'=m.NewId FROM dbo.'+QUOTENAME(@parent)+N' p LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@target AND m.LegacyId=CONVERT(bigint,p.'+QUOTENAME(@column)+N') WHERE p.'+QUOTENAME(@column)+N' IS NOT NULL;';
+    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ADD '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NULL;';
+    EXEC sys.sp_executesql @sql;
+    SET @sql=N'UPDATE p SET '+QUOTENAME(N'__Guid_'+@column)+N'=m.NewId FROM dbo.'+QUOTENAME(@parent)+N' p LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@target AND m.LegacyId=CONVERT(bigint,p.'+QUOTENAME(@column)+N') WHERE p.'+QUOTENAME(@column)+N' IS NOT NULL;';
     EXEC sys.sp_executesql @sql,N'@target sysname',@target=@referenced;
     IF @nullable=0 BEGIN
         SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ALTER COLUMN '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NOT NULL;';
@@ -517,7 +519,9 @@ OPEN scalar_cursor; FETCH NEXT FROM scalar_cursor INTO @parent,@column,@referenc
 WHILE @@FETCH_STATUS=0
 BEGIN
     INSERT dbo.GuidIdentityColumnMap VALUES(@parent,@column,@referenced,@type,@nullable,0);
-    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ADD '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NULL; UPDATE p SET '+QUOTENAME(N'__Guid_'+@column)+N'=m.NewId FROM dbo.'+QUOTENAME(@parent)+N' p LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@target AND m.LegacyId=CONVERT(bigint,p.'+QUOTENAME(@column)+N') WHERE p.'+QUOTENAME(@column)+N' IS NOT NULL;';
+    SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ADD '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NULL;';
+    EXEC sys.sp_executesql @sql;
+    SET @sql=N'UPDATE p SET '+QUOTENAME(N'__Guid_'+@column)+N'=m.NewId FROM dbo.'+QUOTENAME(@parent)+N' p LEFT JOIN dbo.GuidIdentityMap m ON m.EntityName=@target AND m.LegacyId=CONVERT(bigint,p.'+QUOTENAME(@column)+N') WHERE p.'+QUOTENAME(@column)+N' IS NOT NULL;';
     EXEC sys.sp_executesql @sql,N'@target sysname',@target=@referenced;
     IF @nullable=0 BEGIN
         SET @sql=N'ALTER TABLE dbo.'+QUOTENAME(@parent)+N' ALTER COLUMN '+QUOTENAME(N'__Guid_'+@column)+N' uniqueidentifier NOT NULL;';
@@ -532,26 +536,31 @@ CLOSE scalar_cursor; DEALLOCATE scalar_cursor;
 -- Audit TargetId is polymorphic. Every non-null target must resolve through this explicit class/table map.
 IF COL_LENGTH(N'dbo.AuditLogs',N'TargetId') IS NOT NULL
 BEGIN
+    CREATE TABLE #AuditTargetTypes(TargetType sysname NOT NULL PRIMARY KEY,EntityName sysname NOT NULL);
+    INSERT #AuditTargetTypes(TargetType,EntityName) VALUES
+    (N'Account',N'Accounts'),(N'Company',N'Companies'),(N'CompanyModule',N'CompanyModule'),
+    (N'Conversation',N'Conversations'),(N'ConversationParticipant',N'ConversationParticipants'),
+    (N'Customer',N'Customers'),(N'CustomerRequest',N'CustomerRequests'),
+    (N'CustomerRequestEvaluation',N'CustomerRequestEvaluations'),(N'CustomerRequestMessage',N'CustomerRequestMessages'),
+    (N'CustomerRequestMessageDocument',N'CustomerRequestDocuments'),(N'CustomerRequestStatus',N'CustomerRequestStatuses'),
+    (N'Document',N'Documents'),(N'FAQ',N'FAQs'),(N'Guide',N'Guides'),(N'MenuItem',N'MenuItems'),
+    (N'Module',N'Modules'),(N'ModuleExpert',N'ModuleExperts'),(N'OrganizationInfo',N'OrganizationInfos'),
+    (N'Project',N'Projects'),(N'ProjectModule',N'ProjectModule'),(N'RequestHistory',N'RequestHistories'),
+    (N'RequestSubject',N'RequestSubjects'),(N'Role',N'Roles'),(N'RolePermission',N'RolePermissions'),
+    (N'RolePermissionAction',N'RolePermissionActions'),(N'User',N'Users'),(N'UserProject',N'UserProjects'),
+    (N'UserRole',N'UserRoles');
     INSERT dbo.GuidIdentityColumnMap VALUES(N'AuditLogs',N'TargetId',NULL,N'bigint',1,0);
-    ALTER TABLE dbo.AuditLogs ADD __Guid_TargetId uniqueidentifier NULL;
-    UPDATE a SET __Guid_TargetId=m.NewId
-    FROM dbo.AuditLogs a
-    JOIN dbo.GuidIdentityMap m ON m.LegacyId=CONVERT(bigint,a.TargetId)
-      AND m.EntityName=CASE a.TargetType
-        WHEN N'Account' THEN N'Accounts' WHEN N'Company' THEN N'Companies' WHEN N'CompanyModule' THEN N'CompanyModule'
-        WHEN N'Conversation' THEN N'Conversations' WHEN N'ConversationParticipant' THEN N'ConversationParticipants'
-        WHEN N'Customer' THEN N'Customers' WHEN N'CustomerRequest' THEN N'CustomerRequests'
-        WHEN N'CustomerRequestEvaluation' THEN N'CustomerRequestEvaluations' WHEN N'CustomerRequestMessage' THEN N'CustomerRequestMessages'
-        WHEN N'CustomerRequestMessageDocument' THEN N'CustomerRequestDocuments' WHEN N'CustomerRequestStatus' THEN N'CustomerRequestStatuses'
-        WHEN N'Document' THEN N'Documents' WHEN N'FAQ' THEN N'FAQs' WHEN N'Guide' THEN N'Guides' WHEN N'MenuItem' THEN N'MenuItems'
-        WHEN N'Module' THEN N'Modules' WHEN N'ModuleExpert' THEN N'ModuleExperts' WHEN N'OrganizationInfo' THEN N'OrganizationInfos'
-        WHEN N'Project' THEN N'Projects' WHEN N'ProjectModule' THEN N'ProjectModule' WHEN N'RequestHistory' THEN N'RequestHistories'
-        WHEN N'RequestSubject' THEN N'RequestSubjects' WHEN N'Role' THEN N'Roles' WHEN N'RolePermission' THEN N'RolePermissions'
-        WHEN N'RolePermissionAction' THEN N'RolePermissionActions' WHEN N'User' THEN N'Users' WHEN N'UserProject' THEN N'UserProjects'
-        WHEN N'UserRole' THEN N'UserRoles' ELSE NULL END
-    WHERE a.TargetId IS NOT NULL;
-    IF EXISTS(SELECT 1 FROM dbo.AuditLogs WHERE TargetId IS NOT NULL AND __Guid_TargetId IS NULL)
-        THROW 51000, 'Unmapped polymorphic AuditLog.TargetId; add its TargetType to the manifest before cutover.', 1;
+    SET @sql=N'ALTER TABLE dbo.AuditLogs ADD __Guid_TargetId uniqueidentifier NULL;';
+    EXEC sys.sp_executesql @sql;
+    SET @sql=N'UPDATE a SET __Guid_TargetId=m.NewId
+        FROM dbo.AuditLogs a
+        JOIN #AuditTargetTypes targetType ON targetType.TargetType=a.TargetType
+        JOIN dbo.GuidIdentityMap m ON m.EntityName=targetType.EntityName AND m.LegacyId=CONVERT(bigint,a.TargetId)
+        WHERE a.TargetId IS NOT NULL;';
+    EXEC sys.sp_executesql @sql;
+    SET @sql=N'IF EXISTS(SELECT 1 FROM dbo.AuditLogs WHERE TargetId IS NOT NULL AND __Guid_TargetId IS NULL)
+        THROW 51000, ''Unmapped polymorphic AuditLog.TargetId; add its TargetType to the manifest before cutover.'', 1;';
+    EXEC sys.sp_executesql @sql;
 END
 
 -- User-created statistics, non-default filegroups and partition schemes cannot be round-tripped by this manifest.
@@ -577,13 +586,13 @@ IF EXISTS (
 DECLARE @indexEntity sysname,@indexName sysname,@keys nvarchar(max),@includes nvarchar(max),@filter nvarchar(max),@unique bit,@clustered bit,@isConstraint bit,@schema sysname,@create nvarchar(max),@drop nvarchar(max),@indexObject int,@fillfactor tinyint,@ignoredup bit,@allowrow bit,@allowpage bit,@indexDisabled bit;
 INSERT dbo.GuidIdentityIndexSnapshot
 (
-    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
     IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
 )
 SELECT t.name,i.name,kc.name,i.type,i.is_unique,i.is_primary_key,i.is_unique_constraint,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,
        i.is_padded,i.allow_row_locks,i.allow_page_locks,i.has_filter,i.filter_definition,i.optimize_for_sequential_key,ds.name,ds.type,
        ISNULL(cols.KeyDefinition,N''),ISNULL(parts.PartitionDefinition,N'')
-FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name COLLATE DATABASE_DEFAULT
 JOIN sys.data_spaces ds ON ds.data_space_id=i.data_space_id
 LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=i.object_id AND kc.unique_index_id=i.index_id
 OUTER APPLY
@@ -601,11 +610,11 @@ OUTER APPLY
 ) parts
 WHERE i.index_id>0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
   AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id
-             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name
+             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name COLLATE DATABASE_DEFAULT AND cm.ColumnName=cc.name COLLATE DATABASE_DEFAULT
              WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
 DECLARE index_cursor CURSOR LOCAL FAST_FORWARD FOR
 SELECT t.name,i.name,i.object_id,i.is_unique,CONVERT(bit,CASE WHEN i.type=1 THEN 1 ELSE 0 END),i.is_unique_constraint,SCHEMA_NAME(t.schema_id),i.filter_definition,i.fill_factor,i.ignore_dup_key,i.allow_row_locks,i.allow_page_locks,i.is_disabled
-FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+ FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name COLLATE DATABASE_DEFAULT
 WHERE i.index_id>0 AND i.is_primary_key=0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
 AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
 OPEN index_cursor; FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage,@indexDisabled;
@@ -619,8 +628,8 @@ BEGIN
     FROM sys.index_columns ic JOIN sys.columns c ON c.object_id=ic.object_id AND c.column_id=ic.column_id
     WHERE ic.object_id=@indexObject AND ic.index_id=(SELECT index_id FROM sys.indexes WHERE object_id=@indexObject AND name=@indexName) AND ic.is_included_column=1;
     IF @isConstraint=1 AND (@filter IS NOT NULL OR @includes IS NOT NULL) THROW 51000, 'Unique constraint has unsupported filtered/include metadata.', 1;
-    SET @create=CASE WHEN @isConstraint=1 THEN N'ALTER TABLE '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ADD CONSTRAINT '+QUOTENAME(@indexName)+N' UNIQUE '+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'('+@keys+N') WITH (FILLFACTOR='+CONVERT(nvarchar(3),ISNULL(NULLIF(@fillfactor,0),0))+N');'
-        ELSE N'CREATE '+CASE WHEN @unique=1 THEN N'UNIQUE ' ELSE N'' END+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'INDEX '+QUOTENAME(@indexName)+N' ON '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ('+@keys+N')'+CASE WHEN @includes IS NULL THEN N'' ELSE N' INCLUDE ('+@includes+N')' END+CASE WHEN @filter IS NULL THEN N'' ELSE N' WHERE '+@filter END+N' WITH (FILLFACTOR='+CONVERT(nvarchar(3),ISNULL(NULLIF(@fillfactor,0),0))+N', IGNORE_DUP_KEY='+CASE WHEN @ignoredup=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_ROW_LOCKS='+CASE WHEN @allowrow=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_PAGE_LOCKS='+CASE WHEN @allowpage=1 THEN N'ON' ELSE N'OFF' END+N');' END;
+    SET @create=CASE WHEN @isConstraint=1 THEN N'ALTER TABLE '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ADD CONSTRAINT '+QUOTENAME(@indexName)+N' UNIQUE '+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'('+@keys+N')'+CASE WHEN ISNULL(@fillfactor,0)>0 THEN N' WITH (FILLFACTOR='+CONVERT(nvarchar(3),@fillfactor)+N')' ELSE N'' END+N';'
+        ELSE N'CREATE '+CASE WHEN @unique=1 THEN N'UNIQUE ' ELSE N'' END+CASE WHEN @clustered=1 THEN N'CLUSTERED ' ELSE N'NONCLUSTERED ' END+N'INDEX '+QUOTENAME(@indexName)+N' ON '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' ('+@keys+N')'+CASE WHEN @includes IS NULL THEN N'' ELSE N' INCLUDE ('+@includes+N')' END+CASE WHEN @filter IS NULL THEN N'' ELSE N' WHERE '+@filter END+N' WITH ('+CASE WHEN ISNULL(@fillfactor,0)>0 THEN N'FILLFACTOR='+CONVERT(nvarchar(3),@fillfactor)+N', ' ELSE N'' END+N'IGNORE_DUP_KEY='+CASE WHEN @ignoredup=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_ROW_LOCKS='+CASE WHEN @allowrow=1 THEN N'ON' ELSE N'OFF' END+N', ALLOW_PAGE_LOCKS='+CASE WHEN @allowpage=1 THEN N'ON' ELSE N'OFF' END+N');' END;
     SET @drop=CASE WHEN @isConstraint=1 THEN N'ALTER TABLE '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N' DROP CONSTRAINT '+QUOTENAME(@indexName)+N';' ELSE N'DROP INDEX '+QUOTENAME(@indexName)+N' ON '+QUOTENAME(@schema)+N'.'+QUOTENAME(@indexEntity)+N';' END;
     INSERT dbo.GuidIdentityIndexMap(EntityName,IndexName,IsDisabled,DropSql,CreateSql) VALUES(@indexEntity,@indexName,@indexDisabled,@drop,@create);
     FETCH NEXT FROM index_cursor INTO @indexEntity,@indexName,@indexObject,@unique,@clustered,@isConstraint,@schema,@filter,@fillfactor,@ignoredup,@allowrow,@allowpage,@indexDisabled;
@@ -694,7 +703,7 @@ END
 CLOSE drop_fk; DEALLOCATE drop_fk;
 
 -- Save and drop every simple Id primary key.
-INSERT dbo.GuidIdentityPrimaryKeyMap(EntityName,ConstraintName,IndexType,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,IsPadded,AllowRowLocks,AllowPageLocks,OptimizeForSequentialKey)
+INSERT dbo.GuidIdentityPrimaryKeyMap(EntityName,ConstraintName,IndexType,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,IsPadded,AllowRowLocks,AllowPageLocks,OptimizeForSequentialKey)
 SELECT t.name,k.name,i.type_desc,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,i.is_padded,i.allow_row_locks,i.allow_page_locks,i.optimize_for_sequential_key
 FROM sys.key_constraints k JOIN sys.tables t ON t.object_id=k.parent_object_id
 JOIN sys.indexes i ON i.object_id=k.parent_object_id AND i.index_id=k.unique_index_id
@@ -752,34 +761,18 @@ END
 CLOSE fk_add; DEALLOCATE fk_add;
 
 -- The single-Guid/PublicId alias is preserved; statuses are the sole canonical-ID exception.
-UPDATE e SET PublicId=Id FROM dbo.Accounts e;
-UPDATE e SET PublicId=Id FROM dbo.Companies e;
-UPDATE e SET PublicId=Id FROM dbo.CompanyModule e;
-UPDATE e SET PublicId=Id FROM dbo.ConversationParticipants e;
-UPDATE e SET PublicId=Id FROM dbo.Conversations e;
-UPDATE e SET PublicId=Id FROM dbo.CustomerRequestDocuments e;
-UPDATE e SET PublicId=Id FROM dbo.CustomerRequestEvaluations e;
-UPDATE e SET PublicId=Id FROM dbo.CustomerRequestMessages e;
-UPDATE e SET PublicId=Id FROM dbo.CustomerRequests e;
-UPDATE e SET PublicId=Id FROM dbo.CustomerRequestStatuses e;
-UPDATE e SET PublicId=Id FROM dbo.Customers e;
-UPDATE e SET PublicId=Id FROM dbo.Documents e;
-UPDATE e SET PublicId=Id FROM dbo.FAQs e;
-UPDATE e SET PublicId=Id FROM dbo.Guides e;
-UPDATE e SET PublicId=Id FROM dbo.MenuItems e;
-UPDATE e SET PublicId=Id FROM dbo.ModuleExperts e;
-UPDATE e SET PublicId=Id FROM dbo.Modules e;
-UPDATE e SET PublicId=Id FROM dbo.OrganizationInfos e;
-UPDATE e SET PublicId=Id FROM dbo.ProjectModule e;
-UPDATE e SET PublicId=Id FROM dbo.Projects e;
-UPDATE e SET PublicId=Id FROM dbo.RequestHistories e;
-UPDATE e SET PublicId=Id FROM dbo.RequestSubjects e;
-UPDATE e SET PublicId=Id FROM dbo.RolePermissionActions e;
-UPDATE e SET PublicId=Id FROM dbo.RolePermissions e;
-UPDATE e SET PublicId=Id FROM dbo.Roles e;
-UPDATE e SET PublicId=Id FROM dbo.UserProjects e;
-UPDATE e SET PublicId=Id FROM dbo.UserRoles e;
-UPDATE e SET PublicId=Id FROM dbo.Users e;
+-- Execute after the shadow swap so SQL Server compiles each statement against the Guid Id schema.
+DECLARE @publicIdEntity sysname,@publicIdSql nvarchar(max);
+DECLARE public_id_sync CURSOR LOCAL FAST_FORWARD FOR
+SELECT EntityName FROM @Entities WHERE EntityName NOT IN(N'AuditLogs',N'RefreshTokens') ORDER BY EntityName;
+OPEN public_id_sync; FETCH NEXT FROM public_id_sync INTO @publicIdEntity;
+WHILE @@FETCH_STATUS=0
+BEGIN
+    SET @publicIdSql=N'UPDATE e SET PublicId=Id FROM dbo.'+QUOTENAME(@publicIdEntity)+N' e;';
+    EXEC sys.sp_executesql @publicIdSql;
+    FETCH NEXT FROM public_id_sync INTO @publicIdEntity;
+END
+CLOSE public_id_sync; DEALLOCATE public_id_sync;
 IF OBJECT_ID(N'dbo.TR_AuditLogs_AppendOnly', N'TR') IS NOT NULL AND EXISTS(SELECT 1 FROM dbo.GuidIdentityTriggerState WHERE TriggerName=N'TR_AuditLogs_AppendOnly' AND IsDisabled=0) ENABLE TRIGGER dbo.TR_AuditLogs_AppendOnly ON dbo.AuditLogs;
 """;
 
@@ -825,12 +818,12 @@ INSERT @RequiredProcedures VALUES
 (N'Sp_StatusDistribution'),(N'Sp_ModuleDistribution'),(N'Sp_CompanyTopN'),(N'Sp_AgentPerformance'),
 (N'Sp_DailyTrend'),(N'Sp_AvgResolutionMinutes'),(N'Sp_ReopenStats'),(N'Sp_CompletedRequests'),
 (N'Sp_ActiveRequests'),(N'Sp_DashboardStats');
-IF EXISTS(SELECT 1 FROM @RequiredProcedures r LEFT JOIN sys.procedures p ON p.name=r.ProcedureName AND SCHEMA_NAME(p.schema_id)=N'dbo' WHERE p.object_id IS NULL)
+IF EXISTS(SELECT 1 FROM @RequiredProcedures r LEFT JOIN sys.procedures p ON p.name COLLATE DATABASE_DEFAULT=r.ProcedureName AND SCHEMA_NAME(p.schema_id)=N'dbo' WHERE p.object_id IS NULL)
     THROW 51000, 'A required GUID-compatible reporting procedure is missing after cutover.', 1;
 IF EXISTS
 (
     SELECT 1 FROM dbo.GuidIdentityPrepareModuleDependency md
-    LEFT JOIN sys.objects o ON o.name=md.ReferencingObject AND SCHEMA_NAME(o.schema_id)=md.ReferencingSchema AND o.type_desc=md.ReferencingType
+    LEFT JOIN sys.objects o ON o.name COLLATE DATABASE_DEFAULT=md.ReferencingObject AND SCHEMA_NAME(o.schema_id) COLLATE DATABASE_DEFAULT=md.ReferencingSchema AND o.type_desc COLLATE DATABASE_DEFAULT=md.ReferencingType
     LEFT JOIN sys.sql_modules sm ON sm.object_id=o.object_id
     WHERE md.Disposition='PreserveUnchanged'
       AND (o.object_id IS NULL OR sm.definition IS NULL OR md.DefinitionHash IS NULL OR HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition))<>md.DefinitionHash)
@@ -840,19 +833,19 @@ IF EXISTS
 IF EXISTS
 (
     SELECT 1 FROM dbo.GuidIdentityForeignKeyMap m
-    LEFT JOIN sys.tables pt ON pt.name=m.ParentEntityName AND SCHEMA_NAME(pt.schema_id)=N'dbo'
-    LEFT JOIN sys.foreign_keys fk ON fk.parent_object_id=pt.object_id AND fk.name=m.ConstraintName
+    LEFT JOIN sys.tables pt ON pt.name COLLATE DATABASE_DEFAULT=m.ParentEntityName AND SCHEMA_NAME(pt.schema_id)=N'dbo'
+    LEFT JOIN sys.foreign_keys fk ON fk.parent_object_id=pt.object_id AND fk.name COLLATE DATABASE_DEFAULT=m.ConstraintName
     LEFT JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id
     LEFT JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id
     LEFT JOIN sys.columns pc ON pc.object_id=pt.object_id AND pc.column_id=fkc.parent_column_id
     LEFT JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id
-    WHERE fk.object_id IS NULL OR rt.name<>m.ReferencedEntityName OR pc.name<>m.ParentColumnName OR rc.name<>m.ReferencedColumnName
-       OR fk.delete_referential_action_desc<>m.DeleteAction OR fk.update_referential_action_desc<>m.UpdateAction
+    WHERE fk.object_id IS NULL OR rt.name COLLATE DATABASE_DEFAULT<>m.ReferencedEntityName OR pc.name COLLATE DATABASE_DEFAULT<>m.ParentColumnName OR rc.name COLLATE DATABASE_DEFAULT<>m.ReferencedColumnName
+       OR fk.delete_referential_action_desc COLLATE DATABASE_DEFAULT<>m.DeleteAction OR fk.update_referential_action_desc COLLATE DATABASE_DEFAULT<>m.UpdateAction
        OR fk.is_not_for_replication<>m.IsNotForReplication OR fk.is_disabled<>m.IsDisabled OR fk.is_not_trusted<>m.IsNotTrusted
 )
     THROW 51000, 'A rebuilt identity foreign key differs from its captured relation or state.', 1;
 IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityForeignKeyMap)<>
-   (SELECT COUNT_BIG(*) FROM sys.foreign_keys fk JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities e ON e.EntityName=pt.name
+   (SELECT COUNT_BIG(*) FROM sys.foreign_keys fk JOIN sys.tables pt ON pt.object_id=fk.parent_object_id JOIN @Entities e ON e.EntityName=pt.name COLLATE DATABASE_DEFAULT
      JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id=fk.object_id JOIN sys.tables rt ON rt.object_id=fk.referenced_object_id
      JOIN sys.columns rc ON rc.object_id=rt.object_id AND rc.column_id=fkc.referenced_column_id WHERE rc.name=N'Id')
     THROW 51000, 'The identity foreign-key count changed during reconstruction.', 1;
@@ -861,23 +854,23 @@ IF OBJECT_ID(N'dbo.GuidIdentityIndexSnapshot',N'U') IS NULL
     THROW 51000, 'The captured exact index/PK metadata snapshot is missing.', 1;
 CREATE TABLE #CurrentIndexSnapshot
 (
-    EntityName sysname NOT NULL,IndexName sysname NOT NULL,ConstraintName sysname NULL,IndexType int NOT NULL,
+    EntityName sysname COLLATE DATABASE_DEFAULT NOT NULL,IndexName sysname COLLATE DATABASE_DEFAULT NOT NULL,ConstraintName sysname COLLATE DATABASE_DEFAULT NULL,IndexType int NOT NULL,
     IsUnique bit NOT NULL,IsPrimaryKey bit NOT NULL,IsUniqueConstraint bit NOT NULL,IsDisabled bit NOT NULL,
-    FillFactor tinyint NOT NULL,IgnoreDuplicateKey bit NOT NULL,SuppressDuplicateKeyMessages bit NOT NULL,IsPadded bit NOT NULL,AllowRowLocks bit NOT NULL,
-    AllowPageLocks bit NOT NULL,HasFilter bit NOT NULL,FilterDefinition nvarchar(max) NULL,
-    OptimizeForSequentialKey bit NOT NULL,DataSpaceName sysname NOT NULL,DataSpaceType char(2) NOT NULL,
-    KeyDefinition nvarchar(max) NOT NULL,PartitionDefinition nvarchar(max) NOT NULL,
+    IndexFillFactor tinyint NOT NULL,IgnoreDuplicateKey bit NOT NULL,SuppressDuplicateKeyMessages bit NOT NULL,IsPadded bit NOT NULL,AllowRowLocks bit NOT NULL,
+    AllowPageLocks bit NOT NULL,HasFilter bit NOT NULL,FilterDefinition nvarchar(max) COLLATE DATABASE_DEFAULT NULL,
+    OptimizeForSequentialKey bit NOT NULL,DataSpaceName sysname COLLATE DATABASE_DEFAULT NOT NULL,DataSpaceType char(2) COLLATE DATABASE_DEFAULT NOT NULL,
+    KeyDefinition nvarchar(max) COLLATE DATABASE_DEFAULT NOT NULL,PartitionDefinition nvarchar(max) COLLATE DATABASE_DEFAULT NOT NULL,
     PRIMARY KEY(EntityName,IndexName)
 );
 INSERT #CurrentIndexSnapshot
 (
-    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+    EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
     IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
 )
 SELECT t.name,i.name,kc.name,i.type,i.is_unique,i.is_primary_key,i.is_unique_constraint,i.is_disabled,i.fill_factor,i.ignore_dup_key,i.suppress_dup_key_messages,
        i.is_padded,i.allow_row_locks,i.allow_page_locks,i.has_filter,i.filter_definition,i.optimize_for_sequential_key,ds.name,ds.type,
        ISNULL(cols.KeyDefinition,N''),ISNULL(parts.PartitionDefinition,N'')
-FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name
+ FROM sys.indexes i JOIN sys.tables t ON t.object_id=i.object_id JOIN @Entities e ON e.EntityName=t.name COLLATE DATABASE_DEFAULT
 JOIN sys.data_spaces ds ON ds.data_space_id=i.data_space_id
 LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=i.object_id AND kc.unique_index_id=i.index_id
 OUTER APPLY
@@ -895,26 +888,26 @@ OUTER APPLY
 ) parts
 WHERE i.index_id>0 AND i.is_hypothetical=0 AND SCHEMA_NAME(t.schema_id)=N'dbo'
   AND EXISTS(SELECT 1 FROM sys.index_columns xc JOIN sys.columns cc ON cc.object_id=xc.object_id AND cc.column_id=xc.column_id
-             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name AND cm.ColumnName=cc.name
+             JOIN dbo.GuidIdentityColumnMap cm ON cm.EntityName=t.name COLLATE DATABASE_DEFAULT AND cm.ColumnName=cc.name COLLATE DATABASE_DEFAULT
              WHERE xc.object_id=i.object_id AND xc.index_id=i.index_id);
 IF EXISTS
 (
-    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
-           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    SELECT EntityName COLLATE DATABASE_DEFAULT,IndexName COLLATE DATABASE_DEFAULT,ConstraintName COLLATE DATABASE_DEFAULT,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition COLLATE DATABASE_DEFAULT,OptimizeForSequentialKey,DataSpaceName COLLATE DATABASE_DEFAULT,DataSpaceType COLLATE DATABASE_DEFAULT,KeyDefinition COLLATE DATABASE_DEFAULT,PartitionDefinition COLLATE DATABASE_DEFAULT
     FROM dbo.GuidIdentityIndexSnapshot
     EXCEPT
-    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
-           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    SELECT EntityName COLLATE DATABASE_DEFAULT,IndexName COLLATE DATABASE_DEFAULT,ConstraintName COLLATE DATABASE_DEFAULT,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition COLLATE DATABASE_DEFAULT,OptimizeForSequentialKey,DataSpaceName COLLATE DATABASE_DEFAULT,DataSpaceType COLLATE DATABASE_DEFAULT,KeyDefinition COLLATE DATABASE_DEFAULT,PartitionDefinition COLLATE DATABASE_DEFAULT
     FROM #CurrentIndexSnapshot
 )
 OR EXISTS
 (
-    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
-           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    SELECT EntityName COLLATE DATABASE_DEFAULT,IndexName COLLATE DATABASE_DEFAULT,ConstraintName COLLATE DATABASE_DEFAULT,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition COLLATE DATABASE_DEFAULT,OptimizeForSequentialKey,DataSpaceName COLLATE DATABASE_DEFAULT,DataSpaceType COLLATE DATABASE_DEFAULT,KeyDefinition COLLATE DATABASE_DEFAULT,PartitionDefinition COLLATE DATABASE_DEFAULT
     FROM #CurrentIndexSnapshot
     EXCEPT
-    SELECT EntityName,IndexName,ConstraintName,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,FillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
-           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition,OptimizeForSequentialKey,DataSpaceName,DataSpaceType,KeyDefinition,PartitionDefinition
+    SELECT EntityName COLLATE DATABASE_DEFAULT,IndexName COLLATE DATABASE_DEFAULT,ConstraintName COLLATE DATABASE_DEFAULT,IndexType,IsUnique,IsPrimaryKey,IsUniqueConstraint,IsDisabled,IndexFillFactor,IgnoreDuplicateKey,SuppressDuplicateKeyMessages,
+           IsPadded,AllowRowLocks,AllowPageLocks,HasFilter,FilterDefinition COLLATE DATABASE_DEFAULT,OptimizeForSequentialKey,DataSpaceName COLLATE DATABASE_DEFAULT,DataSpaceType COLLATE DATABASE_DEFAULT,KeyDefinition COLLATE DATABASE_DEFAULT,PartitionDefinition COLLATE DATABASE_DEFAULT
     FROM dbo.GuidIdentityIndexSnapshot
 )
     THROW 51000, 'Rebuilt PK/index catalog metadata differs from the exact captured snapshot.', 1;
@@ -922,10 +915,10 @@ IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityPrimaryKeyMap)<>30
    OR EXISTS
    (
        SELECT 1 FROM dbo.GuidIdentityPrimaryKeyMap p
-       LEFT JOIN sys.tables t ON t.name=p.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
-       LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=t.object_id AND kc.name=p.ConstraintName AND kc.type=N'PK'
+       LEFT JOIN sys.tables t ON t.name COLLATE DATABASE_DEFAULT=p.EntityName AND SCHEMA_NAME(t.schema_id)=N'dbo'
+       LEFT JOIN sys.key_constraints kc ON kc.parent_object_id=t.object_id AND kc.name COLLATE DATABASE_DEFAULT=p.ConstraintName AND kc.type=N'PK'
        LEFT JOIN sys.indexes i ON i.object_id=kc.parent_object_id AND i.index_id=kc.unique_index_id
-       WHERE i.index_id IS NULL OR i.type_desc<>p.IndexType OR i.is_disabled<>p.IsDisabled OR i.fill_factor<>p.FillFactor
+       WHERE i.index_id IS NULL OR i.type_desc COLLATE DATABASE_DEFAULT<>p.IndexType OR i.is_disabled<>p.IsDisabled OR i.fill_factor<>p.IndexFillFactor
           OR i.ignore_dup_key<>p.IgnoreDuplicateKey OR i.suppress_dup_key_messages<>p.SuppressDuplicateKeyMessages
           OR i.is_padded<>p.IsPadded OR i.allow_row_locks<>p.AllowRowLocks
           OR i.allow_page_locks<>p.AllowPageLocks OR i.optimize_for_sequential_key<>p.OptimizeForSequentialKey
@@ -941,7 +934,7 @@ IF (SELECT COUNT_BIG(*) FROM dbo.GuidIdentityIndexMap)<>
    )
     THROW 51000, 'The rebuilt secondary-index inventory differs from its captured metadata.', 1;
 
-DECLARE @ResultMetadata table(ProcedureName sysname,ColumnName sysname,SystemTypeName nvarchar(256),ErrorNumber int NULL);
+DECLARE @ResultMetadata table(ProcedureName sysname,ColumnName sysname NULL,SystemTypeName nvarchar(256),ErrorNumber int NULL);
 INSERT @ResultMetadata
 SELECT p.name,d.name,d.system_type_name,d.error_number
 FROM @RequiredProcedures r JOIN sys.procedures p ON p.name=r.ProcedureName AND SCHEMA_NAME(p.schema_id)=N'dbo'
@@ -961,19 +954,21 @@ IF OBJECT_ID(N'dbo.GuidIdentityTriggerState',N'U') IS NULL
     THROW 51000, 'The captured trigger state is missing before final verification.', 1;
 CREATE TABLE #CurrentTriggerState
 (
-    TriggerSchema sysname NOT NULL,TriggerName sysname NOT NULL,ParentSchema sysname NOT NULL,ParentName sysname NOT NULL,
-    IsDisabled bit NOT NULL,IsNotForReplication bit NOT NULL,IsInsteadOfTrigger bit NOT NULL,DefinitionHash varbinary(32) NULL,EventList nvarchar(max) NOT NULL
+    TriggerSchema sysname COLLATE DATABASE_DEFAULT NOT NULL,TriggerName sysname COLLATE DATABASE_DEFAULT NOT NULL,
+    ParentSchema sysname COLLATE DATABASE_DEFAULT NOT NULL,ParentName sysname COLLATE DATABASE_DEFAULT NOT NULL,
+    IsDisabled bit NOT NULL,IsNotForReplication bit NOT NULL,IsInsteadOfTrigger bit NOT NULL,DefinitionHash varbinary(32) NULL,
+    EventList nvarchar(max) COLLATE DATABASE_DEFAULT NOT NULL
 );
 INSERT #CurrentTriggerState
 SELECT SCHEMA_NAME(triggerObject.schema_id),tr.name,SCHEMA_NAME(parent.schema_id),parent.name,tr.is_disabled,tr.is_not_for_replication,tr.is_instead_of_trigger,
        CASE WHEN sm.definition IS NULL THEN NULL ELSE HASHBYTES('SHA2_256',CONVERT(varbinary(max),sm.definition)) END,ISNULL(ev.EventList,N'')
 FROM sys.triggers tr JOIN sys.objects triggerObject ON triggerObject.object_id=tr.object_id
-JOIN sys.tables parent ON parent.object_id=tr.parent_id JOIN @Entities e ON e.EntityName=parent.name
+JOIN sys.tables parent ON parent.object_id=tr.parent_id JOIN @Entities e ON e.EntityName=parent.name COLLATE DATABASE_DEFAULT
 LEFT JOIN sys.sql_modules sm ON sm.object_id=tr.object_id
 OUTER APPLY(SELECT STRING_AGG(CONVERT(nvarchar(max),CONCAT(te.type_desc,N':',te.event_group_type_desc,N':',te.is_first,N':',te.is_last)),N'|') WITHIN GROUP(ORDER BY te.type_desc) AS EventList FROM sys.trigger_events te WHERE te.object_id=tr.object_id) ev
 WHERE SCHEMA_NAME(parent.schema_id)=N'dbo';
-IF EXISTS(SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM dbo.GuidIdentityTriggerState EXCEPT SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM #CurrentTriggerState)
-   OR EXISTS(SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM #CurrentTriggerState EXCEPT SELECT TriggerSchema,TriggerName,ParentSchema,ParentName,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList FROM dbo.GuidIdentityTriggerState)
+IF EXISTS(SELECT TriggerSchema COLLATE DATABASE_DEFAULT,TriggerName COLLATE DATABASE_DEFAULT,ParentSchema COLLATE DATABASE_DEFAULT,ParentName COLLATE DATABASE_DEFAULT,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList COLLATE DATABASE_DEFAULT FROM dbo.GuidIdentityTriggerState EXCEPT SELECT TriggerSchema COLLATE DATABASE_DEFAULT,TriggerName COLLATE DATABASE_DEFAULT,ParentSchema COLLATE DATABASE_DEFAULT,ParentName COLLATE DATABASE_DEFAULT,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList COLLATE DATABASE_DEFAULT FROM #CurrentTriggerState)
+   OR EXISTS(SELECT TriggerSchema COLLATE DATABASE_DEFAULT,TriggerName COLLATE DATABASE_DEFAULT,ParentSchema COLLATE DATABASE_DEFAULT,ParentName COLLATE DATABASE_DEFAULT,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList COLLATE DATABASE_DEFAULT FROM #CurrentTriggerState EXCEPT SELECT TriggerSchema COLLATE DATABASE_DEFAULT,TriggerName COLLATE DATABASE_DEFAULT,ParentSchema COLLATE DATABASE_DEFAULT,ParentName COLLATE DATABASE_DEFAULT,IsDisabled,IsNotForReplication,IsInsteadOfTrigger,DefinitionHash,EventList COLLATE DATABASE_DEFAULT FROM dbo.GuidIdentityTriggerState)
     THROW 51000, 'Trigger definition, parent, enabled state, replication state, or event list changed during cutover.', 1;
 
 DROP TABLE dbo.GuidIdentityTriggerState;

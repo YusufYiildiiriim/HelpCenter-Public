@@ -44,6 +44,22 @@ IF OBJECT_ID(N'dbo.GuidIdentityPrepareMap',N'U') IS NULL
    OR OBJECT_ID(N'dbo.GuidIdentityPrepareModuleDependency',N'U') IS NULL
     THROW 51000, 'Guid identity preparation artifacts are incomplete; Validate cannot proceed.', 1;
 DECLARE @isFinalizer bit=0;
+-- Create this table for both modes so SQL Server can compile the later parity checks;
+-- the Validate path leaves it empty while the cutover refresh populates it below.
+CREATE TABLE #PreviousGuidIdentityGate
+(
+    GateId int NOT NULL,
+    DatabaseName sysname NOT NULL,
+    EntityCount int NOT NULL,
+    SourceRows bigint NOT NULL,
+    PreparedIds bigint NOT NULL,
+    PreparedReferences bigint NOT NULL,
+    PreparedTextReferences bigint NOT NULL,
+    ForeignKeyCount bigint NOT NULL,
+    ModuleDependencyCount bigint NOT NULL,
+    SchemaFingerprint varbinary(32) NOT NULL,
+    PreparedFingerprint varbinary(32) NOT NULL
+);
 IF @isFinalizer=1
 BEGIN
     IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NULL
@@ -77,9 +93,11 @@ BEGIN
     IF EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityValidateModuleSnapshot)
        OR EXISTS(SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityValidateModuleSnapshot EXCEPT SELECT ReferencingSchema,ReferencingObject,ReferencingType,ReferencedEntityName,ReferencedColumnName,DefinitionHash,TriggerMetadata,DiscoveryMethod,Disposition FROM dbo.GuidIdentityPrepareModuleDependency)
         THROW 51000, 'Prepared SQL-module inventory changed after Validate; cutover is aborted.', 1;
+    INSERT #PreviousGuidIdentityGate(GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
+           ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint)
     SELECT GateId,DatabaseName,EntityCount,SourceRows,PreparedIds,PreparedReferences,PreparedTextReferences,
            ForeignKeyCount,ModuleDependencyCount,SchemaFingerprint,PreparedFingerprint
-    INTO #PreviousGuidIdentityGate FROM dbo.GuidIdentityValidateGate;
+    FROM dbo.GuidIdentityValidateGate;
     DROP TABLE dbo.GuidIdentityValidateGate;
 END
 ELSE IF OBJECT_ID(N'dbo.GuidIdentityValidateGate',N'U') IS NOT NULL
