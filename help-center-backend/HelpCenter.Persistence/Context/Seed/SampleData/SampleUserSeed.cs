@@ -34,7 +34,7 @@ public static class SampleUserSeed
             Email = "agent2@helpcenter.com",
             Username = "agent2.user",
             FirstName = "Berna",
-            LastName = "KisittiTemsilci",
+            LastName = "Kısıtlı Temsilci",
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 532 000 0003",
             IsActive = true,
