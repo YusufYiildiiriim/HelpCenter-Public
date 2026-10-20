@@ -45,11 +45,11 @@ export const AssignedRequestHeader: React.FC<AssignedRequestHeaderProps> = ({
                 Kişisel Atamalar
               </span>
             </div>
-            <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-300 max-w-xl">
-              {totalCount > 0
-                ? `${totalCount} aktif talep sizin takibinizde.`
-                : "Şu an size atanmış talep bulunmuyor."}
-            </p>
+            {totalCount > 0 && (
+              <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-300 max-w-xl">
+                {totalCount} aktif talep sizin takibinizde.
+              </p>
+            )}
           </div>
         </div>
 
