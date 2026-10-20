@@ -476,9 +476,10 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
               <button
                 type="button"
                 onClick={goNext}
+                aria-label="Sonraki adıma geç"
                 className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/20 transition-all active:scale-95 cursor-pointer"
               >
-                Devam Et
+                Sonraki Adım
                 <ChevronRight size={16} />
               </button>
             ) : (
