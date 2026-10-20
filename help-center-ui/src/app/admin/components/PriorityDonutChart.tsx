@@ -145,7 +145,7 @@ export const PriorityDonutChart: React.FC<PriorityDonutChartProps> = ({ prioriti
                 <p className="text-xs font-medium text-slate-400">Henüz talep bulunmuyor.</p>
               )}
               {segments.data.map((seg, i) => (
-                <button
+                <div
                   key={seg.key}
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(null)}
@@ -158,7 +158,7 @@ export const PriorityDonutChart: React.FC<PriorityDonutChartProps> = ({ prioriti
                   <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-300">{seg.meta.label}</span>
                   <span className="text-[10px] font-black tabular-nums text-slate-400">{seg.pct}%</span>
                   <span className="w-8 text-right text-xs font-black tabular-nums text-white">{seg.count}</span>
-                </button>
+                </div>
               ))}
             </div>
           </div>
