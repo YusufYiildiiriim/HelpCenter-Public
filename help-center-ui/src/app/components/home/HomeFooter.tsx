@@ -81,7 +81,7 @@ export const HomeFooter: React.FC<HomeFooterProps> = ({
 
       {/* Copyright Notice */}
       <div className="text-center text-slate-500 text-[11px] pt-1">
-        © 2025 {orgName || "Help Center Enterprise Portal"}. Tüm hakları saklıdır.
+        © {new Date().getFullYear()} {orgName || "Help Center Enterprise Portal"}. Tüm hakları saklıdır.
       </div>
     </footer>
   );
