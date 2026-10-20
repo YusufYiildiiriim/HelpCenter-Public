@@ -217,7 +217,6 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="admin@helpcenter.com veya kullanıcı adı"
                     className={inputClass}
-                    required
                   />
                 </div>
               </div>

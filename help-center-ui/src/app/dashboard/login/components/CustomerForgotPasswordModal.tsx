@@ -191,7 +191,6 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       />
                       <input
                         type="text"
-                        required
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full pl-14 pr-6 py-4 bg-slate-800 border border-slate-700 rounded-[1.4rem] text-white focus:ring-8 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-500 font-bold text-sm"
