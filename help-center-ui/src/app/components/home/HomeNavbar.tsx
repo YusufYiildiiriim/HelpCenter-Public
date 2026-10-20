@@ -111,7 +111,7 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
         <div className="flex flex-col text-left">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-lg tracking-tight text-white leading-tight">
-              {orgName || "Help Center"}
+              {orgName || "HelpCenter"}
             </span>
             <span className="text-[11px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase whitespace-nowrap">
               v2.4 Portal

@@ -304,7 +304,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-transparent border-none text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-0"
-            placeholder={placeholder || "Help Center içinde arama yapın, kılavuz veya çözüm sorgulayın..."}
+            placeholder={placeholder || "HelpCenter içinde arama yapın, kılavuz veya çözüm sorgulayın..."}
             aria-label="Kılavuzlarda ara"
           />
         </div>

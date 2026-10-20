@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
-    default: "Help Center",
-    template: "Help Center - %s",
+    default: "HelpCenter",
+    template: "HelpCenter - %s",
   },
   description: "Modern ve Hızlı Kurumsal Destek Yönetim Platformu",
   icons: {
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "Help Center - Destek Platformu",
+    title: "HelpCenter - Destek Platformu",
     description: "Modern ve Hızlı Kurumsal Destek Yönetim Platformu",
-    siteName: "Help Center",
+    siteName: "HelpCenter",
     images: ["/logo.png"],
   },
 };

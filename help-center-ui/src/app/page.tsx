@@ -309,7 +309,7 @@ export default function HomePage() {
           setSelectedModule={setSelectedModule}
           sortBy={sortBy}
           setSortBy={setSortBy}
-          placeholder={`${selectedProject?.name || "Help Center"} içinde arama yapın, kılavuz veya çözüm sorgulayın...`}
+          placeholder={`${selectedProject?.name || "HelpCenter"} içinde arama yapın, kılavuz veya çözüm sorgulayın...`}
         />
 
         <SupportTabs
