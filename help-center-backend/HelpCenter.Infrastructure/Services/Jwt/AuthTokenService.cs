@@ -77,12 +77,9 @@ public class AuthTokenService : IAuthTokenService
             t => t.TokenHash == hash,
             asTracking: true,
             cancellationToken: ct,
-            includes: new System.Linq.Expressions.Expression<Func<RefreshToken, object>>[]
-            {
-                t => t.User!.Account,
-                t => t.Customer!.Account,
-                t => t.Customer!.Company
-            });
+            t => t.User!.Account,
+            t => t.Customer!.Account,
+            t => t.Customer!.Company);
         if (stored is null)
             throw new UnauthorizedException("Refresh token geçersiz.");
 

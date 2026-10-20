@@ -415,5 +415,9 @@ IF @isFinalizer=1 AND EXISTS
     FROM #PreviousGuidIdentityGate
 )
     THROW 51000, 'The GUID validation snapshot changed after Validate; cutover is aborted.', 1;
+DROP TABLE #SchemaRows;
+DROP TABLE #CurrentFks;
+DROP TABLE #CurrentModules;
+DROP TABLE #PreviousGuidIdentityGate;
 """;
 }

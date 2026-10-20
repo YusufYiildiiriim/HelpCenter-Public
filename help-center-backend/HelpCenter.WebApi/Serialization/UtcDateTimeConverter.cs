@@ -6,7 +6,7 @@ namespace HelpCenter.WebApi.Serialization;
 // SQL datetime2 loses Kind; persisted application timestamps represent UTC.
 public sealed class UtcDateTimeConverter : JsonConverter<DateTime>
 {
-    public override DateTime Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) =>
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         AsUtc(reader.GetDateTime());
 
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) =>

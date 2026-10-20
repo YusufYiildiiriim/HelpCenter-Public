@@ -16,13 +16,9 @@ namespace HelpCenter.Persistence.Context.Seed.SampleData;
 /// SampleDataSeedHostedService decides when this method is called (only Development/Staging) —
 /// there is NO environment check here, only idempotent insertion logic.
 ///
-/// Note — SQL Server IDENTITY columns: the entities in these classes keep the same fixed Id
-/// values as with HasData (tests and cross-references depend on that). Normal SaveChangesAsync
-/// does not allow writing explicit values to an IDENTITY column (IDENTITY_INSERT OFF error), so
-/// when targeting SQL Server, IDENTITY_INSERT is turned on/off around the INSERT for each table —
-/// exactly what HasData's migration SQL already generated, just here at runtime instead of in a
-/// migration. Other providers such as InMemory/SQLite (tests) have no such restriction and rows
-/// are inserted directly.
+/// Sample entities carry fixed GUID identities so their cross-references remain deterministic.
+/// They are inserted through the normal EF Core pipeline; GUID primary keys are not SQL Server
+/// IDENTITY columns and therefore must not use IDENTITY_INSERT.
 /// </summary>
 public static class SampleDataSeeder
 {
@@ -38,42 +34,61 @@ public static class SampleDataSeeder
             return false;
         }
 
-        var isSqlServer = context.Database.IsSqlServer();
-
         // 1. Projects & Modules (no dependencies)
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjects(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildModules(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjectModules(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildRequestSubjects(), isSqlServer, cancellationToken);
+        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjects(), cancellationToken);
+        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildModules(), cancellationToken);
+        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjectModules(), cancellationToken);
+        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildRequestSubjects(), cancellationToken);
 
         // 2. Accounts (staff + customers) — before Company/User/Customer
-        await SeedRangeAsync(context, SampleUserSeed.BuildStaffAccounts(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomerAccounts(), isSqlServer, cancellationToken);
+        await SeedRangeAsync(context, SampleUserSeed.BuildStaffAccounts(), cancellationToken);
+        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomerAccounts(), cancellationToken);
 
         // 3. Companies & their licensed modules
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanies(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanyModules(), isSqlServer, cancellationToken);
+        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanies(), cancellationToken);
+        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanyModules(), cancellationToken);
 
         // 4. Users & customers (tied to accounts)
-        await SeedRangeAsync(context, SampleUserSeed.BuildUsers(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomers(), isSqlServer, cancellationToken);
+        await SeedRangeAsync(context, SampleUserSeed.BuildUsers(), cancellationToken);
+        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomers(), cancellationToken);
 
         // 5. User role/expert/project assignments
-        await SeedRangeAsync(context, SampleUserSeed.BuildUserRoles(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleUserSeed.BuildModuleExperts(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleUserSeed.BuildUserProjects(), isSqlServer, cancellationToken);
+        var rolesByName = await context.Roles.IgnoreQueryFilters()
+            .ToDictionaryAsync(role => role.Name, role => role.Id, StringComparer.Ordinal, cancellationToken);
+        var sampleUserRoles = SampleUserSeed.BuildUserRoles();
+        foreach (var userRole in sampleUserRoles)
+        {
+            userRole.RoleId = userRole.RoleId switch
+            {
+                var id when id == SeedIdentity.FromLegacyInt(2) => rolesByName["Agent"],
+                var id when id == SeedIdentity.FromLegacyInt(4) => rolesByName["Expert"],
+                _ => userRole.RoleId
+            };
+        }
+        await SeedRangeAsync(context, sampleUserRoles, cancellationToken);
+        await SeedRangeAsync(context, SampleUserSeed.BuildModuleExperts(), cancellationToken);
+        var adminUserId = await context.Users.IgnoreQueryFilters()
+            .Where(user => user.Account.Email == "admin@helpcenter.com")
+            .Select(user => user.Id)
+            .SingleAsync(cancellationToken);
+        var sampleUserProjects = SampleUserSeed.BuildUserProjects();
+        foreach (var userProject in sampleUserProjects.Where(project => project.UserId == SeedIdentity.FromLegacyInt(1)))
+        {
+            userProject.UserId = adminUserId;
+        }
+        await SeedRangeAsync(context, sampleUserProjects, cancellationToken);
 
         // 6. Conversations & requests
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversations(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequests(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversationParticipants(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequestMessages(), isSqlServer, cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildRequestHistories(), isSqlServer, cancellationToken);
+        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversations(), cancellationToken);
+        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequests(), cancellationToken);
+        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversationParticipants(), cancellationToken);
+        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequestMessages(), cancellationToken);
+        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildRequestHistories(), cancellationToken);
 
         return true;
     }
 
-    private static async Task SeedRangeAsync<T>(EfContext context, IReadOnlyList<T> entities, bool isSqlServer, CancellationToken cancellationToken)
+    private static async Task SeedRangeAsync<T>(EfContext context, IReadOnlyList<T> entities, CancellationToken cancellationToken)
         where T : class
     {
         if (entities.Count == 0)
@@ -81,37 +96,7 @@ public static class SampleDataSeeder
             return;
         }
 
-        var tableName = isSqlServer
-            ? context.Model.FindEntityType(typeof(T))?.GetTableName()
-            : null;
-
-        if (tableName is null)
-        {
-            context.Set<T>().AddRange(entities);
-            await context.SaveChangesAsync(cancellationToken);
-            return;
-        }
-
-        // IDENTITY_INSERT belongs to a SQL Server connection, not the DbContext. The explicit
-        // transaction keeps the SET commands and SaveChanges on the same connection; the retry
-        // strategy must own that transaction because SQL Server retries are enabled globally.
-        var strategy = context.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-            await context.Database.ExecuteSqlRawAsync($"SET IDENTITY_INSERT [{tableName}] ON", cancellationToken);
-
-            try
-            {
-                context.Set<T>().AddRange(entities);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            finally
-            {
-                await context.Database.ExecuteSqlRawAsync($"SET IDENTITY_INSERT [{tableName}] OFF", cancellationToken);
-            }
-
-            await transaction.CommitAsync(cancellationToken);
-        });
+        context.Set<T>().AddRange(entities);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

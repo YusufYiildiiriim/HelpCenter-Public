@@ -241,8 +241,8 @@ namespace HelpCenter.Persistence.Repositories
             Expression<Func<T, TResult>> selector,
             int pageNumber,
             int pageSize,
-            CancellationToken cancellationToken = default,
-            Expression<Func<T, object>>? orderByDescendingKey = null)
+            Expression<Func<T, object>>? orderByDescendingKey = null,
+            CancellationToken cancellationToken = default)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 0) pageSize = 10;

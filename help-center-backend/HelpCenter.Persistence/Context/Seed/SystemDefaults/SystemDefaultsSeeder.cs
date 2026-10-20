@@ -19,7 +19,10 @@ public static class SystemDefaultsSeeder
             ?? throw new InvalidOperationException("Embedded system-defaults.json resource is missing.");
         var rows = await JsonSerializer.DeserializeAsync<List<SeedRow>>(stream, JsonOptions, cancellationToken)
             ?? throw new InvalidOperationException("System defaults resource is empty or invalid.");
-        var ids = new Dictionary<Guid, Guid>();
+        // Seed IDs are only unique within an entity type. In particular, Roles and
+        // RolePermissions both use the same source IDs (1..N), so a Guid-only map
+        // lets permission rows overwrite the role mapping and produces invalid FKs.
+        var ids = new Dictionary<(Type EntityType, Guid SourceId), Guid>();
         var inserted = 0;
 
         foreach (var row in rows)
@@ -39,7 +42,7 @@ public static class SystemDefaultsSeeder
                 inserted++;
             }
             var actualId = (Guid)(entityType.GetProperty(nameof(BaseEntity.Id))!.GetValue(existing)!);
-            ids[sourceId] = actualId;
+            ids[(entityType, sourceId)] = actualId;
         }
 
         return inserted;
@@ -59,15 +62,37 @@ public static class SystemDefaultsSeeder
         _ => throw new InvalidOperationException($"Unknown system seed entity '{name}'.")
     };
 
-    private static void RewriteSeedForeignKeys(object entity, Type type, Dictionary<Guid, Guid> ids)
+    private static void RewriteSeedForeignKeys(object entity, Type type, Dictionary<(Type EntityType, Guid SourceId), Guid> ids)
     {
         foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                      .Where(p => p.CanRead && p.CanWrite && p.PropertyType == typeof(Guid)))
         {
             if (property.Name is nameof(BaseEntity.Id) or nameof(BaseEntity.PublicId)) continue;
-            if (property.GetValue(entity) is Guid oldId && ids.TryGetValue(oldId, out var actualId))
+            var referencedType = GetReferencedEntityType(type, property.Name);
+            if (referencedType is not null
+                && property.GetValue(entity) is Guid oldId
+                && ids.TryGetValue((referencedType, oldId), out var actualId))
                 property.SetValue(entity, actualId);
         }
+    }
+
+    private static Type? GetReferencedEntityType(Type entityType, string propertyName)
+    {
+        if (entityType == typeof(RolePermission) && propertyName == nameof(RolePermission.RoleId))
+            return typeof(Role);
+        if (entityType == typeof(RolePermissionAction) && propertyName == nameof(RolePermissionAction.RolePermissionId))
+            return typeof(RolePermission);
+        if (entityType == typeof(UserRole))
+        {
+            if (propertyName == nameof(UserRole.RoleId)) return typeof(Role);
+            if (propertyName == nameof(UserRole.UserId)) return typeof(User);
+        }
+        if (entityType == typeof(User) && propertyName == nameof(User.AccountId))
+            return typeof(Account);
+        if (entityType == typeof(MenuItem) && propertyName == nameof(MenuItem.ParentId))
+            return typeof(MenuItem);
+
+        return null;
     }
 
     private static async Task<object?> FindExistingAsync(EfContext context, object candidate, Type type, CancellationToken ct)
