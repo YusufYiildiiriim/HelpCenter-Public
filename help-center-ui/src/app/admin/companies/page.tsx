@@ -387,6 +387,7 @@ export default function CompaniesPage() {
              (filterType === "Demo" && company.isDemoActive);
     });
   }, [companies, filterType]);
+  const visibleTotalCount = filterType === "All" ? totalCount : filteredCompanies.length;
 
   const columns = useMemo<ColumnDef<Company>[]>(() => [
     {
@@ -517,7 +518,7 @@ export default function CompaniesPage() {
           manualPagination={true}
           pageIndex={pageNumber - 1}
           pageCount={totalPages}
-          totalCount={totalCount}
+          totalCount={visibleTotalCount}
           isLoading={tableLoading}
           onPageChange={(page) => setPageNumber(page)}
           onPageSizeChange={(size) => {
