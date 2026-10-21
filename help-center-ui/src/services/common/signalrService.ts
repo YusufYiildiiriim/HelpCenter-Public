@@ -116,24 +116,27 @@ class SignalRService {
     this.hubConnection?.on("ReceiveMessage", callback);
   }
 
-  public offReceiveMessage(): void {
-    this.hubConnection?.off("ReceiveMessage");
+  public offReceiveMessage(callback?: (message: unknown) => void): void {
+    if (callback) this.hubConnection?.off("ReceiveMessage", callback);
+    else this.hubConnection?.off("ReceiveMessage");
   }
 
   public onMessagesRead(callback: (notification: MessagesReadNotification) => void): void {
     this.hubConnection?.on("MessagesRead", callback);
   }
 
-  public offMessagesRead(): void {
-    this.hubConnection?.off("MessagesRead");
+  public offMessagesRead(callback?: (notification: MessagesReadNotification) => void): void {
+    if (callback) this.hubConnection?.off("MessagesRead", callback);
+    else this.hubConnection?.off("MessagesRead");
   }
 
   public onRequestStatusChanged(callback: (status: RequestStatusChanged) => void): void {
     this.hubConnection?.on("RequestStatusChanged", callback);
   }
 
-  public offRequestStatusChanged(): void {
-    this.hubConnection?.off("RequestStatusChanged");
+  public offRequestStatusChanged(callback?: (status: RequestStatusChanged) => void): void {
+    if (callback) this.hubConnection?.off("RequestStatusChanged", callback);
+    else this.hubConnection?.off("RequestStatusChanged");
   }
 }
 

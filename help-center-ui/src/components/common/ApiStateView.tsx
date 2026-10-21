@@ -14,6 +14,8 @@ export interface ApiStateViewProps {
   isLoading: boolean;
   /** Already classified 401/403 flag — status code parsing is not this component's responsibility. */
   isForbidden?: boolean;
+  /** Route data was absent or its public identifier is invalid. */
+  isNotFound?: boolean;
   /** Can be string, Error, or { message, correlationId }; if absent/falsy, the success state is rendered. */
   error?: unknown;
   onRetry?: () => void;
@@ -41,6 +43,7 @@ function normalizeError(error: unknown): ApiErrorLike {
 export function ApiStateView({
   isLoading,
   isForbidden = false,
+  isNotFound = false,
   error,
   onRetry,
   variant = "inline",
@@ -51,6 +54,17 @@ export function ApiStateView({
   className,
   children,
 }: ApiStateViewProps) {
+  if (isNotFound) {
+    return (
+      <ErrorState
+        variant={variant}
+        title="Talep bulunamadı"
+        message="Bu talep silinmiş, erişiminiz dışında ya da bağlantısı geçersiz olabilir."
+        className={className}
+      />
+    );
+  }
+
   if (isLoading) {
     return <LoadingSpinner variant={variant} message={loadingMessage} className={className} />;
   }

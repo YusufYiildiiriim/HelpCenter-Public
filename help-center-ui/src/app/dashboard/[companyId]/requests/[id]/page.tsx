@@ -10,7 +10,8 @@ import type { CustomerRequest, TicketMessage } from "@/services/customer/Custome
 import { CustomerRequestService } from "@/services/customer/CustomerRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { useAuth } from "@/context/AuthContext";
-import { getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
+import { getApiErrorMessage, isForbiddenError, isNotFoundError } from "@/lib/api/errors";
+import { isPublicId } from "@/lib/publicId";
 
 // UI Components
 import { ApiStateView } from "@/components/common/ApiStateView";
@@ -24,6 +25,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
     const { userInfo } = useAuth();
     const router = useRouter();
     const requestId = resolvedParams.id;
+    const hasValidRequestId = isPublicId(requestId);
 
     const [messages, setMessages] = useState<TicketMessage[]>([]);
     const [ticket, setTicket] = useState<CustomerRequest | null>(null);
@@ -44,65 +46,77 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
     const [isClosing, setIsClosing] = useState(false);
 
     useEffect(() => {
+        if (!hasValidRequestId) return;
+        let disposed = false;
+        const receiveMessage = (message: unknown) => {
+            const newMsg = message as { id: string; messageText: string; isAgent?: boolean; createdAt: string; senderName?: string; senderUserId?: string; documents?: { id: string; path: string; fileName: string }[]; isRead?: boolean; type?: number; statusId?: string };
+            if (newMsg.type !== undefined && newMsg.type !== 0) return;
+
+            const formattedMsg: TicketMessage = {
+                id: newMsg.id,
+                messageText: newMsg.messageText,
+                isAgent: newMsg.isAgent ?? false,
+                createdAt: newMsg.createdAt,
+                senderName: newMsg.senderName ?? "Müşteri",
+                senderUserId: newMsg.senderUserId ?? "",
+                documents: newMsg.documents ?? [],
+                isRead: newMsg.isRead ?? false,
+                type: newMsg.type ?? 0
+            };
+
+            setMessages(prev => {
+                if (prev.some(m => m.id === formattedMsg.id)) return prev;
+                return [...prev, formattedMsg];
+            });
+
+            if (newMsg.statusId !== undefined) {
+                const statusMap = requestStatusLabels;
+                setTicket((prev: CustomerRequest | null) => (prev ? {
+                    ...prev,
+                    statusId: newMsg.statusId!,
+                    status: statusMap[newMsg.statusId!] ?? prev.status,
+                } : null));
+            }
+
+            if (newMsg.isAgent) {
+                CustomerRequestService.markAsRead(requestId).catch(err => {
+                    toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+                });
+            }
+        };
+        const requestStatusChanged = (change: Parameters<typeof signalRService.onRequestStatusChanged>[0] extends (status: infer T) => void ? T : never) => {
+            if (change.requestPublicId !== requestId) return;
+            setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
+        };
+
         const setupSignalR = async () => {
             await signalRService.startConnection();
+            if (disposed) return;
             await signalRService.joinRequest(requestId);
-
-            signalRService.onReceiveMessage((message: unknown) => {
-                const newMsg = message as { id: string; messageText: string; isAgent?: boolean; createdAt: string; senderName?: string; senderUserId?: string; documents?: { id: string; path: string; fileName: string }[]; isRead?: boolean; type?: number; statusId?: string };
-                if (newMsg.type !== undefined && newMsg.type !== 0) return;
-
-                const formattedMsg: TicketMessage = {
-                    id: newMsg.id,
-                    messageText: newMsg.messageText,
-                    isAgent: newMsg.isAgent ?? false,
-                    createdAt: newMsg.createdAt,
-                    senderName: newMsg.senderName ?? "Müşteri",
-                    senderUserId: newMsg.senderUserId ?? "",
-                    documents: newMsg.documents ?? [],
-                    isRead: newMsg.isRead ?? false,
-                    type: newMsg.type ?? 0
-                };
-
-                setMessages(prev => {
-                    if (prev.some(m => m.id === formattedMsg.id)) return prev;
-                    return [...prev, formattedMsg];
-                });
-
-                if (newMsg.statusId !== undefined) {
-                    const statusMap = requestStatusLabels;
-                    setTicket((prev: CustomerRequest | null) => (prev ? {
-                        ...prev,
-                        statusId: newMsg.statusId!,
-                        status: statusMap[newMsg.statusId!] ?? prev.status,
-                    } : null));
-                }
-
-                // If agent sent a message, mark it as read immediately
-                if (newMsg.isAgent) {
-                    CustomerRequestService.markAsRead(requestId).catch(err => {
-                        toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
-                    });
-                }
-            });
-            signalRService.onRequestStatusChanged(change => {
-                if (change.requestPublicId !== requestId) return;
-                setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
-            });
+            if (disposed) {
+                void signalRService.leaveRequest(requestId);
+                return;
+            }
+            signalRService.onReceiveMessage(receiveMessage);
+            signalRService.onRequestStatusChanged(requestStatusChanged);
         };
 
         setupSignalR();
 
         return () => {
+            disposed = true;
             signalRService.leaveRequest(requestId);
-            signalRService.offReceiveMessage();
-            signalRService.offRequestStatusChanged();
+            signalRService.offReceiveMessage(receiveMessage);
+            signalRService.offRequestStatusChanged(requestStatusChanged);
         };
-    }, [requestId]);
+    }, [requestId, hasValidRequestId]);
 
     // Only fetch + state update; does not call synchronous setState (can be called directly from effect body).
     const loadTicketDetail = useCallback(() => {
         let isMounted = true;
+        if (!hasValidRequestId) {
+            return () => { isMounted = false; };
+        }
         Promise.all([
             CustomerRequestService.getById(requestId),
             CustomerRequestService.getMessages(requestId)
@@ -123,7 +137,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
             }
         });
         return () => { isMounted = false; };
-    }, [requestId]);
+    }, [requestId, hasValidRequestId]);
 
     // For retry (button click): resets loading/error and refetches.
     const fetchTicketDetail = useCallback(() => {
@@ -209,19 +223,22 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
+    const isNotFound = !hasValidRequestId || isNotFoundError(error);
+
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col font-sans p-4 md:p-8">
             <div className="max-w-4xl mx-auto w-full flex flex-col h-[calc(100vh-64px)] bg-slate-900/90 backdrop-blur-xl rounded-[2.5rem] border border-slate-800 overflow-hidden shadow-2xl shadow-slate-950/40">
-                <ChatHeader
+                {!isNotFound && <ChatHeader
                     onBack={() => router.back()}
                     requestId={requestId}
                     ticket={ticket}
                     onCloseTicket={() => setIsCloseModalOpen(true)}
-                />
+                />}
 
                 <ApiStateView
                     isLoading={loading}
                     isForbidden={isForbiddenError(error)}
+                    isNotFound={isNotFound}
                     error={error}
                     onRetry={fetchTicketDetail}
                     variant="inline"
@@ -234,7 +251,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     />
                 </ApiStateView>
 
-                <ChatInputArea
+                {!isNotFound && <ChatInputArea
                     status={ticket?.status}
                     selectedFiles={selectedFiles}
                     removeFile={removeFile}
@@ -249,10 +266,10 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     onSendMessage={handleSendMessage}
                     sending={sending}
                     menuRef={menuRef}
-                />
+                />}
             </div>
 
-            <CloseTicketModal
+            {!isNotFound && <CloseTicketModal
                 isOpen={isCloseModalOpen}
                 onClose={() => setIsCloseModalOpen(false)}
                 rating={rating}
@@ -261,7 +278,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                 setClosingNote={setClosingNote}
                 onConfirm={confirmCloseTicket}
                 isClosing={isClosing}
-            />
+            />}
         </div>
     );
 }

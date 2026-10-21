@@ -13,7 +13,8 @@ import { AdminRequestService } from "@/services/admin/AdminRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { toast } from "sonner";
 import { ApiStateView } from "@/components/common/ApiStateView";
-import { getApiErrorCode, getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
+import { getApiErrorCode, getApiErrorMessage, isForbiddenError, isNotFoundError } from "@/lib/api/errors";
+import { isPublicId } from "@/lib/publicId";
 
 // Modular Components
 import { ChatHeader } from "./components/ChatHeader";
@@ -37,6 +38,7 @@ export default function AdminTicketChatPage() {
     }, [hasViewPerm, router]);
 
     const requestId = params.id as string;
+    const hasValidRequestId = isPublicId(requestId);
 
     const [messages, setMessages] = useState<AdminTicketMessage[]>([]);
     const [ticket, setTicket] = useState<AdminRequest | null>(null);
@@ -71,6 +73,12 @@ export default function AdminTicketChatPage() {
 
     const loadInitialMessages = useCallback(async () => {
         setLoadingInitial(true);
+        if (!hasValidRequestId) {
+            setFetchError(null);
+            setIsForbidden(false);
+            setLoadingInitial(false);
+            return;
+        }
         try {
             const [msgResponse, ticketData] = await Promise.all([
                 AdminRequestService.getMessages(requestId, PAGE_SIZE, undefined, !canReadAllRequests),
@@ -94,10 +102,10 @@ export default function AdminTicketChatPage() {
         } finally {
             setLoadingInitial(false);
         }
-    }, [requestId, canReadAllRequests]);
+    }, [requestId, canReadAllRequests, hasValidRequestId]);
 
     const loadMoreMessages = useCallback(async () => {
-        if (isLoadingMoreRef.current || !hasMore || messages.length === 0) return;
+        if (!hasValidRequestId || isLoadingMoreRef.current || !hasMore || messages.length === 0) return;
         isLoadingMoreRef.current = true;
         setLoadingMore(true);
 
@@ -123,7 +131,7 @@ export default function AdminTicketChatPage() {
             isLoadingMoreRef.current = false;
             setLoadingMore(false);
         }
-    }, [requestId, hasMore, messages, canReadAllRequests]);
+    }, [requestId, hasMore, messages, canReadAllRequests, hasValidRequestId]);
 
     useEffect(() => {
         const container = messagesContainerRef.current;
@@ -156,65 +164,61 @@ export default function AdminTicketChatPage() {
     }, [loadMoreMessages]);
 
     useEffect(() => {
+        if (!hasValidRequestId) return;
+        let disposed = false;
+        const receiveMessage = (message: unknown) => {
+            const newMsg = message as (AdminTicketMessage & { statusId?: string });
+            const formattedMsg: AdminTicketMessage = {
+                id: newMsg.id, messageText: newMsg.messageText, isAgent: newMsg.isAgent ?? false,
+                createdAt: newMsg.createdAt, senderName: newMsg.senderName ?? "Müşteri",
+                senderUserId: newMsg.senderUserId ?? 0, documents: newMsg.documents ?? [],
+                isRead: newMsg.isRead ?? false, type: newMsg.type ?? 0
+            };
+            setMessages(prev => prev.some(m => m.id === formattedMsg.id) ? prev : [...prev, formattedMsg]);
+            if (newMsg.statusId !== undefined) {
+                setTicket(prev => prev ? { ...prev, statusId: newMsg.statusId!, status: requestStatusLabels[newMsg.statusId!] ?? prev.status } : prev);
+            }
+            if (!newMsg.isAgent) {
+                AdminRequestService.markAsRead(requestId, !canReadAllRequests).catch(err => {
+                    toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
+                });
+            }
+            setTimeout(() => scrollToBottom("smooth"), 100);
+        };
+        const messagesRead = ({ requestId: readRequestId, isAgent }: { requestId: string; isAgent: boolean }) => {
+            if (readRequestId === requestId && !isAgent) {
+                setMessages(prev => prev.map(m => m.isAgent ? { ...m, isRead: true } : m));
+            }
+        };
+        const requestStatusChanged = (change: { requestPublicId: string; statusId: string; status: string }) => {
+            if (change.requestPublicId !== requestId) return;
+            setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
+            if (change.statusId === RequestStatus.Completed) setIsConsultModalOpen(false);
+        };
         const setupSignalR = async () => {
             await signalRService.startConnection();
+            if (disposed) return;
             await signalRService.joinRequest(requestId);
-
-            signalRService.onReceiveMessage((message: unknown) => {
-                const newMsg = message as (AdminTicketMessage & { statusId?: string });
-                const formattedMsg: AdminTicketMessage = {
-                    id: newMsg.id,
-                    messageText: newMsg.messageText,
-                    isAgent: newMsg.isAgent ?? false,
-                    createdAt: newMsg.createdAt,
-                    senderName: newMsg.senderName ?? "Müşteri",
-                    senderUserId: newMsg.senderUserId ?? 0,
-                    documents: newMsg.documents ?? [],
-                    isRead: newMsg.isRead ?? false,
-                    type: newMsg.type ?? 0
-                };
-
-                setMessages(prev => {
-                    if (prev.some(m => m.id === formattedMsg.id)) return prev;
-                    return [...prev, formattedMsg];
-                });
-
-                if (newMsg.statusId !== undefined) {
-                    const statusMap = requestStatusLabels;
-                    setTicket(prev => prev ? { ...prev, statusId: newMsg.statusId!, status: statusMap[newMsg.statusId!] ?? prev.status } : prev);
-                }
-
-                if (!newMsg.isAgent) {
-                    AdminRequestService.markAsRead(requestId, !canReadAllRequests).catch(err => {
-                        toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
-                    });
-                }
-
-                setTimeout(() => scrollToBottom("smooth"), 100);
-            });
-
-            signalRService.onMessagesRead(({ requestId: readRequestId, isAgent }) => {
-                if (readRequestId === requestId && !isAgent) {
-                    setMessages(prev => prev.map(m => m.isAgent ? { ...m, isRead: true } : m));
-                }
-            });
-            signalRService.onRequestStatusChanged(change => {
-                if (change.requestPublicId !== requestId) return;
-                setTicket(prev => prev ? { ...prev, statusId: change.statusId, status: change.status } : prev);
-                if (change.statusId === RequestStatus.Completed) setIsConsultModalOpen(false);
-            });
+            if (disposed) {
+                void signalRService.leaveRequest(requestId);
+                return;
+            }
+            signalRService.onReceiveMessage(receiveMessage);
+            signalRService.onMessagesRead(messagesRead);
+            signalRService.onRequestStatusChanged(requestStatusChanged);
         };
 
         setupSignalR();
 
         return () => {
+            disposed = true;
             signalRService.leaveRequest(requestId);
-            signalRService.offReceiveMessage();
-            signalRService.offMessagesRead();
-            signalRService.offRequestStatusChanged();
+            signalRService.offReceiveMessage(receiveMessage);
+            signalRService.offMessagesRead(messagesRead);
+            signalRService.offRequestStatusChanged(requestStatusChanged);
             router.refresh();
         };
-    }, [requestId, scrollToBottom, router, canReadAllRequests]);
+    }, [requestId, scrollToBottom, router, canReadAllRequests, hasValidRequestId]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -318,21 +322,24 @@ export default function AdminTicketChatPage() {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
+    const isNotFound = !hasValidRequestId || isNotFoundError(fetchError);
+
     return (
         <div className="flex flex-1 min-h-0 flex-col h-full w-full bg-slate-950 rounded-2xl md:rounded-[1.75rem] border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(0,0,0,0.5)]">
 
             {/* Header */}
-            <ChatHeader
+            {!isNotFound && <ChatHeader
                 requestId={requestId}
                 ticket={ticket}
                 onConsultClick={openConsultModal}
-            />
+            />}
 
             {/* Chat Area */}
             <div ref={messagesContainerRef} className="min-h-0 flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 scrollbar-hide bg-slate-950">
                 <ApiStateView
                     isLoading={loadingInitial}
                     isForbidden={isForbidden}
+                    isNotFound={isNotFound}
                     error={fetchError}
                     onRetry={loadInitialMessages}
                     variant="page"
@@ -368,7 +375,7 @@ export default function AdminTicketChatPage() {
             </div>
 
             {/* Input Area */}
-            {ticket?.statusId !== RequestStatus.Completed && ticket?.status !== "Tamamlandı" ? (
+            {!isNotFound && (ticket?.statusId !== RequestStatus.Completed && ticket?.status !== "Tamamlandı" ? (
                 <ChatInput
                     messageType={messageType}
                     setMessageType={setMessageType}
@@ -392,10 +399,10 @@ export default function AdminTicketChatPage() {
                         Bu talep sonuçlandırıldığı için yeni mesaj gönderilemez.
                     </p>
                 </div>
-            )}
+            ))}
 
             {/* Consult Modal */}
-            {isConsultModalOpen && (
+            {!isNotFound && isConsultModalOpen && (
                 <ConsultModal
                     onClose={() => setIsConsultModalOpen(false)}
                     experts={experts}

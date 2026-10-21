@@ -5,6 +5,7 @@ import {
   getApiErrorCorrelationId,
   getApiErrorDetails,
   getApiErrorStatus,
+  isNotFoundError,
   isUnauthorizedError,
   isForbiddenError,
   isValidationError,
@@ -175,6 +176,13 @@ describe('getApiErrorStatus', () => {
 
   it('response yoksa null döner', () => {
     expect(getApiErrorStatus(makeAxiosError({ withResponse: false }))).toBeNull();
+  });
+});
+
+describe('isNotFoundError', () => {
+  it('classifies a 404 response without treating other errors as absent data', () => {
+    expect(isNotFoundError(makeAxiosError({ status: 404 }))).toBe(true);
+    expect(isNotFoundError(makeAxiosError({ status: 403 }))).toBe(false);
   });
 });
 

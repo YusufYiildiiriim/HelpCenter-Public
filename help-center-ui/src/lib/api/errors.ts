@@ -106,6 +106,10 @@ export function isForbiddenError(error: unknown): boolean {
   return getApiErrorStatus(error) === 403;
 }
 
+export function isNotFoundError(error: unknown): boolean {
+  return getApiErrorStatus(error) === 404;
+}
+
 export function isValidationError(error: unknown): boolean {
   if (getApiErrorStatus(error) !== 400) return false;
   const details = getApiErrorDetails(error);
