@@ -345,6 +345,8 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                 <ModalSelect
                   label="Proje"
                   value={String(formData.projectId ?? "")}
+                  searchable
+                  searchPlaceholder="Proje ara..."
                   options={[{ value: "", label: "Proje seçilmedi" }, ...projects.map(project => ({ value: String(project.id), label: project.name }))]}
                   onValueChange={(value) => {
                     const newProjectId = value || null;
@@ -372,6 +374,8 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                     <ModalSelect
                       label="Modül ekle"
                       value={modulePickerValue}
+                      searchable
+                      searchPlaceholder="Modül ara..."
                       disabled={selectableModules.length === 0}
                       options={[{ value: "", label: selectableModules.length === 0 ? "Tüm modüller eklendi" : "Modül seçip ekleyin..." }, ...selectableModules.map(module => ({ value: String(module.id), label: module.name }))]}
                       onValueChange={(value) => {
@@ -383,7 +387,7 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                     />
 
                     <p className="px-1 text-[10px] font-medium text-slate-500">
-                      Seçim kutusunu açtıktan sonra modül adı yazarak doğrudan bulabilirsiniz.
+                      Seçim kutusunu açıp arama alanından modül adıyla filtreleyebilirsiniz.
                     </p>
 
                     {selectedModules.length > 0 && (
