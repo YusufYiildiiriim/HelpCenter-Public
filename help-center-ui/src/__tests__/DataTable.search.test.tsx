@@ -64,4 +64,17 @@ describe('DataTable search', () => {
     expect(screen.queryByText('Beta')).not.toBeInTheDocument();
     expect(screen.getAllByText('Alpha').length).toBeGreaterThan(0);
   });
+
+  it('does not offer a misleading all-record export for server-paginated data without a full-data loader', () => {
+    render(<DataTable {...base} excelColumns={[{ header: 'Name', key: 'name' }]} canExport />);
+    fireEvent.click(screen.getByTitle('CSV İndir (.csv)'));
+    expect(screen.queryByText('Filtredeki Tüm Kayıtlar')).not.toBeInTheDocument();
+    expect(screen.getByText('Aktif Ekran Verileri')).toBeInTheDocument();
+  });
+
+  it('labels all-record export as the current filtered result when a full-data loader exists', () => {
+    render(<DataTable {...base} excelColumns={[{ header: 'Name', key: 'name' }]} canExport onFetchAllData={async () => data} />);
+    fireEvent.click(screen.getByTitle('CSV İndir (.csv)'));
+    expect(screen.getByText('Filtredeki Tüm Kayıtlar')).toBeInTheDocument();
+  });
 });

@@ -93,6 +93,7 @@ export function DataTable<TData extends object>({
   const [exportScope, setExportScope] = useState<"page" | "all">("all");
   const [exporting, setExporting] = useState(false);
   const [mobileViewMode, setMobileViewMode] = useState<"cards" | "table">("cards");
+  const canExportAll = !manualPagination || Boolean(onFetchAllData || onExportAllCsv);
 
   const globalFilter = searchValue !== undefined ? searchValue : internalGlobalFilter;
   const [searchDraft, setSearchDraft] = useState(globalFilter);
@@ -176,7 +177,7 @@ export function DataTable<TData extends object>({
 
   const openExportModal = (type: "excel" | "pdf") => {
     setExportModalType(type);
-    setExportScope(type === "pdf" && !allowFullPdf ? "page" : "all");
+    setExportScope(type === "pdf" && !allowFullPdf || !canExportAll ? "page" : "all");
   };
 
   const executeExport = async () => {
@@ -497,7 +498,7 @@ export function DataTable<TData extends object>({
 
             {/* Modal Body */}
             <div className="p-6 space-y-3.5">
-              {!(exportModalType === "pdf" && !allowFullPdf) && <button
+              {canExportAll && !(exportModalType === "pdf" && !allowFullPdf) && <button
                 type="button"
                 onClick={() => setExportScope("all")}
                 className={cn(
@@ -517,13 +518,13 @@ export function DataTable<TData extends object>({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black text-slate-100 uppercase tracking-wider">Tüm Sistem Verileri</p>
+                    <p className="text-xs font-black text-slate-100 uppercase tracking-wider">Filtredeki Tüm Kayıtlar</p>
                     <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-mono">
                       {totalCount ?? data.length} Kayıt
                     </span>
                   </div>
                   <p className="text-[11px] font-medium text-slate-400 mt-1">
-                    Filtrelenmiş veya mevcut olan tüm kayıtların tamamını dışa aktarır.
+                    Etkin arama ve sayfa filtrelerine uyan tüm kayıtları dışa aktarır.
                   </p>
                 </div>
               </button>}
@@ -589,7 +590,7 @@ export function DataTable<TData extends object>({
                 ) : (
                   <>
                     <Download size={14} />
-                    <span>Dışa Aktar ({exportScope === "all" ? "Tüm Veriler" : "Aktif Sayfa"})</span>
+                    <span>Dışa Aktar ({exportScope === "all" ? "Filtredeki Tüm Kayıtlar" : "Aktif Sayfa"})</span>
                   </>
                 )}
               </button>
