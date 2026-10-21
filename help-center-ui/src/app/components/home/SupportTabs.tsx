@@ -246,18 +246,12 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                     const color = getModuleColor(idx);
 
                     return (
-                      <article
+                      <button
+                        type="button"
                         key={faq.publicId}
                         onClick={() => onSelectFaq(faq)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onSelectFaq(faq);
-                          }
-                        }}
-                        className="p-4 rounded-2xl bg-obsidian-850/80 border border-slate-800 hover:border-purple-500/40 transition-all duration-200 group flex flex-col justify-between min-h-[140px] cursor-pointer"
+                        aria-label={`${faq.title} SSS detayını aç`}
+                        className="w-full p-4 text-left rounded-2xl bg-obsidian-850/80 border border-slate-800 hover:border-purple-500/40 transition-all duration-200 group flex flex-col justify-between min-h-[140px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-900"
                       >
                         <div>
                           <div className="flex items-center justify-between mb-3">
@@ -292,7 +286,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                             </svg>
                           </span>
                         </div>
-                      </article>
+                      </button>
                     );
                   })
                 ) : (

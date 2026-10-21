@@ -35,7 +35,11 @@ async function mockPublicApi(page: Page) {
             },
           ]);
         case "/api/public/faq":
-          return paginated([{ title: "Destek nasıl alınır?", description: "Talep oluşturabilirsiniz." }]);
+          return paginated([{
+            publicId: "60000000-0000-4000-8000-000000000003",
+            title: "Destek nasıl alınır?",
+            description: "Talep oluşturabilirsiniz.",
+          }]);
         default:
           return null;
       }
@@ -75,5 +79,15 @@ test.describe("public help center", () => {
       .disableRules(["color-contrast"])
       .analyze();
     expect(accessibilityScanResults.violations).toEqual([]);
+  });
+
+  test("opens an FAQ with native keyboard activation", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Sıkça Sorulan Sorular/ }).click();
+    const faq = page.getByRole("button", { name: "Destek nasıl alınır? SSS detayını aç" });
+    await expect(faq).toBeVisible();
+    await faq.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByText("Talep oluşturabilirsiniz.")).toBeVisible();
   });
 });

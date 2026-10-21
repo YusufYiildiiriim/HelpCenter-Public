@@ -29,17 +29,17 @@ describe('FAQ card identity', () => {
       filteredGuides: [], setSelectedGuide: vi.fn(), onSelectFaq,
     };
     const { rerender } = render(<SupportTabs {...props} sortBy="newest" />);
-    const zebra = screen.getByText('Zebra').closest('article')!;
-    const alpha = screen.getByText('Alpha').closest('article')!;
+    const zebra = screen.getByRole('button', { name: 'Zebra SSS detayını aç' });
+    const alpha = screen.getByRole('button', { name: 'Alpha SSS detayını aç' });
     zebra.focus();
 
     rerender(<SupportTabs {...props} sortBy="az" />);
 
-    expect(screen.getByText('Zebra').closest('article')).toBe(zebra);
-    expect(screen.getByText('Alpha').closest('article')).toBe(alpha);
+    expect(screen.getByRole('button', { name: 'Zebra SSS detayını aç' })).toBe(zebra);
+    expect(screen.getByRole('button', { name: 'Alpha SSS detayını aç' })).toBe(alpha);
     expect(document.activeElement).toBe(zebra);
     expect(screen.getAllByRole('button')[0]).toBe(alpha);
-    fireEvent.keyDown(zebra, { key: 'Enter' });
+    fireEvent.click(zebra);
     expect(onSelectFaq).toHaveBeenCalledExactlyOnceWith(faqs[0]);
   });
 });
