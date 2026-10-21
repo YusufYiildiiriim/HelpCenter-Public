@@ -15,4 +15,4 @@ public class GetAuditLogsQuery : IRequest<PaginatedResponse<AuditLogDto>>
 }
 
 // Excludes email, IP, user-agent, before/after JSON and arbitrary metadata.
-public record AuditLogDto(Guid Id, string EventType, Guid? ActorUserId, string? TargetType, Guid? TargetId, string? CorrelationId, DateTime OccurredAt);
+public record AuditLogDto(Guid Id, string EventType, Guid? ActorUserId, string ActorDisplayName, string? TargetType, Guid? TargetId, string? CorrelationId, DateTime OccurredAt);

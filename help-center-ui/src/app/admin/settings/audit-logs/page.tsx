@@ -14,6 +14,7 @@ interface AuditRow {
   id: string;
   eventType: string;
   actorUserId: string | null;
+  actorDisplayName: string;
   targetType: string | null;
   targetId: string | null;
   correlationId: string | null;
@@ -31,7 +32,7 @@ type AuditFilters = {
 const columns: ColumnDef<AuditRow>[] = [
   { accessorKey: "occurredAt", header: "Zaman", cell: info => new Date(info.getValue<string>()).toLocaleString("tr-TR") },
   { accessorKey: "eventType", header: "Olay" },
-  { accessorKey: "actorUserId", header: "İşlemi yapan" },
+  { accessorKey: "actorDisplayName", header: "İşlemi yapan" },
   { accessorKey: "targetType", header: "Hedef türü" },
   { accessorKey: "targetId", header: "Hedef kimliği" },
   { accessorKey: "correlationId", header: "Takip kimliği" },
@@ -69,7 +70,7 @@ export default function AuditLogsPage() {
   const filters = [
     { label: "Olay türü", value: eventType, set: setEventType, type: "text" },
     { label: "Hedef türü", value: targetType, set: setTargetType, type: "text" },
-    { label: "Kullanıcı kimliği", value: actor, set: setActor, type: "text" },
+    { label: "Kullanıcı ID'si", value: actor, set: setActor, type: "text" },
     { label: "Başlangıç", value: from, set: setFrom, type: "datetime-local" },
     { label: "Bitiş", value: to, set: setTo, type: "datetime-local" },
   ];

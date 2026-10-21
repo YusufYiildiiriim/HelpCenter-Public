@@ -5,7 +5,8 @@ test("320px admin audit page exposes filters and has no new non-contrast a11y vi
   await page.setViewportSize({ width: 320, height: 844 });
   await fixture(page);
   await page.goto("/admin/settings/audit-logs");
-  await expect(page.locator("td").filter({ hasText: "RoleCreated" })).toBeVisible();
+  await expect(page.getByText("RoleCreated", { exact: true }).filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText("QA Yönetici", { exact: true }).filter({ visible: true }).first()).toBeVisible();
   await page.getByLabel("Olay türü").fill("RoleCreated");
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).disableRules(["color-contrast"]).analyze();
