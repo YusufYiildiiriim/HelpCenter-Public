@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
@@ -19,6 +19,14 @@ interface AuditRow {
   correlationId: string | null;
   occurredAt: string;
 }
+
+type AuditFilters = {
+  eventType: string;
+  targetType: string;
+  actor: string;
+  from: string;
+  to: string;
+};
 
 const columns: ColumnDef<AuditRow>[] = [
   { accessorKey: "occurredAt", header: "Zaman", cell: info => new Date(info.getValue<string>()).toLocaleString("tr-TR") },
@@ -39,12 +47,23 @@ export default function AuditLogsPage() {
   const [actor, setActor] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState<AuditFilters>({ eventType, targetType, actor, from, to });
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setAppliedFilters({ eventType, targetType, actor, from, to });
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [eventType, targetType, actor, from, to]);
+
   const query = useQuery({
-    queryKey: ["audit-logs", userInfo?.userId, page, pageSize, eventType, targetType, actor, from, to],
+    queryKey: ["audit-logs", userInfo?.userId, page, pageSize, appliedFilters],
     enabled: allowed,
+    placeholderData: keepPreviousData,
     queryFn: async () => (await api.get<{ items: AuditRow[]; totalCount: number; totalPages: number }>("/api/admin/audit-logs", {
-      params: { pageNumber: page, pageSize, eventType: eventType || undefined, targetType: targetType || undefined,
-        actorUserId: actor || undefined, from: from ? new Date(from).toISOString() : undefined, to: to ? new Date(to).toISOString() : undefined },
+      params: { pageNumber: page, pageSize, eventType: appliedFilters.eventType || undefined, targetType: appliedFilters.targetType || undefined,
+        actorUserId: appliedFilters.actor || undefined, from: appliedFilters.from ? new Date(appliedFilters.from).toISOString() : undefined, to: appliedFilters.to ? new Date(appliedFilters.to).toISOString() : undefined },
     })).data,
   });
   const filters = [
