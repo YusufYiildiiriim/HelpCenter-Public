@@ -18,6 +18,7 @@ export interface RequestStatusChanged {
 class SignalRService {
   private hubConnection: signalR.HubConnection | null = null;
   private isConnecting: boolean = false;
+  private joinedRequestIds = new Set<string>();
 
   public async startConnection(hubPath: string = "/requestHub"): Promise<void> {
     if (this.hubConnection && this.hubConnection.state === signalR.HubConnectionState.Connected) {
@@ -43,6 +44,18 @@ class SignalRService {
         .configureLogging(signalR.LogLevel.Warning)
         .build();
 
+      this.hubConnection.onreconnected(async () => {
+        // SignalR drops group membership when a new transport connection is
+        // established. Restore every request room still owned by an open view.
+        for (const requestId of this.joinedRequestIds) {
+          try {
+            await this.hubConnection?.invoke("JoinRequestGroup", requestId);
+          } catch (err) {
+            console.error("rejoinRequest failed:", requestId, err);
+          }
+        }
+      });
+
       await this.hubConnection.start();
     } catch (err) {
       console.error("SignalR Connection Error:", err);
@@ -52,6 +65,7 @@ class SignalRService {
   }
 
   public stopConnection(): void {
+    this.joinedRequestIds.clear();
     if (this.hubConnection) {
       this.hubConnection.stop();
       this.hubConnection = null;
@@ -89,12 +103,14 @@ class SignalRService {
     if (!this.hubConnection || this.hubConnection.state !== signalR.HubConnectionState.Connected) return;
     try {
       await this.hubConnection.invoke("JoinRequestGroup", requestId);
+      this.joinedRequestIds.add(requestId);
     } catch (err) {
       console.error("joinRequest failed:", err);
     }
   }
 
   public async leaveRequest(requestId: string): Promise<void> {
+    this.joinedRequestIds.delete(requestId);
     if (!this.hubConnection || this.hubConnection.state !== signalR.HubConnectionState.Connected) return;
     try {
       await this.hubConnection.invoke("LeaveRequestGroup", requestId);
