@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Send, X, Loader2, Paperclip, FileText, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CustomerModule } from "@/services/customer/CustomerModuleService";
@@ -66,10 +66,42 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
   }), []);
 
   const { register, handleSubmit, reset, errors, submitAttempted } = useValidatedForm<typeof values>(values, fieldConfig);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (isOpen) reset();
+    if (isOpen) {
+      reset();
+      closeButtonRef.current?.focus();
+    }
   }, [isOpen, reset]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+      ));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setNewRequest({ ...newRequest, [e.target.name]: e.target.value });
@@ -79,18 +111,21 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-        <div className="bg-slate-900/95 backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden relative border border-slate-800">
+        <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="new-request-modal-title" className="bg-slate-900/95 backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden relative border border-slate-800">
             <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
                         <Send size={20} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-white tracking-tight">Yeni Destek Talebi</h2>
+                        <h2 id="new-request-modal-title" className="text-xl font-black text-white tracking-tight">Yeni Destek Talebi</h2>
                         <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Teknik Destek Hattı</p>
                     </div>
                 </div>
                 <button
+                    ref={closeButtonRef}
+                    type="button"
+                    aria-label="Yeni destek talebi penceresini kapat"
                     onClick={onClose}
                     className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                 >
@@ -230,7 +265,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                             {selectedFiles.map((file, index) => (
                                 <div key={index} className="flex items-center gap-1.5 bg-slate-800 text-slate-300 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-700">
                                     <span className="max-w-[100px] truncate">{file.name}</span>
-                                    <button type="button" onClick={() => removeFile(index)} className="hover:text-red-400 transition-colors">
+                                    <button type="button" aria-label={`${file.name} ekini kaldır`} onClick={() => removeFile(index)} className="hover:text-red-400 transition-colors">
                                         <X size={12} />
                                     </button>
                                 </div>
