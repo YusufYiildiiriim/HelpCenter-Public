@@ -26,6 +26,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // For cookie transmission via CORS
+  timeout: 15000,
   // Backend [FromQuery] List<T>/T[] binding expects `key=v1&key=v2`; axios's
   // default (`indexes: false`) produces `key[]=v1&key[]=v2` and ASP.NET Core
   // does not bind it. `indexes: null` produces repeated, bracketless keys.

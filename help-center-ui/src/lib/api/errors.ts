@@ -13,6 +13,10 @@ import type { ApiError, ApiResponse } from "./types";
 
 const NETWORK_ERROR_MESSAGE =
   "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.";
+const TIMEOUT_ERROR_MESSAGE =
+  "Sunucu yanıtı zaman aşımına uğradı. Lütfen tekrar deneyin.";
+const SERVER_ERROR_MESSAGE =
+  "Sunucu tarafında geçici bir sorun oluştu. Lütfen tekrar deneyin.";
 const GENERIC_FALLBACK_MESSAGE = "İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.";
 
 const STATUS_MESSAGES: Record<number, string> = {
@@ -23,6 +27,10 @@ const STATUS_MESSAGES: Record<number, string> = {
   409: "Bu işlem kaydın mevcut durumu nedeniyle tamamlanamadı.",
   422: "Gönderilen bilgiler işlenemedi. Lütfen alanları kontrol edin.",
   429: "Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.",
+  500: SERVER_ERROR_MESSAGE,
+  502: SERVER_ERROR_MESSAGE,
+  503: SERVER_ERROR_MESSAGE,
+  504: SERVER_ERROR_MESSAGE,
 };
 
 function getResponseData(error: unknown): Partial<ApiResponse<unknown>> | undefined {
@@ -67,7 +75,14 @@ export function isNetworkError(error: unknown): boolean {
   return !error.response;
 }
 
+export function isTimeoutError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  return error.code === "ECONNABORTED" || error.code === "ETIMEDOUT" ||
+    (typeof error.message === "string" && error.message.toLowerCase().includes("timeout"));
+}
+
 export function getApiErrorMessage(error: unknown): string {
+  if (isTimeoutError(error)) return TIMEOUT_ERROR_MESSAGE;
   if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
 
   const status = getApiErrorStatus(error);

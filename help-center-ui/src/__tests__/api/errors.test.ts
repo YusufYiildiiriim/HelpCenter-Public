@@ -10,6 +10,7 @@ import {
   isForbiddenError,
   isValidationError,
   isNetworkError,
+  isTimeoutError,
 } from '@/lib/api/errors';
 
 /**
@@ -21,11 +22,13 @@ function makeAxiosError(opts: {
   data?: unknown;
   message?: string;
   withResponse?: boolean;
+  code?: string;
 }): unknown {
-  const { status, data, message = 'Request failed with status code', withResponse = true } = opts;
+  const { status, data, message = 'Request failed with status code', withResponse = true, code } = opts;
   return {
     isAxiosError: true,
     message,
+    code,
     response: withResponse ? { status, data, statusText: '', headers: {}, config: {} } : undefined,
   };
 }
@@ -73,7 +76,12 @@ describe('getApiErrorMessage', () => {
       status: 500,
       data: { success: false, message: 'stack trace: internal service host' },
     });
-    expect(getApiErrorMessage(error)).toBe('İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    expect(getApiErrorMessage(error)).toBe('Sunucu tarafında geçici bir sorun oluştu. Lütfen tekrar deneyin.');
+  });
+
+  it('timeout hatasını ağ bağlantısı hatasından ayırır', () => {
+    const error = makeAxiosError({ withResponse: false, code: 'ECONNABORTED', message: 'timeout of 15000ms exceeded' });
+    expect(getApiErrorMessage(error)).toBe('Sunucu yanıtı zaman aşımına uğradı. Lütfen tekrar deneyin.');
   });
 
   it('response yoksa (network hatası) sabit ağ hatası mesajını döner', () => {
@@ -85,7 +93,7 @@ describe('getApiErrorMessage', () => {
 
   it('backend gövdesi boş/parse edilemez ise Axios mesajını göstermez', () => {
     const error = makeAxiosError({ status: 500, data: undefined, message: 'Request failed with status code 500' });
-    expect(getApiErrorMessage(error)).toBe('İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    expect(getApiErrorMessage(error)).toBe('Sunucu tarafında geçici bir sorun oluştu. Lütfen tekrar deneyin.');
   });
 
   it('axios hatası olmayan Error mesajını göstermez', () => {
@@ -197,6 +205,13 @@ describe('isNetworkError', () => {
 
   it('axios hatası değilse false döner', () => {
     expect(isNetworkError(new Error('boom'))).toBe(false);
+  });
+});
+
+describe('isTimeoutError', () => {
+  it('Axios timeout kodunu sınıflandırır', () => {
+    expect(isTimeoutError(makeAxiosError({ withResponse: false, code: 'ECONNABORTED' }))).toBe(true);
+    expect(isTimeoutError(makeAxiosError({ withResponse: false, code: 'ERR_NETWORK' }))).toBe(false);
   });
 });
 
