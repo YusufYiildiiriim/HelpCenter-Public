@@ -68,6 +68,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
 
     const isMountedRef = useRef(true);
     const dashboardLoadRef = useRef<Promise<void> | null>(null);
+    const silentRefreshRef = useRef<Promise<void> | null>(null);
     useEffect(() => {
         isMountedRef.current = true;
         return () => { isMountedRef.current = false; };
@@ -87,6 +88,28 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
             if (isMountedRef.current) setLoading(false);
         }
     }, []);
+
+    const refreshRequestsSilently = useCallback(async () => {
+        if (silentRefreshRef.current) return silentRefreshRef.current;
+        const refresh = CustomerRequestService.getMyRequests().then((data) => {
+            if (isMountedRef.current) setRequests(data);
+        }).catch((err) => {
+            // Keep the current list visible when a background refresh fails.
+            console.error("Error refreshing requests after a message:", err);
+        }).finally(() => {
+            if (silentRefreshRef.current === refresh) silentRefreshRef.current = null;
+        });
+        silentRefreshRef.current = refresh;
+        return refresh;
+    }, []);
+
+    useEffect(() => {
+        const handleRequestUpdated = () => {
+            void refreshRequestsSilently();
+        };
+        window.addEventListener("customer-request-updated", handleRequestUpdated);
+        return () => window.removeEventListener("customer-request-updated", handleRequestUpdated);
+    }, [refreshRequestsSilently]);
 
     // Only fetch + state update; does not call synchronous setState (can be called directly from effect body).
     const loadDashboardData = useCallback(() => {

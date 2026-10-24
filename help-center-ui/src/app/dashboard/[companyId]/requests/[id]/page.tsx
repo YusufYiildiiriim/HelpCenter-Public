@@ -83,6 +83,9 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     toast.error(`Okundu bilgisi kaydedilemedi: ${getApiErrorMessage(err)}`, { id: "mark-read-error" });
                 });
             }
+            window.dispatchEvent(new CustomEvent("customer-request-updated", {
+                detail: { requestPublicId: requestId }
+            }));
         };
         const requestStatusChanged = (change: Parameters<typeof signalRService.onRequestStatusChanged>[0] extends (status: infer T) => void ? T : never) => {
             if (change.requestPublicId !== requestId) return;
@@ -173,6 +176,9 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                 messageText: textToSend,
                 files: filesToSend,
             });
+            window.dispatchEvent(new CustomEvent("customer-request-updated", {
+                detail: { requestPublicId: requestId }
+            }));
         } catch (err) {
             console.error("Error sending message:", err);
             toast.error(getApiErrorMessage(err));
