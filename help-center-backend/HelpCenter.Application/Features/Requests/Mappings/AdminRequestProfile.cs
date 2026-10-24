@@ -17,8 +17,19 @@ public class AdminRequestProfile : AutoMapper.Profile
             .ForMember(dest => dest.DocumentCount, opt => opt.MapFrom(src => src.Documents.Count))
             .ForMember(dest => dest.MessageCount, opt => opt.MapFrom(src => src.Conversation != null ? src.Conversation.Messages.Count : 0))
             .ForMember(dest => dest.PriorityName, opt => opt.MapFrom(src => src.Priority.ToString()))
-            .ForMember(dest => dest.AssignedUserName, opt => opt.MapFrom(src => src.AssignedUser != null ? $"{src.AssignedUser.FirstName} {src.AssignedUser.LastName}" : "Atanmadı"))
-            .ForMember(dest => dest.CurrentExpertName, opt => opt.MapFrom(src => src.CurrentExpert != null ? $"{src.CurrentExpert.FirstName} {src.CurrentExpert.LastName}" : "Uzman Yok"))
+            // Project against the Account navigation explicitly. The User shortcut
+            // properties are convenient for in-memory entities but are not a
+            // reliable SQL projection target, which made assigned names blank on
+            // the admin detail endpoint after an assignment.
+            .ForMember(dest => dest.AssignedUserName, opt => opt.MapFrom(src => src.AssignedUser != null
+                ? $"{src.AssignedUser.Account.FirstName} {src.AssignedUser.Account.LastName}"
+                : "Atanmadı"))
+            // Keep this empty when no expert is assigned so the UI can fall back
+            // to the handling agent name instead of treating "Uzman Yok" as a
+            // selected expert.
+            .ForMember(dest => dest.CurrentExpertName, opt => opt.MapFrom(src => src.CurrentExpert != null
+                ? $"{src.CurrentExpert.Account.FirstName} {src.CurrentExpert.Account.LastName}"
+                : string.Empty))
             .ForMember(dest => dest.RequestSubjectName, opt => opt.MapFrom(src => src.RequestSubject != null ? src.RequestSubject.Name : "Konu Yok"));
     }
 }
