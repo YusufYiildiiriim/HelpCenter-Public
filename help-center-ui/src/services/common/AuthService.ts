@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/authSession";
+import { broadcastLogout, clearAccessToken, getAccessToken, setAccessToken } from "@/lib/authSession";
 import type { components } from "@/api/schema";
 
 export type ChangePasswordRequest = components["schemas"]["ChangePasswordCommand"];
@@ -110,6 +110,7 @@ export const AuthService = {
       await api.post("/api/auth/logout", undefined, { skipAuthRefresh: true });
     } finally {
       clearAccessToken();
+      broadcastLogout();
     }
   },
 

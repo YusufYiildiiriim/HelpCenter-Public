@@ -10,6 +10,7 @@ import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/common/ErrorState";
 import { getApiErrorMessage, getApiErrorStatus, getApiRetryAfterSeconds } from "@/lib/api/errors";
+import { clearAccessToken, subscribeToLogout } from "@/lib/authSession";
 
 export default function DashboardLayout({
   children,
@@ -29,6 +30,13 @@ export default function DashboardLayout({
   const [permissions, setPermissions] = React.useState<UserPermissions | undefined>(undefined);
   const [userInfo, setUserInfo] = React.useState<VerifyResponse | null>(null);
   const [showPasswordChange, setShowPasswordChange] = React.useState(false);
+
+  React.useEffect(() => {
+    return subscribeToLogout(() => {
+      clearAccessToken();
+      router.replace("/dashboard/login");
+    });
+  }, [router]);
 
   React.useEffect(() => {
     let mounted = true;
