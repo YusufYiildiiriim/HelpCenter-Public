@@ -119,12 +119,10 @@ public class EmailService : IEmailService
         string code,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Password reset OTP generated for {Email} ({UserName}): {OTP}", toEmail, userName, code);
-
         if (_smtp == null || string.IsNullOrWhiteSpace(_smtp.Host) || string.IsNullOrWhiteSpace(_smtp.SenderEmail))
         {
-            _logger.LogWarning("SMTP is not configured. OTP code for {Email} is: {Code}", toEmail, code);
-            return;
+            _logger.LogError("SMTP is not configured; password reset email cannot be delivered to {Email}.", toEmail);
+            throw new InvalidOperationException("Password reset email delivery is not configured.");
         }
 
         try
@@ -169,7 +167,8 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send password reset email to {Email}. OTP code is: {Code}", toEmail, code);
+            _logger.LogError(ex, "Failed to send password reset email to {Email}.", toEmail);
+            throw;
         }
     }
 
