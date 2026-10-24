@@ -45,6 +45,10 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
     const [subjects, setSubjects] = useState<CustomerRequestSubject[]>([]);
     const [newRequest, setNewRequest] = useState({ title: "", description: "", moduleId: "", requestSubjectId: "", priority: 1 });
     const [submitting, setSubmitting] = useState(false);
+    // State updates are asynchronous; a rapid double-click can invoke the
+    // submit handler twice before the disabled button is rendered. Keep a
+    // synchronous lock for the request lifecycle as well.
+    const createRequestLockRef = useRef(false);
     const [requestFilter, setRequestFilter] = useState("Hepsi");
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isFileTypeMenuOpen, setIsFileTypeMenuOpen] = useState(false);
@@ -161,6 +165,8 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
 
     const handleCreateRequest = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (createRequestLockRef.current) return;
+        createRequestLockRef.current = true;
         setSubmitting(true);
         try {
             const formData = new FormData();
@@ -197,6 +203,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
             console.error("Error creating request:", err);
             toast.error(getApiErrorMessage(err));
         } finally {
+            createRequestLockRef.current = false;
             setSubmitting(false);
         }
     };
