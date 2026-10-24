@@ -9,7 +9,7 @@ interface DashboardNavProps {
 
 export const DashboardNav: React.FC<DashboardNavProps> = ({ profile, onLogout }) => {
   return (
-    <nav className="h-20 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-8 flex items-center justify-between shadow-lg shadow-slate-950/40 sticky top-0 z-50">
+    <nav aria-label="Müşteri portalı" className="h-20 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-8 flex items-center justify-between shadow-lg shadow-slate-950/40 sticky top-0 z-50">
         <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
                 <Building2 size={26} />
@@ -30,6 +30,8 @@ export const DashboardNav: React.FC<DashboardNavProps> = ({ profile, onLogout })
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Firma Yöneticisi</p>
                 </div>
                 <button
+                    type="button"
+                    aria-label="Oturumu kapat"
                     onClick={onLogout}
                     className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-all"
                 >

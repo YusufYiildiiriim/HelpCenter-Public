@@ -296,7 +296,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
         <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
             <DashboardNav profile={profile} onLogout={handleLogout} />
 
-            <main className="flex-1 p-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-8">
+            <main id="customer-main" tabIndex={-1} className="flex-1 p-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-8 focus:outline-none">
                 <DashboardSidebar
                     activeView={activeView}
                     setActiveView={setActiveView}

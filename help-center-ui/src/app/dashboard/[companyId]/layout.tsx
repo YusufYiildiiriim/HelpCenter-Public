@@ -128,6 +128,12 @@ export default function DashboardLayout({
 
   return (
     <AuthProvider userInfo={userInfo} permissions={permissions}>
+      <a
+        href="#customer-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-3 focus:font-bold focus:text-white focus:outline-none focus:ring-4 focus:ring-indigo-300/50"
+      >
+        Ana içeriğe geç
+      </a>
       {children}
       <Toaster richColors position="top-right" theme="system" />
       {showPasswordChange && (
