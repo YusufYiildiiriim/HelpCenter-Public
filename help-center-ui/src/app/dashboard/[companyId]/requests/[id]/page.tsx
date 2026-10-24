@@ -187,7 +187,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
         setIsClosing(true);
         try {
             await CustomerRequestService.close({ publicId: requestId, note: closingNote, rating });
-            toast.success("Talebiniz başarıyla kapatıldı. Geri bildiriminiz için teşekkürler!");
+            toast.success("Talebiniz başarıyla kapatıldı. Geri bildiriminiz için teşekkürler!", { id: "request-closed" });
             router.push(`/dashboard/${resolvedParams.companyId}`);
         } catch (err: unknown) {
             console.error("Error closing ticket:", err);

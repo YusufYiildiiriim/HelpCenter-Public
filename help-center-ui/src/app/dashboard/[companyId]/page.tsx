@@ -204,7 +204,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
             selectedFiles.forEach((file) => formData.append("Files", file));
 
             await CustomerRequestService.create(formData);
-            toast.success("Talebiniz başarıyla oluşturuldu.");
+            toast.success("Talebiniz başarıyla oluşturuldu.", { id: "request-created" });
             await fetchRequests();
             setIsModalOpen(false);
             setNewRequest({ title: "", description: "", moduleId: "", requestSubjectId: "", priority: 1 });
