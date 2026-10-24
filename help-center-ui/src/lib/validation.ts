@@ -12,6 +12,11 @@ export interface FieldRules {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export function isValidEmailAddress(value: string): boolean {
+  const normalized = value.trim();
+  return normalized.length <= 254 && EMAIL_REGEX.test(normalized);
+}
+
 export function validateField(value: unknown, rules: FieldRules | undefined, label: string): string | undefined {
   if (!rules) return undefined;
 
@@ -26,7 +31,7 @@ export function validateField(value: unknown, rules: FieldRules | undefined, lab
     return undefined;
   }
 
-  if (rules.type === "email" && (str.length > 254 || !EMAIL_REGEX.test(str))) {
+  if (rules.type === "email" && !isValidEmailAddress(str)) {
     return "Geçerli bir e-posta adresi giriniz.";
   }
 

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { AuthService } from "@/services/common/AuthService";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { isValidEmailAddress } from "@/lib/validation";
 
 interface CustomerForgotPasswordModalProps {
   isOpen: boolean;
@@ -33,6 +34,10 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
 
     if (!username.trim()) {
       toast.error("Lütfen kullanıcı adınızı veya e-posta adresinizi girin.");
+      return;
+    }
+    if (username.includes("@") && !isValidEmailAddress(username)) {
+      toast.error("Lütfen geçerli bir e-posta adresi girin.");
       return;
     }
 
