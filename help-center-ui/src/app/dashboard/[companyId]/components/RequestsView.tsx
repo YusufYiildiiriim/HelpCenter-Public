@@ -31,7 +31,7 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
   ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/90 backdrop-blur-xl p-8 rounded-[2.5rem] border border-slate-800 shadow-xl shadow-slate-950/30">
             <div>
                 <h2 className="text-2xl font-black text-white tracking-tight">
@@ -43,8 +43,9 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
             </div>
             {activeView === "requests" && (
                 <button 
+                    type="button"
                     onClick={onNewRequest}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-600/20 flex items-center gap-3 transition-all active:scale-95"
+                    className="relative z-10 bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-600/20 flex items-center gap-3 transition-all active:scale-95"
                 >
                     <Plus size={22} /> Yeni Talep Oluştur
                 </button>
