@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { validateField, type FieldRules } from "@/lib/validation";
 
 export interface FieldConfig {
@@ -11,6 +11,7 @@ export function useValidatedForm<T extends object>(
   fieldConfig: Partial<Record<keyof T, FieldConfig>>
 ) {
   const [touched, setTouched] = useState<Set<keyof T>>(new Set());
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const submitCbRef = useRef<(e: React.FormEvent) => void>(() => {});
 
   const computeErrors = useCallback((): Partial<Record<keyof T, string>> => {
@@ -23,6 +24,8 @@ export function useValidatedForm<T extends object>(
     });
     return next;
   }, [values, fieldConfig]);
+
+  const errors = useMemo(() => computeErrors(), [computeErrors]);
 
   const markAllTouched = useCallback(() => {
     setTouched(new Set(Object.keys(fieldConfig) as (keyof T)[]));
@@ -70,10 +73,11 @@ export function useValidatedForm<T extends object>(
     submitCbRef.current = cb;
     return (e: React.FormEvent) => {
       e.preventDefault();
-      const errors = computeErrors();
+      const validationErrors = computeErrors();
+      setSubmitAttempted(true);
       markAllTouched();
-      if (Object.keys(errors).length > 0) {
-        const first = Object.keys(errors)[0];
+      if (Object.keys(validationErrors).length > 0) {
+        const first = Object.keys(validationErrors)[0];
         const el = document.querySelector<HTMLElement>(`[name="${first}"]`);
         el?.focus();
         return;
@@ -82,7 +86,10 @@ export function useValidatedForm<T extends object>(
     };
   }, [computeErrors, markAllTouched]);
 
-  const reset = useCallback(() => setTouched(new Set()), []);
+  const reset = useCallback(() => {
+    setTouched(new Set());
+    setSubmitAttempted(false);
+  }, []);
 
-  return { register, validateAll, validateFields, handleSubmit, reset };
+  return { register, validateAll, validateFields, handleSubmit, reset, errors, submitAttempted };
 }

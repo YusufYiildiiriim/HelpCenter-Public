@@ -65,7 +65,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
     description: { label: "Detaylı Açıklama", rules: { required: true } },
   }), []);
 
-  const { register, handleSubmit, reset } = useValidatedForm<typeof values>(values, fieldConfig);
+  const { register, handleSubmit, reset, errors, submitAttempted } = useValidatedForm<typeof values>(values, fieldConfig);
 
   useEffect(() => {
     if (isOpen) reset();
@@ -99,6 +99,11 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="p-6 space-y-4">
+                {submitAttempted && Object.keys(errors).length > 0 && (
+                    <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-300">
+                        Lütfen zorunlu alanları doldurun.
+                    </div>
+                )}
                 <FormField
                     name="title"
                     label="Talep Başlığı"
