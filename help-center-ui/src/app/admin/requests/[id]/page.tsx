@@ -13,7 +13,7 @@ import { AdminRequestService } from "@/services/admin/AdminRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { toast } from "sonner";
 import { ApiStateView } from "@/components/common/ApiStateView";
-import { getApiErrorCode, getApiErrorMessage, isForbiddenError, isNotFoundError } from "@/lib/api/errors";
+import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus, isForbiddenError, isNotFoundError } from "@/lib/api/errors";
 import { isPublicId } from "@/lib/publicId";
 
 // Modular Components
@@ -256,10 +256,10 @@ export default function AdminTicketChatPage() {
             if (messageType === 1) setMessageType(0);
         } catch (err) {
             console.error("Error sending message:", err);
-            if (getApiErrorCode(err) === "RequestCompleted") {
+            if (getApiErrorCode(err) === "RequestCompleted" || getApiErrorStatus(err) === 409) {
                 setTicket(prev => prev ? { ...prev, statusId: RequestStatus.Completed, status: "Tamamlandı" } : prev);
                 setIsConsultModalOpen(false);
-                toast.error("Bu talep kapatılmış. Yeni mesaj gönderilemez.");
+                toast.error("Bu talep kapatılmış. Yeni mesaj gönderilemez.", { id: "request-completed-send" });
             } else toast.error(getApiErrorMessage(err));
         } finally {
             setSending(false);
