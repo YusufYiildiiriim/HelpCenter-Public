@@ -12,3 +12,11 @@ export const requestStatusLabels: Record<string, string> = {
   [RequestStatus.Completed]: "Tamamlandı",
   [RequestStatus.UnderTechnicalReview]: "Teknik İncelemede",
 };
+
+export function getRequestStatusLabel(statusId?: string, fallback?: string): string {
+  return (statusId && requestStatusLabels[statusId]) || fallback || "Durum bilinmiyor";
+}
+
+export function isCompletedRequest(statusId?: string, status?: string): boolean {
+  return statusId === RequestStatus.Completed || status === requestStatusLabels[RequestStatus.Completed];
+}

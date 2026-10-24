@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { CustomerRequest } from "@/services/customer/CustomerRequestService";
+import { getRequestStatusLabel, isCompletedRequest } from "@/lib/requestStatus";
 
 interface ChatHeaderProps {
   onBack: () => void;
@@ -17,6 +18,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   ticket, 
   onCloseTicket 
 }) => {
+  const statusLabel = getRequestStatusLabel(ticket?.statusId, ticket?.status);
+  const isCompleted = isCompletedRequest(ticket?.statusId, ticket?.status);
   return (
     <div className="p-6 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -48,16 +51,16 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                             aria-label={`Talep durumu: ${ticket.status}`}
                             className={cn(
                                 "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter border",
-                                ticket.status === "Tamamlandı"
+                    isCompleted
                                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                     : ticket.status === "Cevaplandı"
                                         ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                                        : ticket.status === "Teknik İncelemede"
+                                        : statusLabel === "Teknik İncelemede"
                                             ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                                             : "bg-slate-800 text-slate-300 border-slate-700"
                             )}
                         >
-                            {ticket.status}
+                            {statusLabel}
                         </span>
                     )}
                 </div>
@@ -66,7 +69,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-4">
-            {ticket?.status !== "Tamamlandı" ? (
+            {!isCompleted ? (
                 <button
                     onClick={onCloseTicket}
                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20 active:scale-95"

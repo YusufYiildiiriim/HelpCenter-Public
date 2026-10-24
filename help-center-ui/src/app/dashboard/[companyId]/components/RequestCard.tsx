@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MessageSquare, FileText, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CustomerRequest } from "@/services/customer/CustomerRequestService";
+import { getRequestStatusLabel } from "@/lib/requestStatus";
 
 interface RequestCardProps {
   request: CustomerRequest;
@@ -10,6 +11,7 @@ interface RequestCardProps {
 }
 
 export const RequestCard: React.FC<RequestCardProps> = ({ request, companyId }) => {
+  const statusLabel = getRequestStatusLabel(request.statusId, request.status);
   return (
     <Link 
         href={`/dashboard/${companyId}/requests/${request.publicId}`}
@@ -29,11 +31,12 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, companyId }) 
             <div className="flex flex-col items-end gap-2">
                 <div className={cn(
                     "px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-sm",
-                    request.status === "Cevap Bekliyor" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : 
-                    request.status === "Tamamlandı" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" :
+                    statusLabel === "Cevap Bekliyor" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" : 
+                    statusLabel === "Tamamlandı" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" :
+                    statusLabel === "Teknik İncelemede" ? "bg-amber-500/10 text-amber-400 border border-amber-500/30" :
                     "bg-indigo-500/10 text-indigo-400 border border-indigo-500/30"
                 )}>
-                    {request.status}
+                    {statusLabel}
                 </div>
                 <div className={cn(
                     "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
