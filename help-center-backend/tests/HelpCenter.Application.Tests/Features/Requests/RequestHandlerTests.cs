@@ -102,6 +102,52 @@ public class RequestHandlerTests : HandlerTestBase
     }
 
     [Fact]
+    public async Task AdminSendMessage_should_reply_to_request_created_by_customer()
+    {
+        var customer = SeedCustomer();
+
+        var createHandler = new CreateRequestCommandHandler(
+            Uow, new CreateRequestRules(Uow), _fileService, _publisher,
+            NullLogger<CreateRequestCommandHandler>.Instance);
+
+        var created = await createHandler.Handle(new CreateRequestCommand
+        {
+            CustomerId = customer.Id,
+            Title = "Customer-created request",
+            MessageText = "Initial customer message",
+            Priority = RequestPriority.Medium
+        }, CancellationToken.None);
+
+        var account = new Account
+        {
+            Email = "customer-created-agent@example.com",
+            Username = "customer-created-agent",
+            FirstName = "Admin",
+            LastName = "Agent",
+            Password = "p"
+        };
+        var agent = new User { Account = account, IsActive = true };
+        Db.Accounts.Add(account);
+        Db.Users.Add(agent);
+        Db.SaveChanges();
+        Db.ChangeTracker.Clear();
+
+        var adminHandler = new AdminSendMessageCommandHandler(Uow, _hubService, _fileService);
+
+        var result = await adminHandler.Handle(new AdminSendMessageCommand
+        {
+            SenderUserId = agent.Id,
+            RequestPublicId = created.PublicId,
+            MessageText = "Admin reply to customer-created request",
+            Type = MessageType.Public
+        }, CancellationToken.None);
+
+        result.Should().BeTrue();
+        Db.CustomerRequestMessages.Should().ContainSingle(m =>
+            m.MessageText == "Admin reply to customer-created request");
+    }
+
+    [Fact]
     public async Task CreateRequest_with_allowed_module_should_succeed()
     {
         var customer = SeedCustomer();

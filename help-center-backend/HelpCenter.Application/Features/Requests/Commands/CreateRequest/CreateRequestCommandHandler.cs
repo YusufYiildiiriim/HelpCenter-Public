@@ -86,6 +86,9 @@ public class CreateRequestCommandHandler : IRequestHandler<CreateRequestCommand,
         await _unitOfWork.SaveAsync(cancellationToken);
 
         customerRequest.ConversationId = conversation.Id;
+        customerRequest.Conversation = conversation;
+        await _unitOfWork.Repository<CustomerRequest>().UpdateAsync(customerRequest, cancellationToken);
+        await _unitOfWork.SaveAsync(cancellationToken);
 
         var participant = conversation.AddParticipant(request.CustomerId, null, ParticipantType.Customer);
         await _unitOfWork.Repository<ConversationParticipant>().AddAsync(participant, cancellationToken);
