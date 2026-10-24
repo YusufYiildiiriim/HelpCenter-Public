@@ -17,7 +17,7 @@ import type { CustomerGuide } from "@/services/customer/CustomerGuideService";
 import { CustomerGuideService } from "@/services/customer/CustomerGuideService";
 import { AuthService } from "@/services/common/AuthService";
 import { usePageTitle } from "@/lib/usePageTitle";
-import { getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
+import { getApiErrorMessage, getApiErrorStatus, isForbiddenError } from "@/lib/api/errors";
 
 // UI Components
 import { ApiStateView } from "@/components/common/ApiStateView";
@@ -121,7 +121,13 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
         const request = Promise.all([
             AuthService.verify(),
             CustomerRequestService.getMyRequests(),
-            CustomerProfileService.getMyProfile(),
+            CustomerProfileService.getMyProfile().catch((profileError) => {
+                // A missing profile should not hide otherwise usable requests,
+                // modules and guides. The header/profile view already supports
+                // a null profile fallback.
+                if (getApiErrorStatus(profileError) === 404) return null;
+                throw profileError;
+            }),
             CustomerModuleService.getAll(),
             CustomerRequestSubjectService.getAll(),
             CustomerGuideService.getAll()
