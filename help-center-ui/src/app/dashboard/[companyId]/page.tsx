@@ -67,6 +67,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
     const [timeLeft, setTimeLeft] = useState(180);
 
     const isMountedRef = useRef(true);
+    const dashboardLoadRef = useRef<Promise<void> | null>(null);
     useEffect(() => {
         isMountedRef.current = true;
         return () => { isMountedRef.current = false; };
@@ -89,7 +90,12 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
 
     // Only fetch + state update; does not call synchronous setState (can be called directly from effect body).
     const loadDashboardData = useCallback(() => {
-        return Promise.all([
+        // React StrictMode and rapid route transitions can invoke the effect
+        // twice before the first response settles. Reuse the same request
+        // batch so every dashboard endpoint is called once per load cycle.
+        if (dashboardLoadRef.current) return dashboardLoadRef.current;
+
+        const request = Promise.all([
             AuthService.verify(),
             CustomerRequestService.getMyRequests(),
             CustomerProfileService.getMyProfile(),
@@ -114,7 +120,12 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
                 setError(err);
                 setLoading(false);
             }
+        }).finally(() => {
+            if (dashboardLoadRef.current === request) dashboardLoadRef.current = null;
         });
+
+        dashboardLoadRef.current = request;
+        return request;
     }, [router]);
 
     // For retry (button click): resets loading/error and refetches.
