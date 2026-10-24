@@ -84,6 +84,14 @@ describe('getApiErrorMessage', () => {
     expect(getApiErrorMessage(error)).toBe('Sunucu yanıtı zaman aşımına uğradı. Lütfen tekrar deneyin.');
   });
 
+  it('rowversion çakışmasını genel 409 mesajından ayırır', () => {
+    const error = makeAxiosError({
+      status: 409,
+      data: makeBackendEnvelope({ code: 'ConcurrencyConflict', message: 'internal rowversion details' }),
+    });
+    expect(getApiErrorMessage(error)).toBe('Kayıt başka biri tarafından güncellendi. Sayfayı yenileyip tekrar deneyin.');
+  });
+
   it('response yoksa (network hatası) sabit ağ hatası mesajını döner', () => {
     const error = makeAxiosError({ withResponse: false });
     expect(getApiErrorMessage(error)).toBe(

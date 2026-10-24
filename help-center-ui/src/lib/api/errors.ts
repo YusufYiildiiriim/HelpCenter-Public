@@ -86,6 +86,9 @@ export function getApiErrorMessage(error: unknown): string {
   if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
 
   const status = getApiErrorStatus(error);
+  if (status === 409 && getApiErrorCode(error) === "ConcurrencyConflict") {
+    return "Kayıt başka biri tarafından güncellendi. Sayfayı yenileyip tekrar deneyin.";
+  }
   if (status === 401 && getApiErrorCode(error) === "InvalidCredentials") {
     return "Hatalı kullanıcı adı/e-posta veya şifre.";
   }
