@@ -43,6 +43,23 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                              ticket.priority === 1 ? "NORMAL" : "DÜŞÜK"}
                         </span>
                     )}
+                    {ticket?.status && (
+                        <span
+                            aria-label={`Talep durumu: ${ticket.status}`}
+                            className={cn(
+                                "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter border",
+                                ticket.status === "Tamamlandı"
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                    : ticket.status === "Cevaplandı"
+                                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                                        : ticket.status === "Teknik İncelemede"
+                                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                            : "bg-slate-800 text-slate-300 border-slate-700"
+                            )}
+                        >
+                            {ticket.status}
+                        </span>
+                    )}
                 </div>
                 <p className="text-xs text-slate-400 font-medium">Müşteri Hizmetleri ile Görüşüyorsunuz</p>
             </div>
