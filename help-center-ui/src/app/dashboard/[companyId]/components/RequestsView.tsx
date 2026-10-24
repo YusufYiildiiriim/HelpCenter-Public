@@ -21,9 +21,10 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
   onNewRequest,
   companyId
 }) => {
+  const availableRequests = Array.isArray(requests) ? requests : [];
   const baseRequests = activeView === "requests"
-    ? requests.filter(r => r.status !== "Tamamlandı")
-    : requests.filter(r => r.status === "Tamamlandı");
+    ? availableRequests.filter(r => r.status !== "Tamamlandı")
+    : availableRequests.filter(r => r.status === "Tamamlandı");
 
   const filteredRequests = (activeView === "requests" && requestFilter !== "Hepsi"
     ? baseRequests.filter(r => r.status === requestFilter)

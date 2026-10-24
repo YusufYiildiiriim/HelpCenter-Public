@@ -33,7 +33,14 @@ export interface TicketMessage {
 export const CustomerRequestService = {
   getMyRequests: async (): Promise<CustomerRequest[]> => {
     const response = await api.get("/api/customer/requests/my-requests");
-    return response.data;
+    const payload = response.data as unknown;
+    if (Array.isArray(payload)) return payload as CustomerRequest[];
+    if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data)) {
+      return (payload as { data: CustomerRequest[] }).data;
+    }
+    // A valid empty collection must render the empty state, not be treated as
+    // a missing request or cause a downstream `.filter` crash.
+    return [];
   },
 
   getById: async (publicId: string): Promise<CustomerRequest> => {
