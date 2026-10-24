@@ -9,7 +9,7 @@ import PasswordChangeModal from "@/components/auth/PasswordChangeModal";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ErrorState } from "@/components/common/ErrorState";
-import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api/errors";
+import { getApiErrorMessage, getApiErrorStatus, getApiRetryAfterSeconds } from "@/lib/api/errors";
 
 export default function DashboardLayout({
   children,
@@ -23,6 +23,8 @@ export default function DashboardLayout({
   const [isVerifying, setIsVerifying] = React.useState(true);
   const [verificationFailed, setVerificationFailed] = React.useState(false);
   const [verificationError, setVerificationError] = React.useState<unknown>(null);
+  const [retryDeadline, setRetryDeadline] = React.useState<number | null>(null);
+  const [retrySeconds, setRetrySeconds] = React.useState(0);
   const [attempt, setAttempt] = React.useState(0);
   const [permissions, setPermissions] = React.useState<UserPermissions | undefined>(undefined);
   const [userInfo, setUserInfo] = React.useState<VerifyResponse | null>(null);
@@ -50,7 +52,12 @@ export default function DashboardLayout({
       } catch (error) {
         if (!mounted) return;
         console.error("Dashboard auth verification failed:", error);
-        if ([401, 403].includes(getApiErrorStatus(error) ?? 0)) {
+        if (getApiErrorStatus(error) === 429) {
+          const seconds = getApiRetryAfterSeconds(error);
+          setRetrySeconds(seconds);
+          setRetryDeadline(Date.now() + seconds * 1000);
+          setVerificationFailed(false);
+        } else if ([401, 403].includes(getApiErrorStatus(error) ?? 0)) {
           await AuthService.logout();
           router.replace("/dashboard/login");
         } else {
@@ -65,6 +72,13 @@ export default function DashboardLayout({
     verifyAuth();
     return () => { mounted = false; };
   }, [pathname, router, attempt]);
+
+  React.useEffect(() => {
+    if (retryDeadline === null) return;
+    const update = () => setRetrySeconds(Math.max(0, Math.ceil((retryDeadline - Date.now()) / 1000)));
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [retryDeadline]);
 
   if (isVerifying) {
     return (
@@ -84,6 +98,28 @@ export default function DashboardLayout({
       setIsVerifying(true);
       setAttempt(value => value + 1);
     }} />;
+  }
+
+  if (retryDeadline !== null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6">
+        <div className="max-w-md text-center space-y-5 text-slate-200">
+          <h1 className="text-xl font-semibold">Kısa bir süre bekleyin</h1>
+          <p>İstek sınırına ulaşıldığı için oturumunuz şu anda doğrulanamıyor.</p>
+          <p role="status">{retrySeconds > 0 ? `${retrySeconds} saniye sonra yeniden deneyebilirsiniz.` : "Şimdi yeniden deneyebilirsiniz."}</p>
+          <button type="button" disabled={retrySeconds > 0}
+            onClick={() => {
+              if (Date.now() < retryDeadline) return;
+              setRetryDeadline(null);
+              setIsVerifying(true);
+              setAttempt(value => value + 1);
+            }}
+            className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+            Yeniden dene
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthorized) {
