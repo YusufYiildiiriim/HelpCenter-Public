@@ -76,6 +76,14 @@ public interface IGenericRepository<T> where T : class
         Expression<Func<T, TResult>> selector,
         CancellationToken cancellationToken = default);
 
+    Task<List<TResult>> SelectTopDescendingAsync<TResult, TKey, TSecondaryKey>(
+        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, TKey>> orderByDescendingKey,
+        Expression<Func<T, TSecondaryKey>> thenByDescendingKey,
+        int take,
+        Expression<Func<T, TResult>> selector,
+        CancellationToken cancellationToken = default);
+
     Task<PaginatedResponse<T>> GetPaginatedAsync(
         Expression<Func<T, bool>>? predicate,
         int pageNumber,

@@ -173,6 +173,23 @@ namespace HelpCenter.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<TResult>> SelectTopDescendingAsync<TResult, TKey, TSecondaryKey>(
+            Expression<Func<T, bool>> predicate,
+            Expression<Func<T, TKey>> orderByDescendingKey,
+            Expression<Func<T, TSecondaryKey>> thenByDescendingKey,
+            int take,
+            Expression<Func<T, TResult>> selector,
+            CancellationToken cancellationToken = default)
+        {
+            return await _efContext.Set<T>().AsNoTracking()
+                .Where(predicate)
+                .OrderByDescending(orderByDescendingKey)
+                .ThenByDescending(thenByDescendingKey)
+                .Take(take)
+                .Select(selector)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<List<TResult>> SelectAsync<TResult>(
             Expression<Func<T, bool>>? predicate,
             Expression<Func<T, TResult>> selector,

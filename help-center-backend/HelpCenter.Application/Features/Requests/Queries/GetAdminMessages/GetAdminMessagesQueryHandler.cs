@@ -19,6 +19,8 @@ public sealed record AdminMessagesTicketSummary(
     string? CustomerLastName,
     bool CustomerHasAccount);
 
+public sealed record AdminMessageCursor(DateTime CreatedAt, Guid Id);
+
 public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuery, AdminMessagesResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -55,6 +57,13 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
             TotalCount = 0
         };
 
+        var cursor = request.BeforeId.HasValue
+            ? await _unitOfWork.Repository<CustomerRequestMessage>().FirstOrDefaultProjectedAsync(
+                x => x.Id == request.BeforeId.Value && x.ConversationId == ticket.ConversationId,
+                x => new AdminMessageCursor(x.CreatedAt, x.Id),
+                cancellationToken)
+            : null;
+
         var totalCount = await _unitOfWork.Repository<CustomerRequestMessage>().CountAsync(
             x => x.ConversationId == ticket.ConversationId,
             cancellationToken: cancellationToken);
@@ -67,12 +76,21 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
         // the old code fetched all matching messages into memory and applied Take there (see
         // Threads.md, "GetAdminMessagesQueryHandler — Cursor Pagination Correct, Take In Memory",
         // also fixed by this refactor).
-        Task<List<AdminMessageDto>> LoadMessages(CancellationToken token) => _unitOfWork.Repository<CustomerRequestMessage>().SelectTopDescendingAsync(
-            x => x.ConversationId == ticket.ConversationId &&
-                 (!request.BeforeId.HasValue || x.Id < request.BeforeId.Value),
-            x => x.CreatedAt,
-            request.PageSize + 1,
-            m => new AdminMessageDto
+        Task<List<AdminMessageDto>> LoadMessages(CancellationToken token)
+        {
+            if (request.BeforeId.HasValue && cursor is null)
+            {
+                return Task.FromResult(new List<AdminMessageDto>());
+            }
+
+            return _unitOfWork.Repository<CustomerRequestMessage>().SelectTopDescendingAsync(
+                x => x.ConversationId == ticket.ConversationId &&
+                    (!request.BeforeId.HasValue || x.CreatedAt < cursor!.CreatedAt ||
+                     (x.CreatedAt == cursor.CreatedAt && x.Id < cursor.Id)),
+                x => x.CreatedAt,
+                x => x.Id,
+                request.PageSize + 1,
+                m => new AdminMessageDto
             {
                 Id = m.Id,
                 MessageText = m.MessageText,
@@ -91,6 +109,7 @@ public class GetAdminMessagesQueryHandler : IRequestHandler<GetAdminMessagesQuer
                 }).ToList()
             },
             token);
+        }
 
         // Only the initial bounded window is cached; ownership/assignment is checked above on every read.
         var useCache = _cache != null && !request.BeforeId.HasValue && request.PageSize is 5 or 10;
