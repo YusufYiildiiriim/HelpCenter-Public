@@ -23,11 +23,13 @@ public class AuditLogEndpointsTests(SqlServerWebApplicationFactory factory)
         var allowed = await StaffTestSession.CreateAsync(factory, AppResources.AuditLogs);
         using var client = allowed.Client;
         var marker = "TestAudit" + Guid.NewGuid().ToString("N");
+        var firstTargetId = Guid.NewGuid();
+        var secondTargetId = Guid.NewGuid();
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<EfContext>();
-            db.AuditLogs.AddRange(new AuditLog { EventType = marker, ActorUserId = allowed.UserId, ActorEmail = "private@example.test", IpAddress = "private-ip", BeforeJson = "secret-before", MetadataJson = "secret-metadata", TargetType = "Role", TargetId = Guid.NewGuid() },
-                new AuditLog { EventType = marker, ActorUserId = allowed.UserId, TargetType = "Role", TargetId = Guid.NewGuid() });
+            db.AuditLogs.AddRange(new AuditLog { EventType = marker, ActorUserId = allowed.UserId, ActorEmail = "private@example.test", IpAddress = "private-ip", BeforeJson = "secret-before", MetadataJson = "secret-metadata", TargetType = "Role", TargetId = firstTargetId },
+                new AuditLog { EventType = marker, ActorUserId = allowed.UserId, TargetType = "Role", TargetId = secondTargetId });
             await db.SaveChangesAsync();
         }
         var response = await client.GetAsync($"/api/admin/audit-logs?eventType={marker}&actorUserId={allowed.UserId}&targetType=Role&pageSize=1&pageNumber=1");
@@ -36,7 +38,7 @@ public class AuditLogEndpointsTests(SqlServerWebApplicationFactory factory)
         using var body = JsonDocument.Parse(text);
         Assert.Equal(2, body.RootElement.GetProperty("totalCount").GetInt32());
         var row = Assert.Single(body.RootElement.GetProperty("items").EnumerateArray());
-        Assert.Equal(456, row.GetProperty("targetId").GetInt32());
+        Assert.Contains(Guid.Parse(row.GetProperty("targetId").GetString()!), new[] { firstTargetId, secondTargetId });
         Assert.DoesNotContain("private", text);
         Assert.DoesNotContain("secret", text);
         Assert.False(row.TryGetProperty("beforeJson", out _));
