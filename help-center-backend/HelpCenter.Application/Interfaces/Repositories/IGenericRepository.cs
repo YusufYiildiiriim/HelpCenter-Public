@@ -97,6 +97,7 @@ public interface IGenericRepository<T> where T : class
         int pageNumber,
         int pageSize,
         Expression<Func<T, object>>? orderByDescendingKey = null,
+        Expression<Func<T, object>>? thenByDescendingKey = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

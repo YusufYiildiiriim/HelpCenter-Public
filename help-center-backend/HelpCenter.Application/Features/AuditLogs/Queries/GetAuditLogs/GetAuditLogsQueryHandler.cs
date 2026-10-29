@@ -18,7 +18,10 @@ public class GetAuditLogsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<
             (!request.To.HasValue || log.OccurredAt <= request.To);
         var page = await unitOfWork.Repository<AuditLog>().GetPaginatedProjectedAsync(filter,
             log => new AuditLogDto(log.Id, log.EventType, log.ActorUserId, string.Empty, log.TargetType, log.TargetId, log.CorrelationId, log.OccurredAt),
-            request.PageNumber, request.PageSize, orderByDescendingKey: log => log.Id, cancellationToken: cancellationToken);
+            request.PageNumber, request.PageSize,
+            orderByDescendingKey: log => log.OccurredAt,
+            thenByDescendingKey: log => log.Id,
+            cancellationToken: cancellationToken);
 
         var actorIds = page.Items
             .Where(log => log.ActorUserId.HasValue)
