@@ -29,8 +29,8 @@ public class GetCompaniesQueryHandler : IRequestHandler<GetCompaniesQuery, Pagin
             predicate,
             request.PageNumber,
             request.PageSize,
-            cancellationToken: cancellationToken,
-            x => x.CompanyModules, x => x.Project!);
+            includes: [x => x.CompanyModules, x => x.Project!],
+            cancellationToken: cancellationToken);
 
         var dtoItems = _mapper.Map<List<GetCompaniesResponse>>(paginatedEntities.Items);
 

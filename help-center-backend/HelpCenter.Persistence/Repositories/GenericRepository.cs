@@ -217,6 +217,7 @@ namespace HelpCenter.Persistence.Repositories
             Expression<Func<T, bool>>? predicate,
             int pageNumber,
             int pageSize,
+            Expression<Func<T, object>>? orderByKey = null,
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes)
         {
@@ -238,7 +239,9 @@ namespace HelpCenter.Persistence.Repositories
 
             var totalCount = await query.CountAsync(cancellationToken);
 
-            var ordered = OrderByPrimaryKey(query);
+            var ordered = orderByKey != null
+                ? query.OrderBy(orderByKey)
+                : OrderByPrimaryKey(query);
             var items = unlimited
                 ? await ordered.ToListAsync(cancellationToken)
                 : await ordered.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);

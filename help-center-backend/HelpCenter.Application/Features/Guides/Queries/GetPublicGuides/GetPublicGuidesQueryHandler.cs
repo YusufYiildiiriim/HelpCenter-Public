@@ -77,6 +77,7 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
             predicate,
             pagination.PageNumber,
             pagination.PageSize,
+            orderByKey: x => x.Title,
             cancellationToken: ct,
             g => g.Documents!, g => g.ModuleEntity!);
 

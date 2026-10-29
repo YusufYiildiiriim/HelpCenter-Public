@@ -30,6 +30,7 @@ public class GetGuidesQueryHandler : IRequestHandler<GetGuidesQuery, PaginatedRe
             predicate,
             request.PageNumber,
             request.PageSize,
+            orderByKey: x => x.Title,
             cancellationToken: cancellationToken,
             g => g.Documents!, g => g.ModuleEntity!);
 

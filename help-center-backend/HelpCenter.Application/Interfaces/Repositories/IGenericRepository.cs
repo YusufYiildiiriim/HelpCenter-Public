@@ -88,6 +88,7 @@ public interface IGenericRepository<T> where T : class
         Expression<Func<T, bool>>? predicate,
         int pageNumber,
         int pageSize,
+        Expression<Func<T, object>>? orderByKey = null,
         CancellationToken cancellationToken = default,
         params Expression<Func<T, object>>[] includes);
 

@@ -38,7 +38,7 @@ public sealed class RoleQueryRepository : IRoleQueryRepository
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var projected = query.OrderBy(r => r.Id).Select(r => new RoleDto
+        var projected = query.OrderBy(r => r.Name).ThenBy(r => r.Id).Select(r => new RoleDto
         {
             Id = r.Id,
             Name = r.Name,

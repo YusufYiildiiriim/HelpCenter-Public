@@ -33,8 +33,8 @@ public class GetCustomersQueryHandler : IRequestHandler<GetCustomersQuery, Pagin
             predicate,
             request.PageNumber,
             request.PageSize,
-            cancellationToken: cancellationToken,
-            x => x.Company, x => x.Account);
+            includes: [x => x.Company, x => x.Account],
+            cancellationToken: cancellationToken);
 
         var dtoItems = _mapper.Map<List<CustomerDetailDto>>(paginatedEntities.Items);
 

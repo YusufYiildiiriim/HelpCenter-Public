@@ -35,8 +35,8 @@ public class GetProjectsQueryHandler : IRequestHandler<GetProjectsQuery, Paginat
             predicate,
             request.PageNumber,
             request.PageSize,
-            cancellationToken: cancellationToken,
-            x => x.Companies, x => x.UserProjects, x => x.ProjectModules);
+            includes: [x => x.Companies, x => x.UserProjects, x => x.ProjectModules],
+            cancellationToken: cancellationToken);
 
         var dtoItems = _mapper.Map<List<ProjectDto>>(paginatedEntities.Items);
 

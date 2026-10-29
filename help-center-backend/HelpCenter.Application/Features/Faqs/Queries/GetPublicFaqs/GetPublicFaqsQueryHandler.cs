@@ -56,6 +56,7 @@ public class GetPublicFaqsQueryHandler : IRequestHandler<GetPublicFaqsQuery, Pag
             predicate,
             pagination.PageNumber,
             pagination.PageSize,
+            orderByKey: x => x.Title,
             cancellationToken: ct,
             x => x.Project!, x => x.Module!);
 

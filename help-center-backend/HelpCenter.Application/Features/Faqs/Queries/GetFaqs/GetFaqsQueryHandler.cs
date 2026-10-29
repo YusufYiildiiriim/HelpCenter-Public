@@ -31,6 +31,7 @@ public class GetFaqsQueryHandler : IRequestHandler<GetFaqsQuery, PaginatedRespon
             predicate,
             request.PageNumber,
             request.PageSize,
+            orderByKey: x => x.Title,
             cancellationToken: cancellationToken,
             x => x.Project!, x => x.Module!);
 
