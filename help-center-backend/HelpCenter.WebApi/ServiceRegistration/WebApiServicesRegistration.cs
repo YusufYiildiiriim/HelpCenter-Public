@@ -87,6 +87,25 @@ public static class WebApiServicesRegistration
 
             options.Events = new JwtBearerEvents
             {
+                OnTokenValidated = context =>
+                {
+                    var userId = context.Principal?.FindFirst(AppClaimTypes.UserId)?.Value
+                        ?? context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!Guid.TryParse(userId, out var parsedUserId) || parsedUserId == Guid.Empty)
+                    {
+                        context.Fail("The token does not contain a valid GUID user identity.");
+                        return Task.CompletedTask;
+                    }
+
+                    var companyId = context.Principal?.FindFirst(AppClaimTypes.CompanyId)?.Value;
+                    if (!string.IsNullOrEmpty(companyId) &&
+                        (!Guid.TryParse(companyId, out var parsedCompanyId) || parsedCompanyId == Guid.Empty))
+                    {
+                        context.Fail("The token contains an invalid company identity.");
+                    }
+
+                    return Task.CompletedTask;
+                },
                 OnMessageReceived = context =>
                 {
                     var accessToken = context.Request.Query["access_token"];
