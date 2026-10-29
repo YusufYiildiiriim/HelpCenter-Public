@@ -175,6 +175,23 @@ public class CustomerHandlerTests : HandlerTestBase
     }
 
     [Fact]
+    public async Task GetCustomerById_should_resolve_the_external_public_id_when_it_differs_from_the_primary_key()
+    {
+        var customer = SeedCustomer("external-id@example.com", "external.id");
+        var externalId = Guid.NewGuid();
+        var tracked = Db.Customers.Single(x => x.Id == customer.Id);
+        tracked.PublicId = externalId;
+        Db.SaveChanges();
+        Db.ChangeTracker.Clear();
+
+        var result = await new GetCustomerByIdQueryHandler(Uow, Mapper)
+            .Handle(new GetCustomerByIdQuery(externalId), CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result!.PublicId.Should().Be(externalId);
+    }
+
+    [Fact]
     public async Task GetProfile_should_return_profile_dto()
     {
         var customer = SeedCustomer("profile@example.com", "profile.user");
