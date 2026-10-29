@@ -41,12 +41,9 @@ namespace HelpCenter.Persistence.Repositories
             return _context.SaveChanges();
         }
 
-        public void SetOriginalVersion<T>(T entity, byte[]? version) where T : class
+        public void SetOriginalVersion<T>(T entity, Guid version) where T : class
         {
-            if (version != null)
-            {
-                _context.Entry(entity).Property("RowVersion").OriginalValue = version;
-            }
+            _context.Entry(entity).Property<Guid>("RowVersion").OriginalValue = version;
         }
 
         public void Dispose()

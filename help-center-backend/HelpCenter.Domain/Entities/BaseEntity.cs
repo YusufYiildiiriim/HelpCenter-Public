@@ -20,7 +20,7 @@ public abstract class BaseEntity : IAuditable, ISoftDelete
     public Guid? CreatedByAccountId { get; set; }
     public Guid? LastModifiedByAccountId { get; set; }
 
-    public byte[] RowVersion { get; set; } = new byte[8];
+    public Guid RowVersion { get; set; } = Guid.NewGuid();
 
     private readonly List<IDomainEvent> _domainEvents = [];
 

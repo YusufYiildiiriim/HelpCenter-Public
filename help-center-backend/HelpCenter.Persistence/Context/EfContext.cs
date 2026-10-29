@@ -65,23 +65,11 @@ public class EfContext : DbContext
             {
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(BuildSoftDeleteFilter(entityType.ClrType));
 
-                // RowVersion Configuration
-                var rowVersionProperty = modelBuilder.Entity(entityType.ClrType)
+                // Application-managed opaque concurrency token, rotated before updates.
+                modelBuilder.Entity(entityType.ClrType)
                     .Property("RowVersion")
-                    .IsRowVersion()
-                    .HasValueGenerator<HelpCenter.Persistence.ValueGeneration.RowVersionValueGenerator>();
-
-                // Value-generated properties are automatically excluded from the INSERTs of
-                // HasData() seed rows (EF Core assumes the value will be provided by the
-                // store/generator). On SQL Server this worked fine thanks to the automatic value
-                // generation inherited from the column's native rowversion type; on non-SQL
-                // Server providers (e.g. SQLite in tests) the column is just a NOT NULL BLOB, so
-                // these rows hit a constraint error. We only define a DEFAULT value OUTSIDE of
-                // SQL Server — production (SQL Server) behavior is unchanged.
-                if (!isPostgreSql)
-                {
-                    rowVersionProperty.HasDefaultValue(new byte[8]);
-                }
+                    .IsConcurrencyToken()
+                    .ValueGeneratedNever();
 
                 // PublicId Configuration — a real/randomly generated, stored external identity
                 // for each entity, replacing the XOR/HMAC scheme that "obfuscated" the Guid Id
@@ -266,8 +254,31 @@ public class EfContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override int SaveChanges() => SaveChanges(acceptAllChangesOnSuccess: true);
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        PrepareEntitiesForSave();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => SaveChangesAsync(acceptAllChangesOnSuccess: true, cancellationToken);
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        PrepareEntitiesForSave();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void PrepareEntitiesForSave()
+    {
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Modified)
+                entry.Entity.RowVersion = Guid.NewGuid();
+        }
+
         foreach (var entry in ChangeTracker.Entries<HelpCenter.Domain.Common.IAuditable>())
         {
             switch (entry.State)
@@ -281,7 +292,6 @@ public class EfContext : DbContext
             }
         }
 
-        return await base.SaveChangesAsync(cancellationToken);
     }
 
     private static LambdaExpression BuildSoftDeleteFilter(Type entityType)
