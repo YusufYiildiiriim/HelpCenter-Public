@@ -54,13 +54,13 @@ public class AdminRequestProjectionTests : HandlerTestBase
         Db.Users.AddRange(assigned, expert);
         Db.CustomerRequestStatuses.Add(new CustomerRequestStatus
         {
-            Id = Domain.Constants.RequestStatusConstants.UnderTechnicalReview,
+            Id = global::HelpCenter.Domain.Constants.RequestStatusConstants.UnderTechnicalReview,
             Name = "Teknik İncelemede"
         });
         await Db.SaveChangesAsync();
 
         var request = CustomerRequest.Create(customer.Id, null, null, "Projection test", RequestPriority.Medium);
-        request.StatusId = Domain.Constants.RequestStatusConstants.UnderTechnicalReview;
+        request.StatusId = global::HelpCenter.Domain.Constants.RequestStatusConstants.UnderTechnicalReview;
         request.AssignedUserId = assigned.Id;
         request.CurrentExpertId = expert.Id;
         Db.CustomerRequests.Add(request);

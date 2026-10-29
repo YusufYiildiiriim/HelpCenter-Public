@@ -50,7 +50,7 @@ public sealed class RequestLogEnrichmentTests
         await pipeline.Build()(context);
 
         Assert.Equal(500, context.Response.StatusCode);
-        var handled = Assert.Single(sink.Events.Where(entry => entry.MessageTemplate.Text.StartsWith("Handled exception", StringComparison.Ordinal)));
+        var handled = Assert.Single(sink.Events, entry => entry.MessageTemplate.Text.StartsWith("Handled exception", StringComparison.Ordinal));
         Assert.Equal(authenticated ? "Yusuf" : "Anonymous (203.0.113.7)", Scalar(handled, "UserName"));
         Assert.Equal("203.0.113.7", Scalar(handled, "ClientIp"));
         Assert.Equal("log-regression-test", Scalar(handled, "UserAgent"));
@@ -60,7 +60,7 @@ public sealed class RequestLogEnrichmentTests
         Assert.DoesNotContain("private failure detail", await reader.ReadToEndAsync());
 
         logger.Information("AfterRequest");
-        var after = Assert.Single(sink.Events.Where(entry => entry.MessageTemplate.Text == "AfterRequest"));
+        var after = Assert.Single(sink.Events, entry => entry.MessageTemplate.Text == "AfterRequest");
         Assert.False(after.Properties.ContainsKey("UserName"));
         Assert.False(after.Properties.ContainsKey("ClientIp"));
         Assert.False(after.Properties.ContainsKey("UserAgent"));
