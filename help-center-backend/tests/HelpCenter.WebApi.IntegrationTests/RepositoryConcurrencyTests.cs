@@ -9,7 +9,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public class RepositoryConcurrencyTests(SqlServerWebApplicationFactory factory)
+public class RepositoryConcurrencyTests(PostgreSqlWebApplicationFactory factory)
 {
     [Theory]
     [InlineData(false)]

@@ -6,7 +6,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class RequestHubAuthenticationTests(SqlServerWebApplicationFactory factory)
+public sealed class RequestHubAuthenticationTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task Anonymous_client_cannot_connect_to_request_hub()

@@ -7,7 +7,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class AuthSessionEndpointsTests(SqlServerWebApplicationFactory factory)
+public sealed class AuthSessionEndpointsTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task AdminLogin_sets_secure_refresh_cookie_without_leaking_it_in_json()

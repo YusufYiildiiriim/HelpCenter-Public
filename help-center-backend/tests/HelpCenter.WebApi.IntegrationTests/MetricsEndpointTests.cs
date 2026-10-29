@@ -6,7 +6,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class MetricsEndpointTests(SqlServerWebApplicationFactory factory)
+public sealed class MetricsEndpointTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task Metrics_rejects_anonymous_requests()

@@ -13,7 +13,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public class ExpertQueueEndpointsTests(SqlServerWebApplicationFactory factory)
+public class ExpertQueueEndpointsTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task Consultation_persists_and_is_visible_only_to_the_selected_expert_session()

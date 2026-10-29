@@ -3,7 +3,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests.Infrastructure;
 
 [CollectionDefinition(Name)]
-public sealed class IntegrationTestCollection : ICollectionFixture<SqlServerWebApplicationFactory>
+public sealed class IntegrationTestCollection : ICollectionFixture<PostgreSqlWebApplicationFactory>
 {
-    public const string Name = "SQL Server integration tests";
+    public const string Name = "PostgreSQL integration tests";
 }

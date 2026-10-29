@@ -5,10 +5,10 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class HealthEndpointsTests(SqlServerWebApplicationFactory factory)
+public sealed class HealthEndpointsTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
-    public async Task LiveAndReadyEndpoints_ReturnOkAgainstMigratedSqlServer()
+    public async Task LiveAndReadyEndpoints_ReturnOkAgainstInitializedPostgreSql()
     {
         using var client = factory.CreateClient();
 

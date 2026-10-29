@@ -10,7 +10,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public class AuditLogEndpointsTests(SqlServerWebApplicationFactory factory)
+public class AuditLogEndpointsTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task Audit_read_requires_explicit_permission_and_limits_fields_and_page_size()

@@ -4,18 +4,19 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Testcontainers.MsSql;
+using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace HelpCenter.WebApi.IntegrationTests.Infrastructure;
 
-public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public sealed class PostgreSqlWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private const string SqlServerPassword = "IntegrationTests!2026";
+    private const string PostgreSqlPassword = "IntegrationTests!2026";
 
-    private readonly MsSqlContainer _sqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04")
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine")
         .WithDatabase("HelpCenterIntegrationTests")
-        .WithPassword(SqlServerPassword)
+        .WithUsername("postgres")
+        .WithPassword(PostgreSqlPassword)
         .Build();
 
     private static int _clientSequence;
@@ -35,7 +36,7 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
         {
             var settings = new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = _sqlServer.GetConnectionString(),
+                ["ConnectionStrings:DefaultConnection"] = _postgres.GetConnectionString(),
                 ["JwtSettings:Issuer"] = "HelpCenter.IntegrationTests",
                 ["JwtSettings:Audience"] = "HelpCenter.IntegrationTests",
                 ["JwtSettings:SecretKey"] = "IntegrationTestsOnlySecretKeyThatIsAtLeastThirtyTwoCharacters",
@@ -53,12 +54,12 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
 
     public async Task InitializeAsync()
     {
-        await _sqlServer.StartAsync();
+        await _postgres.StartAsync();
 
         // The top-level Program validates these settings while it is being constructed, before
         // WebApplicationFactory's ConfigureAppConfiguration callback is applied. Supplying them
         // through this test process's environment makes the real startup path deterministic.
-        SetProcessConfiguration("ConnectionStrings__DefaultConnection", _sqlServer.GetConnectionString());
+        SetProcessConfiguration("ConnectionStrings__DefaultConnection", _postgres.GetConnectionString());
         SetProcessConfiguration("JwtSettings__Issuer", "HelpCenter.IntegrationTests");
         SetProcessConfiguration("JwtSettings__Audience", "HelpCenter.IntegrationTests");
         SetProcessConfiguration("JwtSettings__SecretKey", "IntegrationTestsOnlySecretKeyThatIsAtLeastThirtyTwoCharacters");
@@ -70,10 +71,11 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
         SetProcessConfiguration("AppSettings__FrontendUrl", "http://localhost:3000");
 
         var options = new DbContextOptionsBuilder<EfContext>()
-            .UseSqlServer(_sqlServer.GetConnectionString())
+            .UseNpgsql(_postgres.GetConnectionString())
             .Options;
         await using var dbContext = new EfContext(options);
-        await dbContext.Database.MigrateAsync();
+        // P3 replaces this temporary clean-schema bootstrap with the PostgreSQL initial migration.
+        await dbContext.Database.EnsureCreatedAsync();
     }
 
     private static void SetProcessConfiguration(string key, string value)
@@ -81,7 +83,7 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
 
     public new async Task DisposeAsync()
     {
-        await _sqlServer.DisposeAsync();
+        await _postgres.DisposeAsync();
         Dispose();
     }
 }

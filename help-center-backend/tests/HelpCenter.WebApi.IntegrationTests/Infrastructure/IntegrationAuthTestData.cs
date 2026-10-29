@@ -14,7 +14,7 @@ internal static class IntegrationAuthTestData
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
 
-    internal static async Task EnsureSeededAsync(SqlServerWebApplicationFactory factory)
+    internal static async Task EnsureSeededAsync(PostgreSqlWebApplicationFactory factory)
     {
         await Gate.WaitAsync();
         try

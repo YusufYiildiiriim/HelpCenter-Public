@@ -1,4 +1,4 @@
-﻿namespace HelpCenter.WebApi.IntegrationTests;
+namespace HelpCenter.WebApi.IntegrationTests;
 
 internal static class TestIds
 {

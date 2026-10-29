@@ -9,7 +9,7 @@ using Xunit;
 namespace HelpCenter.WebApi.IntegrationTests;
 
 [Collection(IntegrationTestCollection.Name)]
-public sealed class PublicContentEndpointsTests(SqlServerWebApplicationFactory factory)
+public sealed class PublicContentEndpointsTests(PostgreSqlWebApplicationFactory factory)
 {
     [Fact]
     public async Task PublicFaqs_ApplyModuleAndSearchFilters_BeforePaginating()
