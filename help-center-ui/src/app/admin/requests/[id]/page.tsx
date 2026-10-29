@@ -171,7 +171,7 @@ export default function AdminTicketChatPage() {
             const formattedMsg: AdminTicketMessage = {
                 id: newMsg.id, messageText: newMsg.messageText, isAgent: newMsg.isAgent ?? false,
                 createdAt: newMsg.createdAt, senderName: newMsg.senderName ?? "Müşteri",
-                senderUserId: newMsg.senderUserId ?? 0, documents: newMsg.documents ?? [],
+                senderUserId: newMsg.senderUserId ?? "", documents: newMsg.documents ?? [],
                 isRead: newMsg.isRead ?? false, type: newMsg.type ?? 0
             };
             setMessages(prev => prev.some(m => m.id === formattedMsg.id) ? prev : [...prev, formattedMsg]);
