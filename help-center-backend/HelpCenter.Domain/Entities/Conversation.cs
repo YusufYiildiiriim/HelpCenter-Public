@@ -10,24 +10,28 @@ namespace HelpCenter.Domain.Entities
         public virtual ICollection<CustomerRequestMessage> Messages { get; set; } = new HashSet<CustomerRequestMessage>();
 
         public ConversationParticipant AddParticipant(Guid? customerId, Guid? userId, ParticipantType type)
+            => GetOrAddParticipant(customerId, userId, type).Participant;
+
+        public (ConversationParticipant Participant, bool IsNew) GetOrAddParticipant(Guid? customerId, Guid? userId, ParticipantType type)
         {
             var participant = Participants.FirstOrDefault(p =>
                 (customerId.HasValue && p.CustomerId == customerId && p.Type == type) ||
                 (userId.HasValue && p.UserId == userId && p.Type == type));
 
-            if (participant == null)
+            if (participant != null)
             {
-                participant = new ConversationParticipant
-                {
-                    ConversationId = this.Id,
-                    CustomerId = customerId,
-                    UserId = userId,
-                    Type = type
-                };
-                Participants.Add(participant);
+                return (participant, false);
             }
 
-            return participant;
+            participant = new ConversationParticipant
+            {
+                ConversationId = Id,
+                CustomerId = customerId,
+                UserId = userId,
+                Type = type
+            };
+            Participants.Add(participant);
+            return (participant, true);
         }
 
         public int MarkMessagesAsRead(bool readerIsAgent)

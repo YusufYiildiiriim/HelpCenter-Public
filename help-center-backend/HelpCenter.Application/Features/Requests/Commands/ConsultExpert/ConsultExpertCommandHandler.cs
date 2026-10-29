@@ -71,9 +71,10 @@ public class ConsultExpertCommandHandler : IRequestHandler<ConsultExpertCommand,
             await _unitOfWork.Repository<CustomerRequest>().UpdateAsync(customerRequest, cancellationToken);
         }
 
-        var participant = conversation.AddParticipant(null, request.AgentUserId, ParticipantType.Agent);
+        var participantResult = conversation.GetOrAddParticipant(null, request.AgentUserId, ParticipantType.Agent);
+        var participant = participantResult.Participant;
 
-        if (participant.Id == Guid.Empty)
+        if (participantResult.IsNew)
         {
             await _unitOfWork.Repository<ConversationParticipant>().AddAsync(participant, cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);

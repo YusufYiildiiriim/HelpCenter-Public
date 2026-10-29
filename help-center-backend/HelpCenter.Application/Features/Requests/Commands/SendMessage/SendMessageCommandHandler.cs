@@ -54,10 +54,10 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, boo
                 await _unitOfWork.Repository<CustomerRequest>().UpdateAsync(customerRequest, cancellationToken);
             }
 
-            var participant =
-                customerRequest.Conversation.AddParticipant(request.CustomerId, null, ParticipantType.Customer);
+            var participantResult = customerRequest.Conversation.GetOrAddParticipant(request.CustomerId, null, ParticipantType.Customer);
+            var participant = participantResult.Participant;
 
-            if (participant.Id == Guid.Empty)
+            if (participantResult.IsNew)
             {
                 await _unitOfWork.Repository<ConversationParticipant>().AddAsync(participant, cancellationToken);
                 await _unitOfWork.SaveAsync(cancellationToken);
