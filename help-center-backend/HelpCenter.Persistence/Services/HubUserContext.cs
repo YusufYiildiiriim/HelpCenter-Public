@@ -7,7 +7,7 @@ namespace HelpCenter.Persistence.Services;
 /// <summary>
 /// IUserContext implementation for the SignalR Hub context. IHttpContextAccessor no longer carries the
 /// HttpContext in method calls made AFTER a Hub connection is established (invocations the client makes
-/// over the WebSocket) — so HttpBasedUserContext always appears "anonymous" (IsAuthenticated=false, UserId=0)
+/// over the WebSocket) — so HttpBasedUserContext always appears "anonymous" (IsAuthenticated=false, UserId=Guid.Empty)
 /// when called inside a Hub.
 /// This implementation directly uses the Hub-specific ClaimsPrincipal
 /// (HubCallerContext.User) that SignalR keeps alive for the duration of the connection; it does not depend on HttpContext.
