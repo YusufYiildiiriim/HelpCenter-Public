@@ -12,8 +12,8 @@ namespace HelpCenter.Persistence.ServiceRegistration
         {
 
             services.AddDbContext<EfContext>(options =>
-              options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-              sqlOptions => sqlOptions.EnableRetryOnFailure()));
+              options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+              npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
 
 
             services.AddHttpContextAccessor();

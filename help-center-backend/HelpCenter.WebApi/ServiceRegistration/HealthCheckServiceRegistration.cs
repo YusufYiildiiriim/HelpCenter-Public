@@ -7,9 +7,9 @@ public static class HealthCheckServiceRegistration
     public static IServiceCollection AddHealthCheckServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHealthChecks()
-            .AddSqlServer(
+            .AddNpgSql(
                 configuration.GetConnectionString("DefaultConnection")!,
-                name: "sqlserver",
+                name: "postgresql",
                 tags: new[] { "ready" })
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: new[] { "live" });
 

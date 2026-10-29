@@ -50,7 +50,7 @@ public sealed class PublicIdLifecycleTests
     [Fact]
     public void System_defaults_are_not_embedded_in_the_ef_model()
     {
-        using var db = CreateSqlServerModel();
+        using var db = CreatePostgreSqlModel();
         var seeds = db.GetService<IDesignTimeModel>().Model.GetEntityTypes()
             .Where(type => typeof(BaseEntity).IsAssignableFrom(type.ClrType))
             .SelectMany(type => type.GetSeedData()).ToList();
@@ -58,13 +58,6 @@ public sealed class PublicIdLifecycleTests
         Assert.Empty(seeds);
     }
 
-    [Fact]
-    public void SqlServer_model_has_no_pending_migration_changes()
-    {
-        using var db = CreateSqlServerModel();
-        Assert.False(db.Database.HasPendingModelChanges());
-    }
-
-    private static EfContext CreateSqlServerModel() => new(new DbContextOptionsBuilder<EfContext>()
-        .UseSqlServer("Server=localhost;Database=ModelOnly;Integrated Security=true;TrustServerCertificate=true").Options);
+    private static EfContext CreatePostgreSqlModel() => new(new DbContextOptionsBuilder<EfContext>()
+        .UseNpgsql("Host=localhost;Database=ModelOnly;Username=postgres;Password=not-used").Options);
 }

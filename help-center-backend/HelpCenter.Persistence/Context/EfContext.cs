@@ -46,15 +46,9 @@ public class EfContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // The SQL Server-specific column types in AuditLogConfiguration/RefreshTokenConfiguration
-        // (nvarchar(max), datetime2(3)) are only applied for that provider — so those two are
-        // excluded from assembly scanning and applied manually with the provider info. All other
-        // configurations (those with a parameterless ctor) continue to be scanned unchanged.
-        var isSqlServer = Database.IsSqlServer();
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly(), t =>
-            t != typeof(Configurations.AuditLogConfiguration) && t != typeof(Configurations.RefreshTokenConfiguration));
-        modelBuilder.ApplyConfiguration(new Configurations.AuditLogConfiguration(isSqlServer));
-        modelBuilder.ApplyConfiguration(new Configurations.RefreshTokenConfiguration(isSqlServer));
+        // Provider-specific column literals are intentionally absent from the active model.
+        var isPostgreSql = Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         // Explicit table names: the CompanyModules/ProjectModules DbSet properties are named
         // in plural (for test ergonomics), but EF's default naming convention would then map
@@ -84,7 +78,7 @@ public class EfContext : DbContext
                 // Server providers (e.g. SQLite in tests) the column is just a NOT NULL BLOB, so
                 // these rows hit a constraint error. We only define a DEFAULT value OUTSIDE of
                 // SQL Server — production (SQL Server) behavior is unchanged.
-                if (!isSqlServer)
+                if (!isPostgreSql)
                 {
                     rowVersionProperty.HasDefaultValue(new byte[8]);
                 }
@@ -102,22 +96,8 @@ public class EfContext : DbContext
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<HelpCenter.Persistence.ValueGeneration.PublicIdValueGenerator>();
 
-                if (isSqlServer)
-                {
-                    publicIdProperty.HasDefaultValueSql("NEWID()");
-                }
-                else
-                {
-                    // SQLite has no NEWID() — this is the standard SQLite expression that
-                    // generates a random UUID string in RFC 4122 v4 format. Rows seeded with
-                    // HasData skip SaveChanges (see the same comment on RowVersion), so these rows
-                    // get their PublicId solely from this DB-side default; since it is evaluated
-                    // per row, the values stay unique.
-                    publicIdProperty.HasDefaultValueSql(
-                        "(lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || " +
-                        "substr(hex(randomblob(2)),2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || " +
-                        "substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6))))");
-                }
+                if (isPostgreSql)
+                    publicIdProperty.HasDefaultValueSql("gen_random_uuid()");
 
                 modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(BaseEntity.PublicId)).IsUnique();
 

@@ -17,20 +17,15 @@ public sealed class ModuleUsageReadRepository(EfContext context) : IModuleUsageR
         var ids = modules.Select(module => module.Id).Distinct().ToArray();
         var names = modules.Select(module => module.Name).Distinct(StringComparer.Ordinal).ToArray();
 
-        // The former in-memory comparison was ordinal. Binary grouping and byte length
-        // keep case variants and trailing spaces separate under a case-insensitive database.
+        // PostgreSQL text equality keeps case and trailing-space variants distinct by default.
         var linkedCounts = await context.Guides.Where(g => g.ModuleId.HasValue && ids.Contains(g.ModuleId.Value) && (!onlyActive || g.IsActive))
             .GroupBy(g => g.ModuleId!.Value).Select(g => new { Id = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Id, g => g.Count, cancellationToken);
 
         var guideGroups = await context.Guides
             .Where(guide => !guide.ModuleId.HasValue && names.Contains(guide.Module) && (!onlyActive || guide.IsActive))
-            .GroupBy(guide => new
-            {
-                Name = EF.Functions.Collate(guide.Module, "Latin1_General_100_BIN2"),
-                ByteLength = EF.Functions.DataLength(guide.Module)
-            })
-            .Select(group => new { group.Key.Name, Count = group.Count() })
+            .GroupBy(guide => guide.Module)
+            .Select(group => new { Name = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
         var guideCounts = guideGroups.ToDictionary(group => group.Name, group => group.Count, StringComparer.Ordinal);
