@@ -18,7 +18,7 @@ public sealed class AdminUsersControllerTests
         var mediator = Substitute.For<IMediator>();
         mediator.Send(Arg.Any<UpdateUserCommand>(), Arg.Any<CancellationToken>()).Returns(true);
         var controller = new AdminUsersController(mediator);
-        var command = new UpdateUserCommand { Id = Guid.Parse(bodyId), Name = "Name", Email = "user@example.test", RowVersion = [1, 2] };
+        var command = new UpdateUserCommand { Id = Guid.Parse(bodyId), Name = "Name", Email = "user@example.test", RowVersion = Guid.NewGuid() };
 
         var result = await controller.UpdateUser(TestIds.FromInt(17), command);
 

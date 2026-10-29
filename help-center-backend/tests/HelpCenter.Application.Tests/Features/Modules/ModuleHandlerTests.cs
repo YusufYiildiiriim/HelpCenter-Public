@@ -90,7 +90,8 @@ public class ModuleHandlerTests : HandlerTestBase
             PublicId = module.PublicId,
             Name = "New Module",
             Description = "New",
-            IsActive = false
+            IsActive = false,
+            RowVersion = module.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

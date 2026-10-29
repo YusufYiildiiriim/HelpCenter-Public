@@ -56,6 +56,7 @@ public class UserHandlerTests : HandlerTestBase
             LastName = "UpdatedLast",
             Email = "updated@example.com",
             IsActive = true,
+            RowVersion = user.RowVersion,
             RoleIds = new List<Guid> { TestIds.FromInt(1), TestIds.FromInt(2) }
         };
 
@@ -143,7 +144,8 @@ public class UserHandlerTests : HandlerTestBase
             LastName = "SelfLast",
             Email = "self@example.com",
             Username = "self.user",
-            IsActive = true
+            IsActive = true,
+            RowVersion = user.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

@@ -64,7 +64,8 @@ public class CompanyHandlerTests : HandlerTestBase
         {
             PublicId = company.PublicId,
             Name = "New Name",
-            Address = "New Address"
+            Address = "New Address",
+            RowVersion = company.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -102,7 +103,8 @@ public class CompanyHandlerTests : HandlerTestBase
         {
             PublicId = company.PublicId,
             Name = "Sync Company",
-            ModuleIds = new List<Guid> { mod1.Id, mod3.Id }
+            ModuleIds = new List<Guid> { mod1.Id, mod3.Id },
+            RowVersion = company.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -121,35 +123,29 @@ public class CompanyHandlerTests : HandlerTestBase
     }
 
     [Fact]
-    public async Task UpdateCompany_should_not_throw_ConcurrencyException_when_RowVersion_is_not_sent()
+    public async Task UpdateCompany_should_reject_a_missing_concurrency_token()
     {
         // Regression coverage for the AdminCompaniesController Base64 fallback bug: a real
-        // RowVersion is generated on insert (RowVersionValueGenerator), so it's never empty.
-        // A client that omits RowVersion must map to command.RowVersion == null, which skips
-        // SetOriginalVersion entirely — not to Array.Empty<byte>(), which would make EF look
-        // for a row with an empty RowVersion (never matches) and throw a bogus concurrency error.
-        var company = new Company { Name = "No RowVersion Sent Co", Address = "Old Address", CreatedAt = DateTime.UtcNow };
+        // Empty/missing client tokens must never skip the optimistic concurrency predicate.
+        var company = new Company { Name = "Missing token Co", Address = "Old Address", CreatedAt = DateTime.UtcNow };
         Db.Companies.Add(company);
         await Db.SaveChangesAsync();
         Db.ChangeTracker.Clear();
-
-        var storedRowVersion = Db.Companies.Find(company.Id)!.RowVersion;
-        storedRowVersion.Should().NotBeNullOrEmpty("a real RowVersion is always generated on insert");
 
         var handler = new UpdateCompanyCommandHandler(Uow, Mapper, _passwordService, new UpdateCompanyRules(Uow));
         var command = new UpdateCompanyCommand
         {
             PublicId = company.PublicId,
-            Name = "No RowVersion Sent Co",
+            Name = "Missing token Co",
             Address = "New Address",
-            RowVersion = null
+            RowVersion = Guid.Empty
         };
 
         Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
 
-        await act.Should().NotThrowAsync<DbUpdateConcurrencyException>();
-        var updated = Db.Companies.Find(company.Id);
-        updated!.Address.Should().Be("New Address");
+        await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        var persisted = await Db.Companies.AsNoTracking().SingleAsync(x => x.Id == company.Id);
+        persisted.Address.Should().Be("Old Address");
     }
 
     [Fact]

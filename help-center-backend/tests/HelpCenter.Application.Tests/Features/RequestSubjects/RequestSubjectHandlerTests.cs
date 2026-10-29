@@ -58,7 +58,8 @@ public class RequestSubjectHandlerTests : HandlerTestBase
             Id = subject.Id,
             Name = "Updated Subject",
             Description = "Updated",
-            IsActive = false
+            IsActive = false,
+            RowVersion = subject.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

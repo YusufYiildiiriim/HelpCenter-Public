@@ -45,9 +45,13 @@ public sealed class RepositoryContractTests
         using (var observer = new EfContext(options))
         {
             Assert.False((await observer.FAQs.SingleAsync(x => x.Id == item.Id)).IsDeleted);
-            // SQLite has no SQL Server rowversion. Simulate another committed writer's new token.
+            // Simulate another committed writer by updating through a second context.
             if (concurrentWrite)
-                await observer.Database.ExecuteSqlInterpolatedAsync($"UPDATE FAQs SET RowVersion = randomblob(8) WHERE Id = {item.Id}");
+            {
+                var writer = await observer.FAQs.SingleAsync(x => x.Id == item.Id);
+                writer.Description = "Concurrent update";
+                await observer.SaveChangesAsync();
+            }
         }
         if (concurrentWrite)
             await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => db.SaveChangesAsync());

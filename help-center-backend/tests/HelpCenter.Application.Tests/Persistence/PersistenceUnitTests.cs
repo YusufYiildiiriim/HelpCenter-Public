@@ -4,7 +4,6 @@ using HelpCenter.Application.Tests.Common;
 using HelpCenter.Domain.Entities;
 using HelpCenter.Persistence.Repositories;
 using HelpCenter.Persistence.Services;
-using HelpCenter.Persistence.ValueGeneration;
 using NSubstitute;
 using Xunit;
 
@@ -22,17 +21,31 @@ public class PersistenceUnitTests : HandlerTestBase
     }
 
     [Fact]
-    public void RowVersionValueGenerator_should_generate_16_bytes()
+    public void Base_entity_concurrency_token_should_be_initialized_as_a_guid()
     {
-        var generator = new RowVersionValueGenerator();
-        generator.GeneratesTemporaryValues.Should().BeFalse();
+        var first = new FAQ();
+        var second = new FAQ();
 
-        var val1 = generator.Next(null!);
-        var val2 = generator.Next(null!);
+        first.RowVersion.Should().NotBe(Guid.Empty);
+        second.RowVersion.Should().NotBe(first.RowVersion);
 
-        val1.Should().NotBeNull();
-        val1.Length.Should().Be(16);
-        val1.Should().NotEqual(val2);
+        var property = Db.Model.FindEntityType(typeof(FAQ))!.FindProperty(nameof(FAQ.RowVersion))!;
+        property.IsConcurrencyToken.Should().BeTrue();
+        property.ValueGenerated.Should().Be(Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never);
+    }
+
+    [Fact]
+    public void Synchronous_save_should_rotate_the_concurrency_token_on_update()
+    {
+        var faq = new FAQ { Title = "Before" };
+        Db.FAQs.Add(faq);
+        Db.SaveChanges();
+        var before = faq.RowVersion;
+
+        faq.Title = "After";
+        Db.SaveChanges();
+
+        faq.RowVersion.Should().NotBe(before);
     }
 
     [Fact]

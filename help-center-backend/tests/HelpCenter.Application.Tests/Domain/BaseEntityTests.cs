@@ -21,7 +21,7 @@ public class BaseEntityTests
         entity.IsDeleted.Should().BeFalse();
         entity.IsActive.Should().BeTrue();
         entity.UpdatedAt.Should().BeNull();
-        entity.RowVersion.Should().NotBeNull();
+        entity.RowVersion.Should().NotBe(Guid.Empty);
     }
 
     [Fact]

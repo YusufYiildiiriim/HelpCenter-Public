@@ -32,7 +32,8 @@ public class RoleHandlerTests : HandlerTestBase
             Id = role.Id,
             Name = "Senior Analyst",
             Description = "Updated description",
-            IsActive = true
+            IsActive = true,
+            RowVersion = role.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

@@ -187,7 +187,8 @@ public class MiscFeaturesHandlerTests : HandlerTestBase
         {
             Id = org.Id,
             OrganizationName = "Support HQ",
-            Email = "support@example.com"
+            Email = "support@example.com",
+            RowVersion = org.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -211,7 +212,8 @@ public class MiscFeaturesHandlerTests : HandlerTestBase
         {
             Id = org.Id,
             OrganizationName = "Support HQ",
-            LogoUrl = "/uploads/Organization/new-logo.png"
+            LogoUrl = "/uploads/Organization/new-logo.png",
+            RowVersion = org.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -248,7 +250,7 @@ public class MiscFeaturesHandlerTests : HandlerTestBase
             Id = org.Id,
             OrganizationName = "Support HQ",
             LogoUrl = "/uploads/Organization/new-logo.png",
-            RowVersion = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }
+            RowVersion = Guid.NewGuid()
         };
 
         await FluentActions.Awaiting(() => handler.Handle(command, CancellationToken.None))

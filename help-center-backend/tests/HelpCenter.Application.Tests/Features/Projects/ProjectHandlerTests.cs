@@ -88,7 +88,8 @@ public class ProjectHandlerTests : HandlerTestBase
             PublicId = project.PublicId,
             Name = "Updated Project",
             Description = "Updated",
-            IsActive = true
+            IsActive = true,
+            RowVersion = project.RowVersion
         };
 
         var result = await handler.Handle(command, CancellationToken.None);

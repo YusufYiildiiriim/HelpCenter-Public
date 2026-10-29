@@ -14,14 +14,15 @@ public class RepositoryConcurrencyTests(PostgreSqlWebApplicationFactory factory)
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Soft_delete_uses_real_sql_server_rowversion(bool concurrentWrite)
+    public async Task Soft_delete_rotates_guid_token_and_rejects_a_stale_writer(bool concurrentWrite)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EfContext>();
         var item = new FAQ { Title = "Concurrency " + Guid.NewGuid() };
         db.FAQs.Add(item);
         await db.SaveChangesAsync();
-        var before = item.RowVersion.ToArray();
+        var before = item.RowVersion;
+        Assert.NotEqual(Guid.Empty, before);
         db.ChangeTracker.Clear();
         await new GenericRepository<FAQ>(db).SoftDeleteRangeAsync(x => x.Id == item.Id);
         if (concurrentWrite)
@@ -39,7 +40,7 @@ public class RepositoryConcurrencyTests(PostgreSqlWebApplicationFactory factory)
             db.ChangeTracker.Clear();
             var deleted = await db.FAQs.IgnoreQueryFilters().SingleAsync(x => x.Id == item.Id);
             Assert.True(deleted.IsDeleted);
-            Assert.False(before.SequenceEqual(deleted.RowVersion));
+            Assert.NotEqual(before, deleted.RowVersion);
         }
     }
 }
