@@ -69,8 +69,10 @@ public sealed class SqlServerWebApplicationFactory : WebApplicationFactory<Progr
         SetProcessConfiguration("SmtpSettings__FromAddress", "integration-tests@example.test");
         SetProcessConfiguration("AppSettings__FrontendUrl", "http://localhost:3000");
 
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<EfContext>();
+        var options = new DbContextOptionsBuilder<EfContext>()
+            .UseSqlServer(_sqlServer.GetConnectionString())
+            .Options;
+        await using var dbContext = new EfContext(options);
         await dbContext.Database.MigrateAsync();
     }
 
