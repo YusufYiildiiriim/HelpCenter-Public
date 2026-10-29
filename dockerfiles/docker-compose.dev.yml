@@ -3,29 +3,24 @@ name: HelpCenterDev
 services:
   db:
     container_name: helpcenter-db-dev
-    build:
-      context: .
-      dockerfile: Dockerfile.sqlserver
+    image: postgres:17-alpine
     ports:
-      - "1433:1433"
+      - "5432:5432"
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${SA_PASSWORD:?SA_PASSWORD is not set — copy .env.example to .env}"
+      POSTGRES_DB: HelpCenterDb
+      POSTGRES_USER: helpcenter
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set — copy .env.example to .env}"
     volumes:
-      - helpcenter-db-data:/var/opt/mssql
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - seccomp:unconfined
+      - helpcenter-db-data:/var/lib/postgresql/data
     networks:
       - helpcenter-network
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 15s
       timeout: 10s
       retries: 15
-      start_period: 30s
+      start_period: 15s
 
   helpcenter.webapi:
     container_name: helpcenter-api-dev
@@ -36,7 +31,7 @@ services:
       - "5005:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
-      ConnectionStrings__DefaultConnection: "Server=db;Database=HelpCenterDb;User Id=sa;Password=${SA_PASSWORD:?SA_PASSWORD is not set — copy .env.example to .env};TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=HelpCenterDb;Username=helpcenter;Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set — copy .env.example to .env}"
       JwtSettings__SecretKey: "${JwtSettings__SecretKey:?JwtSettings__SecretKey is not set — copy .env.example to .env}"
       AppSettings__FrontendUrl: "${AppSettings__FrontendUrl:?AppSettings__FrontendUrl is not set — copy .env.example to .env}"
       SmtpSettings__Host: "${SmtpSettings__Host:?SmtpSettings__Host is not set — copy .env.example to .env}"
