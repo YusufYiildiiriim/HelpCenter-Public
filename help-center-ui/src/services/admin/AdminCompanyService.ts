@@ -19,7 +19,7 @@ export interface Company {
   password?: string;
   projectId?: string | null;
   projectName?: string;
-  rowVersion?: string;
+  rowVersion: string;
 }
 
 export interface RequestCompany {
@@ -71,7 +71,7 @@ export const AdminCompanyService = {
     return [];
   },
 
-  create: async (data: Omit<Company, "id" | "publicId">): Promise<boolean> => {
+  create: async (data: Omit<Company, "id" | "publicId" | "rowVersion">): Promise<boolean> => {
     const response = await api.post("/api/admin/companies/add-company", data);
     return response.data;
   },

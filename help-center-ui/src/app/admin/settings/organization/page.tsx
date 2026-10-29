@@ -106,6 +106,10 @@ export default function OrganizationSettingsPage() {
 
   const submit = async () => {
     if (!form) return;
+    if (!form.rowVersion) {
+      toast.error("Kurum sürüm bilgisi bulunamadı. Sayfayı yenileyip tekrar deneyin.");
+      return;
+    }
     try {
       setSaving(true);
       const formData = new FormData();
@@ -118,7 +122,7 @@ export default function OrganizationSettingsPage() {
       if (form.taxNumber) formData.append("TaxNumber", form.taxNumber);
       if (form.taxOffice) formData.append("TaxOffice", form.taxOffice);
       if (form.footerText) formData.append("FooterText", form.footerText);
-      if (form.rowVersion) formData.append("RowVersion", form.rowVersion);
+      formData.append("RowVersion", form.rowVersion);
       if (logoFile) formData.append("Logo", logoFile);
 
       await AdminOrganizationService.updateOrganizationInfo(formData);

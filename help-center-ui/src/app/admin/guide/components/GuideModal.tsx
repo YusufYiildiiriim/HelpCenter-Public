@@ -25,6 +25,7 @@ export interface GuideFormData {
   existingDocuments: GuideDocument[];
   isActive: boolean;
   isPublic: boolean;
+  rowVersion?: string;
 }
 
 interface GuideModalProps {

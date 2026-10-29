@@ -123,7 +123,11 @@ export default function FaqPage() {
     e.preventDefault();
     try {
       if (editingId) {
-        await FaqService.update({ ...newFaq, id: editingId });
+        if (!newFaq.rowVersion) {
+          toast.error("Soru sürüm bilgisi bulunamadı. Verileri yenileyip tekrar deneyin.");
+          return;
+        }
+        await FaqService.update({ ...newFaq, id: editingId, rowVersion: newFaq.rowVersion });
         toast.success("Soru başarıyla güncellendi.");
       } else {
         await FaqService.create(newFaq);

@@ -14,6 +14,8 @@ export interface Faq {
   rowVersion?: string;
 }
 
+export type UpdateFaqRequest = Faq & { rowVersion: string };
+
 export const AdminFaqService = {
   getAll: async (params?: { pageNumber?: number; pageSize?: number; search?: string; projectId?: string | null; moduleId?: string | null }): Promise<Faq[]> => {
     const response = await api.get("/api/admin/faq/get-all", { params: { pageSize: 0, ...params } });
@@ -42,7 +44,7 @@ export const AdminFaqService = {
     return response.data;
   },
 
-  update: async (faq: Faq): Promise<boolean> => {
+  update: async (faq: UpdateFaqRequest): Promise<boolean> => {
     const response = await api.put("/api/admin/faq/update-faq", faq);
     return response.data;
   },

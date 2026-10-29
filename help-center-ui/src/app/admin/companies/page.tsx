@@ -186,10 +186,17 @@ export default function CompaniesPage() {
       toast.error(`Yetkili Telefon: ${contactPhoneError}`);
       return;
     }
+    if (isEditMode && !formData.rowVersion) {
+      toast.error("Firma sürüm bilgisi bulunamadı. Verileri yenileyip tekrar deneyin.");
+      return;
+    }
     setActionLoading(true);
     try {
       if (isEditMode && selectedCompany) {
-        await AdminCompanyService.update(selectedCompany.publicId, formData);
+        await AdminCompanyService.update(selectedCompany.publicId, {
+          ...formData,
+          rowVersion: formData.rowVersion!,
+        });
         toast.success("Firma başarıyla güncellendi.");
       } else {
         await AdminCompanyService.create(formData);

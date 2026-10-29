@@ -1,13 +1,11 @@
 import api from "@/lib/axios";
 
-export type Base64String = string;
-
 export interface Role {
   id: string;
   name: string;
   description: string;
   isActive: boolean;
-  rowVersion: Base64String;
+  rowVersion: string;
   hasUsers: boolean;
   permissionCount: number;
 }

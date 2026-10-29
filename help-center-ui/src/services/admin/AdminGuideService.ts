@@ -16,7 +16,7 @@ export interface Guide {
   documents?: GuideDocument[];
   isActive: boolean;
   isPublic: boolean;
-  rowVersion?: string;
+  rowVersion: string;
 }
 
 export interface CreateGuideRequest {
@@ -33,6 +33,7 @@ export interface CreateGuideRequest {
 
 export interface UpdateGuideRequest extends CreateGuideRequest {
   id: string;
+  rowVersion: string;
 }
 
 const buildGuideFormData = (data: CreateGuideRequest | UpdateGuideRequest): FormData => {

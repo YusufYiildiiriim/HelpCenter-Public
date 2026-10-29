@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 // Modular Components
 import { GuideHeader } from "./components/GuideHeader";
 import { GuideModal } from "./components/GuideModal";
+import type { GuideFormData } from "./components/GuideModal";
 import { AlertModal } from "../components/AlertModal";
 
 export default function GuidePage() {
@@ -49,7 +50,7 @@ export default function GuidePage() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [newGuide, setNewGuide] = useState({
+  const [newGuide, setNewGuide] = useState<GuideFormData>({
     title: "",
     description: "",
     module: "",
@@ -59,6 +60,7 @@ export default function GuidePage() {
     existingDocuments: [] as GuideDocument[],
     isActive: true,
     isPublic: false,
+    rowVersion: undefined as string | undefined,
   });
 
   const [alertConfig, setAlertConfig] = useState<{
@@ -164,7 +166,11 @@ export default function GuidePage() {
     setActionLoading(true);
     try {
       if (isEditMode && editingId) {
-        await GuideService.update({ ...payload, id: editingId });
+        if (!newGuide.rowVersion) {
+          toast.error("Rehber sürüm bilgisi bulunamadı. Verileri yenileyip tekrar deneyin.");
+          return;
+        }
+        await GuideService.update({ ...payload, id: editingId, rowVersion: newGuide.rowVersion });
         toast.success("Rehber başarıyla güncellendi.");
       } else {
         await GuideService.create(payload);
@@ -193,6 +199,7 @@ export default function GuidePage() {
       existingDocuments: guide.documents || [],
       isActive: guide.isActive,
       isPublic: guide.isPublic,
+      rowVersion: guide.rowVersion,
     });
     setIsModalOpen(true);
   }, []);
@@ -211,6 +218,7 @@ export default function GuidePage() {
       existingDocuments: [],
       isActive: true,
       isPublic: false,
+      rowVersion: undefined,
     });
   };
 
