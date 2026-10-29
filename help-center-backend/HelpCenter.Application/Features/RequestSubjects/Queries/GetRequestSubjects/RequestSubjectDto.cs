@@ -9,5 +9,5 @@ public class RequestSubjectDto
     public int UsageCount { get; set; }
     public bool IsActive { get; set; }
     public bool IsLocked { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }

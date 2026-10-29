@@ -14,5 +14,5 @@ public class UpdateOrganizationInfoCommand : IRequest<bool>
     public string? TaxOffice { get; set; }
     public string? FooterText { get; set; }
     public string? LogoUrl { get; set; }
-    public byte[]? RowVersion { get; set; }
+    public Guid RowVersion { get; set; }
 }

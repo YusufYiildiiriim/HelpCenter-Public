@@ -29,8 +29,7 @@ public class UpdateModuleCommandHandler : IRequestHandler<UpdateModuleCommand, b
 
         await _rules.ModuleNameShouldBeUniqueAsync(request.Name, module!.Id, cancellationToken);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(module!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(module!, request.RowVersion);
 
         module!.UpdateInfo(request.Name, request.Description, request.IsActive);
 

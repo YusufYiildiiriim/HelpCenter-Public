@@ -6,7 +6,7 @@ public class RoleDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
     public bool HasUsers { get; set; }
     public int PermissionCount { get; set; }
 }

@@ -23,8 +23,7 @@ public class UpdateRequestSubjectCommandHandler : IRequestHandler<UpdateRequestS
 
         await _rules.SubjectNameShouldBeUniqueAsync(request.Name, request.Id, cancellationToken);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(subject!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(subject!, request.RowVersion);
 
         subject!.UpdateInfo(request.Name, request.Description, null, request.IsActive);
 

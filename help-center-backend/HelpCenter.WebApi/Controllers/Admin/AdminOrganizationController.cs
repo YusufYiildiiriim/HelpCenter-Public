@@ -107,7 +107,7 @@ public class AdminOrganizationController : ControllerBase
         public string? TaxNumber { get; set; }
         public string? TaxOffice { get; set; }
         public string? FooterText { get; set; }
-        public byte[] RowVersion { get; set; } = null!;
+        public Guid RowVersion { get; set; }
         public IFormFile? Logo { get; set; }
     }
 }

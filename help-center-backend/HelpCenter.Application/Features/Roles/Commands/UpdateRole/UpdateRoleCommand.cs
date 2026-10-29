@@ -8,5 +8,5 @@ public class UpdateRoleCommand : IRequest<bool>
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }

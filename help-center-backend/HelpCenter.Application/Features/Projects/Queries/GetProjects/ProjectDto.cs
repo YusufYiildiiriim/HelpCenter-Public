@@ -10,5 +10,5 @@ public class ProjectDto
     public int CompanyCount { get; set; }
     public int UserCount { get; set; }
     public List<Guid> ModuleIds { get; set; } = new();
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }

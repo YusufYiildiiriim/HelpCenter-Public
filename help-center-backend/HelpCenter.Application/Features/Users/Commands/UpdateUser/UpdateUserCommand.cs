@@ -13,5 +13,5 @@ public class UpdateUserCommand : IRequest<bool>, IInvalidatesMessageCache
     public string? Password { get; set; }
     public List<Guid>? RoleIds { get; set; }
     public bool IsActive { get; set; } = true;
-    public byte[]? RowVersion { get; set; }
+    public Guid RowVersion { get; set; }
 }

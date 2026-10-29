@@ -27,8 +27,7 @@ public class UpdateFaqCommandHandler : IRequestHandler<UpdateFaqCommand, bool>
         await _rules.ProjectShouldExistAsync(request.ProjectId, cancellationToken);
         await _rules.ModuleShouldBelongToProjectAsync(request.ProjectId, request.ModuleId, cancellationToken);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(faq!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(faq!, request.RowVersion);
 
         faq!.UpdateInfo(request.Title, request.Description, request.ProjectId, request.ModuleId, request.IsActive, request.IsPublic);
 

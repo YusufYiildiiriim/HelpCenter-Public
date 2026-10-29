@@ -8,6 +8,6 @@ public class UpdateModuleCommand : IRequest<bool>
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsActive { get; set; }
-    public byte[]? RowVersion { get; set; }
+    public Guid RowVersion { get; set; }
     public List<Guid>? ExpertUserIds { get; set; }
 }

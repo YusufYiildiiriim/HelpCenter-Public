@@ -12,5 +12,5 @@ public class FaqDto
     public string? ModuleName { get; set; }
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }

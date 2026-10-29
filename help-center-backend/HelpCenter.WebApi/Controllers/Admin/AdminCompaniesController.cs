@@ -47,18 +47,6 @@ public class AdminCompaniesController : ControllerBase
     [EnableRateLimiting("admin-write")]
     public async Task<IActionResult> Update(Guid publicId, [FromBody] UpdateCompanyRequest request)
     {
-        byte[]? rowVersion;
-        try
-        {
-            rowVersion = string.IsNullOrEmpty(request.RowVersion)
-                ? null
-                : Convert.FromBase64String(request.RowVersion);
-        }
-        catch
-        {
-            rowVersion = null;
-        }
-
         var command = new UpdateCompanyCommand
         {
             PublicId = publicId,
@@ -74,7 +62,7 @@ public class AdminCompaniesController : ControllerBase
             BranchCount = request.BranchCount,
             ModuleIds = request.ModuleIds,
             PreviousSystem = request.PreviousSystem,
-            RowVersion = rowVersion,
+            RowVersion = request.RowVersion,
             Password = request.Password,
             ContactPersonUsername = request.ContactPersonUsername,
             ProjectId = request.ProjectId
@@ -97,7 +85,7 @@ public class AdminCompaniesController : ControllerBase
         int BranchCount,
         List<Guid> ModuleIds,
         string PreviousSystem,
-        string? RowVersion = null,
+        Guid RowVersion,
         string? Password = null,
         string? ContactPersonUsername = null,
         Guid? ProjectId = null);

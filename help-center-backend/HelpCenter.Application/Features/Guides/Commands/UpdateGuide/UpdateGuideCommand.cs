@@ -20,5 +20,5 @@ public class UpdateGuideCommand : IRequest<bool>
     public string? YoutubeUrl { get; set; }
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
-    public byte[]? RowVersion { get; set; }
+    public Guid RowVersion { get; set; }
 }

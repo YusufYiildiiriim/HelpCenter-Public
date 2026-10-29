@@ -45,8 +45,7 @@ public class UpdateOrganizationInfoCommandHandler : IRequestHandler<UpdateOrgani
             org.LogoUrl
         };
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(org!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(org!, request.RowVersion);
 
         org.Update(
             request.OrganizationName,

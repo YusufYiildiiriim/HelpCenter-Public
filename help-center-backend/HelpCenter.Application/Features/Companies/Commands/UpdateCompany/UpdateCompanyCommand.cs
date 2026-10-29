@@ -17,7 +17,7 @@ public class UpdateCompanyCommand : IRequest<bool>
     public int BranchCount { get; set; }
     public List<Guid> ModuleIds { get; set; } = new();
     public string PreviousSystem { get; set; } = string.Empty;
-    public byte[]? RowVersion { get; set; }
+    public Guid RowVersion { get; set; }
     public string? Password { get; set; }
     public string? ContactPersonUsername { get; set; }
     public Guid? ProjectId { get; set; }

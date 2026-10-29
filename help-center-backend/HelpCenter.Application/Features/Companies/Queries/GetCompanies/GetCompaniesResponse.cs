@@ -19,5 +19,5 @@ public class GetCompaniesResponse
     public string PreviousSystem { get; set; } = string.Empty;
     public Guid? ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }

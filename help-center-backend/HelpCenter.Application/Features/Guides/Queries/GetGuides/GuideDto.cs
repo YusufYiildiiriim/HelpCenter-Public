@@ -13,7 +13,7 @@ public class GuideDto
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
     public List<GuideDocumentDto>? Documents { get; set; }
-    public byte[] RowVersion { get; set; } = null!;
+    public Guid RowVersion { get; set; }
 }
 
 public class GuideDocumentDto

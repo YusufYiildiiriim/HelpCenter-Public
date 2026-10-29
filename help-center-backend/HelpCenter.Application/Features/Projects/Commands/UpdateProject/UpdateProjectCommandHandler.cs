@@ -32,8 +32,7 @@ public class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectCommand,
         await _rules.ProjectNameShouldBeUniqueAsync(request.Name, project!.Id, cancellationToken);
         UpdateProjectRules.ProjectShouldNotHaveActiveCompaniesWhenDeactivating(project!, request.IsActive);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(project!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(project!, request.RowVersion);
 
         project!.UpdateInfo(request.Name, request.Description, request.IsActive);
 

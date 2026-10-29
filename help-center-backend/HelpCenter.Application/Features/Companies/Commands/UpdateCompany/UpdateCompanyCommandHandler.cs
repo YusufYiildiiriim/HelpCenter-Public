@@ -37,10 +37,7 @@ public class UpdateCompanyCommandHandler : IRequestHandler<UpdateCompanyCommand,
 
         await _rules.CompanyNameShouldBeUniqueAsync(request.Name, companyEntity!.Id, cancellationToken);
 
-        if (request.RowVersion != null)
-        {
-            _unitOfWork.SetOriginalVersion(companyEntity!, request.RowVersion);
-        }
+        _unitOfWork.SetOriginalVersion(companyEntity!, request.RowVersion);
         _mapper.Map(request, companyEntity);
 
         var moduleIds = request.ModuleIds;

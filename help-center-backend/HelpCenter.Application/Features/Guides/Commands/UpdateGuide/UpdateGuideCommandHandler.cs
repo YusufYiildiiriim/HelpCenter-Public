@@ -33,8 +33,7 @@ public class UpdateGuideCommandHandler : IRequestHandler<UpdateGuideCommand, boo
 
         await _rules.GuideTitleShouldBeUniqueAsync(request.Title, entity!.Id, cancellationToken);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(entity!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(entity!, request.RowVersion);
 
         entity!.UpdateInfo(
             request.Title,

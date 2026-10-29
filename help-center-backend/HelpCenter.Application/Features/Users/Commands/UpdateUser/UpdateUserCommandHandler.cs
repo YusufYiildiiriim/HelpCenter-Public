@@ -40,8 +40,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, bool>
         var user = userList.FirstOrDefault();
         UpdateUserRules.UserShouldExist(user);
 
-        if (request.RowVersion != null)
-            _unitOfWork.SetOriginalVersion(user!, request.RowVersion);
+        _unitOfWork.SetOriginalVersion(user!, request.RowVersion);
 
         var before = new
         {
