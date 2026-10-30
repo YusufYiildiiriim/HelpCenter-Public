@@ -31,13 +31,12 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, bool>
     {
         _logger.LogInformation("Kullanıcı güncelleniyor. ID: {UserId}", request.Id);
 
-        var userList = await _unitOfWork.Repository<User>().FindAsync(
+        var user = await _unitOfWork.Repository<User>().FirstOrDefaultAsync(
             x => x.Id == request.Id,
+            asTracking: true,
             cancellationToken,
             x => x.Account,
             x => x.UserRoles);
-
-        var user = userList.FirstOrDefault();
         UpdateUserRules.UserShouldExist(user);
 
         _unitOfWork.SetOriginalVersion(user!, request.RowVersion);
@@ -66,17 +65,12 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, bool>
 
         if (request.RoleIds != null)
         {
-            await _unitOfWork.Repository<UserRole>()
-                .ExecuteDeleteAsync(ur => ur.UserId == request.Id, cancellationToken);
-
             user.SyncRoles(request.RoleIds);
         }
 
         user.Account.UpdatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _unitOfWork.Repository<Account>().UpdateAsync(user.Account, cancellationToken);
-        await _unitOfWork.Repository<User>().UpdateAsync(user, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
         var after = new
