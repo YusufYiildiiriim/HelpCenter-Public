@@ -81,6 +81,18 @@ docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d db
 # → http://localhost:3000
 ```
 
+#### PostgreSQL migrations
+
+EF design-time connection resolution checks an explicit argument first, then
+`ConnectionStrings__DefaultConnection` from the process environment (the root `.env` is loaded by
+`scripts/with-env.sh`). `migrations add` and `migrations script` need no database connection. An
+operation that connects, such as `database update`, fails with setup guidance if neither source is
+provided. Prefer the environment variable for secrets; the explicit form is:
+
+```bash
+dotnet ef database update --project help-center-backend/HelpCenter.Persistence --startup-project help-center-backend/HelpCenter.WebApi -- --connection-string "<postgres-connection-string>"
+```
+
 `scripts/with-env.sh` reads the root `.env` and exports its values only for the command it starts.
 Use it for local .NET commands; Next.js configuration automatically loads public values from the
 repository-root `.env`; Docker Compose reads the same file through `--env-file .env`.
