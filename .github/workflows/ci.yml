@@ -110,7 +110,7 @@ jobs:
         run: dotnet test --no-build -c Release --filter "FullyQualifiedName!~IntegrationTests"
 
   backend-integration-tests:
-    name: Backend (SQL Server integration smoke)
+    name: Backend (PostgreSQL integration smoke)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -126,7 +126,7 @@ jobs:
           key: nuget-${{ hashFiles('help-center-backend/**/*.csproj') }}
           restore-keys: nuget-
 
-      - name: Run SQL Server integration smoke tests
+      - name: Run PostgreSQL integration smoke tests
         working-directory: help-center-backend
         run: dotnet test tests/HelpCenter.WebApi.IntegrationTests/HelpCenter.WebApi.IntegrationTests.csproj -c Release --logger "trx;LogFileName=integration-results.trx" --results-directory TestResults
 
