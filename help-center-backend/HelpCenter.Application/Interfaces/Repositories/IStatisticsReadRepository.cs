@@ -3,9 +3,8 @@ using HelpCenter.Application.Features.Statistics.Queries.GetAdminReports;
 namespace HelpCenter.Application.Interfaces;
 
 /// <summary>
-/// Dashboard read model. Which stored procedure is called, the SQL dialect, and
-/// the reader transformation are the responsibility of the Persistence layer; Application
-/// only receives typed results. This way handlers do not carry raw SQL strings.
+/// Provider-neutral dashboard read model. Persistence owns query execution and returns
+/// typed results so Application handlers do not depend on a database provider.
 /// </summary>
 public interface IStatisticsReadRepository
 {

@@ -1,18 +1,24 @@
-using System.Data;
-using System.Data.Common;
 using HelpCenter.Application.Features.Statistics.Queries.GetAdminReports;
 using HelpCenter.Application.Interfaces;
+using HelpCenter.Domain.Constants;
+using HelpCenter.Domain.Enums;
 using HelpCenter.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelpCenter.Persistence.Repositories;
 
 /// <summary>
-/// SQL Server implementation of the dashboard read model. All stored procedure names
-/// and reader conversions are centralized here; the Application layer sees typed results.
+/// Provider-neutral dashboard read model expressed with EF Core queries.
 /// </summary>
 public sealed class StatisticsReadRepository : IStatisticsReadRepository
 {
+    private static readonly Guid[] ActiveRequestStatusIds =
+    [
+        RequestStatusConstants.WaitingForReply,
+        RequestStatusConstants.Replied,
+        RequestStatusConstants.UnderTechnicalReview
+    ];
+
     private readonly EfContext _efContext;
 
     public StatisticsReadRepository(EfContext efContext)
@@ -22,86 +28,163 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
 
     public async Task<IReadOnlyDictionary<string, int>> GetDashboardStatsAsync(CancellationToken cancellationToken = default)
     {
-        var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        await using var reader = await ExecuteProcedureAsync("Sp_DashboardStats", cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            for (int i = 0; i < reader.FieldCount; i++)
+        var requestStats = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(group => new
             {
-                result[reader.GetName(i)] = reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
-            }
-        }
+                Total = group.Count(),
+                Active = group.Count(request => ActiveRequestStatusIds.Contains(request.StatusId)),
+                Completed = group.Count(request => request.StatusId == RequestStatusConstants.Completed)
+            })
+            .SingleOrDefaultAsync(cancellationToken);
 
-        return result;
+        var totalMessages = await _efContext.CustomerRequestMessages.AsNoTracking().CountAsync(cancellationToken);
+        var totalCustomers = await _efContext.Customers.AsNoTracking()
+            .CountAsync(customer => customer.IsActive, cancellationToken);
+        var totalCompanies = await _efContext.Companies.AsNoTracking().CountAsync(cancellationToken);
+
+        return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["TotalRequests"] = requestStats?.Total ?? 0,
+            ["ActiveRequests"] = requestStats?.Active ?? 0,
+            ["CompletedRequests"] = requestStats?.Completed ?? 0,
+            ["TotalMessages"] = totalMessages,
+            ["TotalCustomers"] = totalCustomers,
+            ["TotalCompanies"] = totalCompanies
+        };
     }
 
     public Task<List<NameCountDto>> GetStatusDistributionAsync(CancellationToken cancellationToken = default) =>
-        ReadNameCountsAsync("Sp_StatusDistribution", "StatusId", cancellationToken);
+        _efContext.CustomerRequestStatuses
+            .AsNoTracking()
+            .Select(status => new NameCountDto
+            {
+                Id = status.Id,
+                Name = status.Name,
+                Count = _efContext.CustomerRequests.Count(request => request.StatusId == status.Id)
+            })
+            .OrderByDescending(item => item.Count)
+            .ToListAsync(cancellationToken);
 
     public Task<List<NameCountDto>> GetModuleDistributionAsync(CancellationToken cancellationToken = default) =>
-        ReadNameCountsAsync("Sp_ModuleDistribution", "ModuleId", cancellationToken);
+        _efContext.Modules
+            .AsNoTracking()
+            .Select(module => new NameCountDto
+            {
+                Id = module.Id,
+                Name = module.Name,
+                Count = _efContext.CustomerRequests.Count(request => request.ModuleId == module.Id)
+            })
+            .OrderByDescending(item => item.Count)
+            .ToListAsync(cancellationToken);
 
     public Task<List<NameCountDto>> GetCompanyTopNAsync(CancellationToken cancellationToken = default) =>
-        ReadNameCountsAsync("Sp_CompanyTopN", "CompanyId", cancellationToken);
+        _efContext.Companies
+            .AsNoTracking()
+            .Select(company => new NameCountDto
+            {
+                Id = company.Id,
+                Name = company.Name,
+                Count = _efContext.Customers
+                    .Where(customer => customer.CompanyId == company.Id)
+                    .SelectMany(customer => _efContext.CustomerRequests.Where(request => request.CustomerId == customer.Id))
+                    .Count()
+            })
+            .OrderByDescending(item => item.Count)
+            .ThenBy(item => item.Name)
+            .Take(10)
+            .ToListAsync(cancellationToken);
 
     public async Task<List<DailyTrendPointDto>> GetDailyTrendAsync(CancellationToken cancellationToken = default)
     {
-        var points = new List<DailyTrendPointDto>();
+        const int days = 30;
+        var today = DateTime.UtcNow.Date;
+        var start = today.AddDays(-(days - 1));
+        var end = today.AddDays(1);
 
-        await using var reader = await ExecuteProcedureAsync("Sp_DailyTrend", cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            points.Add(new DailyTrendPointDto
+        var openedRows = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(request => request.CreatedAt >= start && request.CreatedAt < end)
+            .GroupBy(request => request.CreatedAt.Date)
+            .Select(group => new { Date = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
+
+        var closedRows = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(request => request.StatusId == RequestStatusConstants.Completed
+                && request.UpdatedAt.HasValue
+                && request.UpdatedAt.Value >= start
+                && request.UpdatedAt.Value < end)
+            .GroupBy(request => request.UpdatedAt!.Value.Date)
+            .Select(group => new { Date = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken);
+
+        var openedByDate = openedRows.ToDictionary(row => row.Date, row => row.Count);
+        var closedByDate = closedRows.ToDictionary(row => row.Date, row => row.Count);
+
+        return Enumerable.Range(0, days)
+            .Select(offset => start.AddDays(offset))
+            .Select(date => new DailyTrendPointDto
             {
-                Date = Convert.ToDateTime(reader["Date"]),
-                Opened = ToInt(reader["Opened"]),
-                Closed = ToInt(reader["Closed"])
-            });
-        }
-
-        return points;
+                Date = date,
+                Opened = openedByDate.GetValueOrDefault(date),
+                Closed = closedByDate.GetValueOrDefault(date)
+            })
+            .ToList();
     }
 
     public async Task<long> GetAvgResolutionMinutesAsync(CancellationToken cancellationToken = default)
     {
-        await using var reader = await ExecuteProcedureAsync("Sp_AvgResolutionMinutes", cancellationToken);
-        return await reader.ReadAsync(cancellationToken) ? ToLong(reader["AvgMinutes"]) : 0;
+        var averageMinutes = await _efContext.CustomerRequests
+            .AsNoTracking()
+            .Where(request => request.StatusId == RequestStatusConstants.Completed && request.UpdatedAt.HasValue)
+            .Select(request => (double?)((request.UpdatedAt!.Value - request.CreatedAt).TotalMinutes))
+            .AverageAsync(cancellationToken);
+
+        return (long)(averageMinutes ?? 0);
     }
 
     public async Task<List<AgentPerformanceDto>> GetAgentPerformanceAsync(CancellationToken cancellationToken = default)
     {
-        var rows = new List<AgentPerformanceDto>();
-
-        await using var reader = await ExecuteProcedureAsync("Sp_AgentPerformance", cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            rows.Add(new AgentPerformanceDto
+        return await _efContext.Users
+            .AsNoTracking()
+            .Where(user => user.IsActive && _efContext.CustomerRequests.Any(request => request.AssignedUserId == user.Id))
+            .Select(user => new AgentPerformanceDto
             {
-                UserId = ToGuid(reader["UserId"]),
-                FullName = reader["FullName"] as string ?? string.Empty,
-                Assigned = ToInt(reader["Assigned"]),
-                Completed = ToInt(reader["Completed"]),
-                AvgResolutionMinutes = ToLong(reader["AvgResolutionMinutes"])
-            });
-        }
-
-        return rows;
+                UserId = user.Id,
+                FullName = user.Account.FirstName + " " + user.Account.LastName,
+                Assigned = _efContext.CustomerRequests.Count(request => request.AssignedUserId == user.Id),
+                Completed = _efContext.CustomerRequests.Count(request => request.AssignedUserId == user.Id
+                    && request.StatusId == RequestStatusConstants.Completed),
+                AvgResolutionMinutes = (long)(_efContext.CustomerRequests
+                    .Where(request => request.AssignedUserId == user.Id
+                        && request.StatusId == RequestStatusConstants.Completed
+                        && request.UpdatedAt.HasValue)
+                    .Select(request => (double?)((request.UpdatedAt!.Value - request.CreatedAt).TotalMinutes))
+                    .Average() ?? 0)
+            })
+            .OrderByDescending(agent => agent.Assigned)
+            .Take(20)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<ReopenStatsDto> GetReopenStatsAsync(CancellationToken cancellationToken = default)
     {
-        await using var reader = await ExecuteProcedureAsync("Sp_ReopenStats", cancellationToken);
-        if (!await reader.ReadAsync(cancellationToken))
-        {
-            return new ReopenStatsDto();
-        }
+        var totalCompleted = await _efContext.CustomerRequests
+            .CountAsync(request => request.StatusId == RequestStatusConstants.Completed, cancellationToken);
+        var reopened = await _efContext.RequestHistories
+            .Where(history => history.Action == RequestActionType.StatusChanged
+                && history.OldValue == RequestStatusConstants.Completed.ToString("D"))
+            .Select(history => history.RequestId)
+            .Distinct()
+            .CountAsync(cancellationToken);
 
         return new ReopenStatsDto
         {
-            TotalCompleted = ToInt(reader["TotalCompleted"]),
-            Reopened = ToInt(reader["Reopened"]),
-            RatePercent = ToInt(reader["RatePercent"])
+            TotalCompleted = totalCompleted,
+            Reopened = reopened,
+            RatePercent = totalCompleted == 0 ? 0 : (int)(reopened * 100.0 / totalCompleted)
         };
     }
 
@@ -173,48 +256,4 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
             })
             .ToListAsync(cancellationToken);
 
-    private async Task<List<NameCountDto>> ReadNameCountsAsync(string procedureName, string idColumn, CancellationToken cancellationToken)
-    {
-        var rows = new List<NameCountDto>();
-
-        await using var reader = await ExecuteProcedureAsync(procedureName, cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            rows.Add(new NameCountDto
-            {
-                Id = ToGuid(reader[idColumn]),
-                Name = reader["Name"] as string ?? string.Empty,
-                Count = ToInt(reader["Count"])
-            });
-        }
-
-        return rows;
-    }
-
-    /// <summary>
-    /// Invokes the procedure with CommandType.StoredProcedure: the name is never concatenated
-    /// as a string, so no SQL injection surface remains.
-    /// </summary>
-    private async Task<DbDataReader> ExecuteProcedureAsync(string procedureName, CancellationToken cancellationToken)
-    {
-        var connection = _efContext.Database.GetDbConnection();
-
-        if (connection.State != ConnectionState.Open)
-        {
-            await connection.OpenAsync(cancellationToken);
-        }
-
-        var command = connection.CreateCommand();
-        command.CommandText = procedureName;
-        command.CommandType = CommandType.StoredProcedure;
-
-        // The connection is managed by EF; do not use CloseConnection, otherwise the
-        // DbContext's shared connection closes when the reader closes.
-        return await command.ExecuteReaderAsync(cancellationToken);
-    }
-
-    private static Guid ToGuid(object? value) => value is Guid id ? id : Guid.Parse(Convert.ToString(value)!);
-    private static int ToInt(object? value) => value is null or DBNull ? 0 : Convert.ToInt32(value);
-
-    private static long ToLong(object? value) => value is null or DBNull ? 0 : Convert.ToInt64(value);
 }
