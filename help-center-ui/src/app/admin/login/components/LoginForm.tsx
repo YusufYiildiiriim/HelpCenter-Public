@@ -40,6 +40,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       <FormField
         name="email"
         label="E-Posta / Kullanıcı Adı"
+        autoComplete="username"
         value={email}
         onChange={handleChange}
         onBlur={register("email").onBlur}
@@ -52,6 +53,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       <FormField
         name="password"
         label="Şifre"
+        autoComplete="current-password"
         type={showPassword ? "text" : "password"}
         value={password}
         onChange={handleChange}

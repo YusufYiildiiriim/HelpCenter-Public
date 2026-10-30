@@ -100,7 +100,7 @@ export const UserModal: React.FC<UserModalProps> = ({
             <p className="text-slate-400 text-xs font-medium">Kullanıcı listesi güncelleniyor...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 sm:space-y-5 custom-scrollbar">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete="off" className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 sm:space-y-5 custom-scrollbar">
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <FormField
@@ -130,6 +130,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                   <FormField
                     name="username"
                     label="Kullanıcı Adı (opsiyonel)"
+                    autoComplete="off"
                     value={userData.username ?? ""}
                     onChange={handleChange}
                     icon={<AtSign size={12} />}
@@ -141,6 +142,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                   <FormField
                     name="email"
                     label="E-posta"
+                    autoComplete="off"
                     type="email"
                     value={userData.email}
                     onChange={handleChange}
@@ -159,6 +161,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                     name="password"
                     label="Geçici Şifre"
                     type="password"
+                    autoComplete="new-password"
                     value={userData.password}
                     onChange={handleChange}
                     onBlur={register("password").onBlur}

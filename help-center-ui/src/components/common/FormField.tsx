@@ -8,6 +8,7 @@ interface FormFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onBlur?: () => void;
   type?: string;
+  autoComplete?: string;
   placeholder?: string;
   icon?: React.ReactNode;
   right?: React.ReactNode;
@@ -42,6 +43,7 @@ export function FormField({
   onChange,
   onBlur,
   type = "text",
+  autoComplete,
   placeholder,
   icon,
   right,
@@ -75,6 +77,7 @@ export function FormField({
     onChange,
     onBlur,
     placeholder,
+    autoComplete,
     disabled,
     "aria-invalid": showError,
     "aria-describedby": showError ? `${id}-error` : undefined,

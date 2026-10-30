@@ -20,4 +20,19 @@ describe("FormField", () => {
       "text-slate-100"
     );
   });
+
+  it("forwards autocomplete hints to the input", () => {
+    render(
+      <FormField
+        name="password"
+        label="Yeni şifre"
+        type="password"
+        autoComplete="new-password"
+        value=""
+        onChange={() => {}}
+      />
+    );
+
+    expect(screen.getByLabelText("Yeni şifre")).toHaveAttribute("autocomplete", "new-password");
+  });
 });
