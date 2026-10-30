@@ -47,6 +47,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <style>{`@media (min-width: 64rem) { [data-admin-mobile-header] { display: none !important; } }`}</style>
+      </head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>
           <OrganizationProviderWrapper>

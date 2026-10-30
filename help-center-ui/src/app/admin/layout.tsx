@@ -237,7 +237,7 @@ export default function AdminLayout({
         />
 
         {/* Modern Slim Mobile Top Bar (< lg) */}
-        <header className="sticky top-0 z-40 flex h-12 w-full items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 text-white backdrop-blur-md lg:hidden">
+        <header data-admin-mobile-header className="sticky top-0 z-40 flex h-12 w-full items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 text-white backdrop-blur-md lg:hidden">
           {/* Left: Menu Icon */}
           <button
             type="button"
