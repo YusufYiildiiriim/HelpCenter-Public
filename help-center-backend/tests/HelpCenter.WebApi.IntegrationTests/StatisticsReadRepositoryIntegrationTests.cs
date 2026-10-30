@@ -26,7 +26,8 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
     public async Task DashboardReadModel_ReturnsPostgreSqlAggregatesWithTheExistingContracts()
     {
         var services = new ServiceCollection()
-            .AddDbContext<EfContext>(options => options.UseNpgsql(_postgres.GetConnectionString()))
+            .AddDbContext<EfContext>(options => options.UseNpgsql(
+                _postgres.GetConnectionString() + ";Timezone=America/Los_Angeles"))
             .AddScoped<IStatisticsReadRepository, HelpCenter.Persistence.Repositories.StatisticsReadRepository>()
             .BuildServiceProvider();
 
@@ -39,7 +40,8 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
                 await SystemDefaultsSeeder.SeedAsync(db);
                 await SampleDataSeeder.SeedAsync(db);
 
-                var now = DateTime.UtcNow;
+                var todayUtc = DateTime.UtcNow.Date;
+                var now = todayUtc.AddHours(3);
                 var request = new CustomerRequest
                 {
                     TicketId = "TKT-P4-STATISTICS",
@@ -49,7 +51,7 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
                     Description = "P4 PostgreSQL dashboard coverage",
                     StatusId = RequestStatusConstants.Completed,
                     AssignedUserId = TestIds.FromInt(2),
-                    CreatedAt = now.AddHours(-2),
+                    CreatedAt = todayUtc.AddHours(1),
                     UpdatedAt = now,
                     IsActive = true
                 };

@@ -106,7 +106,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         var openedRows = await _efContext.CustomerRequests
             .AsNoTracking()
             .Where(request => request.CreatedAt >= start && request.CreatedAt < end)
-            .GroupBy(request => request.CreatedAt.Date)
+            .GroupBy(request => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(request.CreatedAt, "UTC").Date)
             .Select(group => new { Date = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
@@ -116,7 +116,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
                 && request.UpdatedAt.HasValue
                 && request.UpdatedAt.Value >= start
                 && request.UpdatedAt.Value < end)
-            .GroupBy(request => request.UpdatedAt!.Value.Date)
+            .GroupBy(request => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(request.UpdatedAt!.Value, "UTC").Date)
             .Select(group => new { Date = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
@@ -207,7 +207,7 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         var rows = await _efContext.CustomerRequests
             .AsNoTracking()
             .Where(x => !x.IsDeleted && x.CreatedAt >= start)
-            .GroupBy(x => x.CreatedAt.Date)
+            .GroupBy(x => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(x.CreatedAt, "UTC").Date)
             .Select(x => new DailyOpenedCountDto { Date = x.Key, Count = x.Count() })
             .ToListAsync(cancellationToken);
 
