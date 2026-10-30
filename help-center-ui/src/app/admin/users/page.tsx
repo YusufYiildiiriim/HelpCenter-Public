@@ -49,6 +49,7 @@ export default function AdminUsersPage() {
     // Form States
     const [userData, setUserData] = useState<UserFormData>({
         id: "",
+        rowVersion: "",
         name: "",
         lastName: "",
         email: "",
@@ -162,7 +163,7 @@ export default function AdminUsersPage() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setSuccessMessage("");
-                setUserData({ id: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
+                setUserData({ id: "", rowVersion: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
                 fetchInitialData();
             }, 1800);
         } catch (err: unknown) {
@@ -196,6 +197,7 @@ export default function AdminUsersPage() {
     const openEditModal = useCallback((user: User) => {
         setUserData({
             id: user.id,
+            rowVersion: user.rowVersion,
             name: user.name,
             lastName: user.lastName,
             email: user.email,
@@ -208,7 +210,7 @@ export default function AdminUsersPage() {
     }, []);
 
     const openAddModal = () => {
-        setUserData({ id: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
+        setUserData({ id: "", rowVersion: "", name: "", lastName: "", email: "", username: "", password: "", roleIds: [], isActive: true });
         setIsAddModalOpen(true);
     };
 
@@ -221,6 +223,7 @@ export default function AdminUsersPage() {
         if (!selectedUserForRoles) return;
         await UserService.update(selectedUserForRoles.id, {
             id: selectedUserForRoles.id,
+            rowVersion: selectedUserForRoles.rowVersion,
             name: selectedUserForRoles.name,
             lastName: selectedUserForRoles.lastName,
             email: selectedUserForRoles.email,

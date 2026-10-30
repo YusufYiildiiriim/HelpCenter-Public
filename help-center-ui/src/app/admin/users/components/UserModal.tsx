@@ -8,6 +8,7 @@ import { useValidatedForm } from "@/hooks/useValidatedForm";
 
 export interface UserFormData {
   id: string;
+  rowVersion: string;
   name: string;
   lastName: string;
   email: string;

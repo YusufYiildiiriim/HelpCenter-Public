@@ -7,6 +7,7 @@ export interface UserRole {
 
 export interface User {
   id: string;
+  rowVersion: string;
   email: string;
   name: string;
   lastName: string;
@@ -29,6 +30,7 @@ export interface CreateUserRequest {
 
 export interface UpdateUserRequest {
   id: string;
+  rowVersion: string;
   email: string;
   name: string;
   lastName: string;

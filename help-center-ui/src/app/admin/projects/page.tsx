@@ -83,6 +83,7 @@ export default function ProjectsPage() {
       const parts = item.name.trim().split(/\s+/);
       return {
         id: item.id,
+        rowVersion: "00000000-0000-0000-0000-000000000000",
         name: parts[0] ?? "",
         lastName: parts.slice(1).join(" "),
         email: "",
