@@ -12,9 +12,9 @@ incelemek için teknik referanstır.
 | Dosya | Amaç |
 |---|---|
 | [`architecture.tr.md`](architecture.tr.md) | Mermaid diyagramlarıyla katman haritası, bir isteğin yaşam döngüsü, RBAC modeli ve dağıtım topolojisi |
-| [`database-schema.tr.md`](database-schema.tr.md) | SQL Server tablo referansı; ilişkiler, foreign key davranışları, kısıtlar, indeksler, yaşam döngüsü ve audit sınırı |
+| [`database-schema.tr.md`](database-schema.tr.md) | Tarihsel SQL Server şema referansı; aktif PostgreSQL şeması EF modeli ve initial migration ile tanımlanır |
 | [`tech-stack.tr.md`](tech-stack.tr.md) | Kullanılan her paket, seçilme gerekçesi ve bilinçli olarak reddedilen alternatifler |
-| [`adr/README.tr.md`](adr/README.tr.md) | 9 mimari karar kaydı: 8'i kabul edilmiş, 1'i kaldırılmış/yerine yenisi gelmiş |
+| [`adr/README.tr.md`](adr/README.tr.md) | 11 mimari karar kaydı; PostgreSQL runtime kararı ADR-011'de |
 
 Dahili çalışma belgeleri — sistem mimarisi raporu, commit çalışma günlüğü, refactoring planları ve
 arşivlenmiş production-readiness yol haritası — bu public repoda tutulmaz. Bunlar ayrı çalışma

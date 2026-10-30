@@ -8,6 +8,11 @@
 **Tarih:** 2026-09-19
 **Karar verici:** Yusuf Yıldırım
 
+> Aşağıdaki veritabanı uygulama ayrıntıları tarihsel SQL Server davranışını anlatır. Audit kayıtları
+> ADR-011 uyarınca artık PostgreSQL'dedir. `20261030141555_EnforceAuditLogAppendOnly` migration'ı
+> UPDATE/DELETE trigger'ı kurar. SQL Server'da olduğu gibi veritabanı sahibi trigger'ı değiştirebilir
+> veya kaldırabilir; bu WORM storage değildir.
+
 ## Bağlam
 
 Operasyonel teşhis ile iş/güvenlik kanıtı farklı soruları yanıtlar. Runtime logları bir request'i,

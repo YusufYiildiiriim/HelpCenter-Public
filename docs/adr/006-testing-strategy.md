@@ -4,6 +4,9 @@
 **Date:** 2026-08-09
 **Deciders:** Yusuf Yıldırım
 
+> Historical provider details below describe the original SQL Server test setup. Since
+> 2026-10-30, the real integration provider is PostgreSQL via `Testcontainers.PostgreSql` (ADR-011).
+
 ## Context
 
 Test suites can drift toward either extreme:

@@ -6,7 +6,7 @@
 
 **Stil:** Pragmatik Clean Architecture + MediatR ile CQRS
 **Çalışma zamanı:** Kestrel üzerinde ASP.NET Core 8; container içi (Debian tabanlı `aspnet:8.0`)
-**Veri:** EF Core 9 ile SQL Server 2022
+**Veri:** EF Core 9 ve Npgsql ile PostgreSQL 17 (tek runtime sağlayıcısı; ADR-011)
 **İstemci:** Next.js 16 (App Router, React 19, Tailwind 4)
 
 ---
@@ -33,7 +33,7 @@ graph TB
         EVT[Domain Events<br/>UserPasswordChanged · ...]
         CST[Constants<br/>AppResourceDefinitions · FeaturePackages]
     end
-    subgraph Persistence["HelpCenter.Persistence — SQL Server 2022"]
+    subgraph Persistence["HelpCenter.Persistence — PostgreSQL 17"]
         EF[EfContext · Configurations]
         REPO[IGenericRepository&lt;T&gt; · IUnitOfWork]
         MIG[Migrations]
@@ -79,7 +79,7 @@ Gerçek bir slice olan `CreateRoleCommand` üzerinden akış şöyledir; route s
 2. İnce controller `mediator.Send(CreateRoleCommand)` çağırır. Kayıt sırasına göre `LoggingBehavior`
    dış sarmaldır; `ValidationBehavior` ve handler'ı sarar.
 3. Validation başarısızsa `GlobalExceptionHandler`ın 400'e çevirdiği exception oluşur. Başarılıysa
-   handler business rule ile rol adını kontrol eder, generic repository ve SQL Server üzerinden sorgular.
+   handler iş kuralı ile rol adını kontrol eder, generic repository üzerinden PostgreSQL'i sorgular.
 4. Handler `Role.Create` ile entity üretir, baseline `Dashboard:Read` iznini ekler, repository'ye
    koyup `unitOfWork.SaveAsync()` çağırır. Audit olayı `IAuditLogWriter.WriteAsync("RoleCreated", ...)`
    ile aynı iş akışında yazılır.
@@ -103,11 +103,11 @@ action-list yalnız `AppResourceDefinitions`a yeni aksiyon ekler. Feature packag
 ## 4. Dağıtım topolojisi
 
 Browser HTTPS ile TLS termination yapan Caddy'ye bağlanır. Caddy `/api/*`, `/requestHub*` ve
-`/health/*`i API'ye, kalan trafiği Next.js'e yollar. API SQL Server'a 1433 üzerinden ulaşır; SMTP,
+`/health/*`i API'ye, kalan trafiği Next.js'e yollar. API PostgreSQL'e 5432 üzerinden ulaşır; SMTP,
 isteğe bağlı OTLP trace export ve kimlik doğrulamalı/rate-limitli Prometheus `/metrics` çıkışı vardır. Production compose yalnız
-Caddy'nin 80/443 portlarını açar; API ile SQL Server Docker ağı içinde private kalır.
+Caddy'nin 80/443 portlarını açar; API ile PostgreSQL Docker ağı içinde private kalır.
 
-Production için kökteki `.env`de `SA_PASSWORD`, `JwtSettings__SecretKey`, tüm `SmtpSettings__*`
+Production için kökteki `.env`de `POSTGRES_PASSWORD`, `JwtSettings__SecretKey`, tüm `SmtpSettings__*`
 anahtarları, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL`, `AppSettings__FrontendUrl`, `APP_DOMAIN`,
 `ACME_EMAIL` gerekir; connection, JWT secret, SMTP ve origin ayarları için committed fallback yoktur.
 Development da aynı dosyayı kullanır. Backend `mcr.microsoft.com/dotnet/aspnet:8.0`
@@ -134,7 +134,7 @@ ancak geçerli JWT ve endpoint'e özel rate limit gerektirir.
 
 Architecture (NetArchTest) saniyeler içinde isimlendirme/katman kuralını uygular. Application birim
 testleri xUnit, NSubstitute, EF InMemory ile iş kurallarını; WebApi integration testleri
-Testcontainers.MsSql ve WebApplicationFactory ile gerçek SQL Server, migration, query filter ve
+Testcontainers.PostgreSql ve WebApplicationFactory ile gerçek PostgreSQL, migration, query filter ve
 transaction davranışını doğrular. Playwright E2E üst katmandır. Mimari testleri tabandır; zamanla
 çürüyecek yapısal kuralları erken yakalar.
 

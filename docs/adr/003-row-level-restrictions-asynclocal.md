@@ -5,9 +5,8 @@
 > `RestrictionAmbient` `AsyncLocal` fallback, and the `DataRestrictions` feature slice — has been
 > **removed from the codebase in its entirety** (Domain, Application, Persistence, and WebApi).
 > It is kept here only as the historical record of the design and the bugs it worked around. A
-> replacement is planned as part of the project's known roadmap: after the backend moves from
-> .NET 8 to .NET 10 and the database moves from SQL Server to PostgreSQL, row-level access
-> restriction will be redesigned directly on top of EF Core's native "multiple query filter"
+> replacement remains planned as future work. The database has since moved to PostgreSQL (ADR-011);
+> row-level access restriction will be redesigned directly on top of EF Core's native "multiple query filter"
 > support (`OnModelCreating`) rather than the bespoke builder/registry/ambient mechanism this ADR
 > describes. Until that redesign lands, no row-level restriction is enforced anywhere in the app —
 > an accepted, deliberate gap, since there is no production traffic yet.

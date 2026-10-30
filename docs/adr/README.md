@@ -9,10 +9,11 @@ Short, dated documents capturing the *why* behind architectural choices — so a
 | # | Title | Status |
 |---|---|---|
 | [010](010-internal-keys-and-public-identities.md) | Retain internal numeric keys and public UUID identities | Proposed |
+| [011](011-postgresql-runtime-provider.md) | PostgreSQL as the sole runtime provider | Accepted |
 | [001](001-pragmatic-clean-architecture.md) | Pragmatic Clean Architecture — Application may reference EF Core LINQ extensions | Accepted |
 | [002](002-hierarchical-rbac.md) | Hierarchical action-list RBAC over boolean permission columns | Accepted |
 | [003](003-row-level-restrictions-asynclocal.md) | Row-level restrictions via EF Core global filters + AsyncLocal ambient | Superseded/Removed (2026-09-06) |
-| [004](004-sql-server-and-repository-abstraction.md) | SQL Server 2022 as primary datastore, DB-agnostic repository surface | Accepted |
+| [004](004-sql-server-and-repository-abstraction.md) | SQL Server 2022 as primary datastore, DB-agnostic repository surface | Superseded by ADR-011 |
 | [005](005-jwt-auth-and-password-hashing.md) | JWT bearer auth, BCrypt today with Argon2id migration path | Accepted |
 | [006](006-testing-strategy.md) | Testing pyramid: architecture + unit + Testcontainers integration | Accepted |
 | [007](007-observability-baseline.md) | Observability baseline: Serilog + correlation id + health checks | Accepted |

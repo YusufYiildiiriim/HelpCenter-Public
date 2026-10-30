@@ -4,6 +4,10 @@
 **Date:** 2026-08-09
 **Deciders:** Yusuf Yıldırım
 
+> Historical implementation details below include the original SQL Server readiness/sink setup.
+> Current readiness checks PostgreSQL with `AspNetCore.HealthChecks.NpgSql`; current provider
+> policy is [ADR-011](011-postgresql-runtime-provider.md).
+
 ## Context
 
 Production issues have exactly one useful shape: *"a request came in, it did something, it either finished or failed, and someone needs to know what happened."* The minimum to answer that:

@@ -4,6 +4,11 @@
 **Date:** 2026-09-19
 **Deciders:** Yusuf Yıldırım
 
+> Historical database implementation details below refer to SQL Server. Audit records now live
+> in PostgreSQL under ADR-011. PostgreSQL migration `20261030141555_EnforceAuditLogAppendOnly`
+> installs an UPDATE/DELETE trigger. As with SQL Server, a database owner can still alter or remove
+> the trigger; this is not WORM storage.
+
 ## Context
 
 Operational diagnostics and business/security evidence answer different questions. Runtime logs

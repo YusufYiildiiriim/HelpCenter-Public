@@ -8,6 +8,9 @@
 **Tarih:** 2026-08-09
 **Karar verici:** Yusuf Yıldırım
 
+> Aşağıdaki SQL Server provider ayrıntıları ilk test kurulumunun tarihsel kaydıdır. 2026-10-30
+> itibarıyla gerçek integration sağlayıcısı ADR-011 uyarınca `Testcontainers.PostgreSql` ile PostgreSQL'dir.
+
 ## Bağlam
 
 Test paketleri iki uca da kayabilir. Tamamı birim testiyse persistence refactor'larının kıracağı

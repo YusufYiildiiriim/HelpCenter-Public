@@ -1,10 +1,11 @@
 # Database Schema Reference
 
-This document describes the SQL Server schema produced by the current EF Core
-model. It is a reference for developers and operators; migrations remain the
-authoritative way to change the schema.
+> **Historical reference:** this document describes the former SQL Server schema and is not the
+> active PostgreSQL schema. The only supported runtime provider is PostgreSQL 17 (see
+> [ADR-011](adr/011-postgresql-runtime-provider.md)); the active schema is defined by the EF model
+> and `HelpCenter.Persistence/Migrations/20261030085737_InitialPostgreSql`.
 
-**Model source:** `HelpCenter.Persistence/Context/EfContext.cs` and migration
+**Historical model source:** `HelpCenter.Persistence/Context/EfContext.cs` and SQL Server migration
 `20260919092938_RemoveAppLogsAndHardenAuditTrail`.
 
 ## Entity relationship diagram

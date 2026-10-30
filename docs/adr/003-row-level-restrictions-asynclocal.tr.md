@@ -9,8 +9,8 @@
 > `DataRestrictionQueryFilterBuilder`, `RestrictionAmbient` `AsyncLocal` fallback'i ve
 > `DataRestrictions` feature slice'ı — kod tabanından bütünüyle kaldırıldı (Domain, Application,
 > Persistence ve WebApi). Bu kayıt yalnız tasarımın ve çözdüğü hataların tarihsel açıklaması olarak
-> tutulur. Yerine geçecek tasarım, backend .NET 8'den .NET 10'a ve veritabanı SQL Server'dan
-> PostgreSQL'e taşındıktan sonra, bu özel builder/kayıt/ambient mekanizması yerine EF Core'un yerel
+> tutulur. Veritabanı o zamandan beri PostgreSQL'e taşındı (ADR-011). Yerine geçecek tasarım,
+> bu özel builder/kayıt/ambient mekanizması yerine EF Core'un yerel
 > “multiple query filter” desteğiyle (`OnModelCreating`) kurulacak. Bu yeniden tasarım gelene kadar
 > uygulamada hiçbir yerde satır-seviyesi kısıtlama uygulanmaz; production trafiği olmadığı için
 > bilinçli olarak kabul edilmiş bir boşluktur.

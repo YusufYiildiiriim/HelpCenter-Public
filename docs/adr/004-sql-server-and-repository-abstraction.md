@@ -1,8 +1,11 @@
 # ADR-004 — SQL Server 2022 as primary datastore, DB-agnostic repository surface
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-011](011-postgresql-runtime-provider.md) (2026-10-30)
 **Date:** 2026-08-09
 **Deciders:** Yusuf Yıldırım
+
+> Historical decision: this ADR records the original SQL Server choice. PostgreSQL is the sole
+> supported runtime provider under ADR-011; this file is retained for decision history.
 
 ## Context
 

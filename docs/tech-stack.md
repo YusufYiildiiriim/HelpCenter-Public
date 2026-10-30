@@ -24,7 +24,7 @@ Every runtime dependency in this repository, why it was chosen, and what was rej
 | Package | Purpose | Why |
 |---|---|---|
 | **Microsoft.EntityFrameworkCore 9** | ORM | Native to .NET stack, LINQ, migrations, global query filters. Runs on a `net8.0`-targeted app (EF Core 9 supports .NET 8); chose over Dapper because we need change tracking + relational graphs; would revisit for read-heavy hot paths. |
-| **Microsoft.EntityFrameworkCore.SqlServer** | SQL Server provider | See ADR-004 for DB choice. Repository stays DB-agnostic — swapping providers is a connection-string + migration regen job. |
+| **Npgsql.EntityFrameworkCore.PostgreSQL** | PostgreSQL 17 provider | Sole runtime provider per [ADR-011](adr/011-postgresql-runtime-provider.md); active migrations target PostgreSQL. |
 | `BaseEntity.PublicId` + EF Core value generator | Public entity identifiers | Each eligible entity receives a database-generated random `Guid` through `PublicIdValueGenerator`; external routes use the public identifier rather than masking integer primary keys. This replaced the removed reversible `HashService`. |
 
 ### Security
@@ -43,7 +43,7 @@ Every runtime dependency in this repository, why it was chosen, and what was rej
 | **Serilog.AspNetCore** | Structured logging | Structured-by-default JSON, richer than `Microsoft.Extensions.Logging` alone. |
 | **Serilog.Enrichers.Environment** + **.Thread** | `MachineName`, `ThreadId` enrichment | One line per log = one row in Seq / Loki with full context. |
 | **Serilog.Sinks.File** | Rolling file sink | Fallback when the observability backend is unreachable. |
-| **AspNetCore.HealthChecks.SqlServer** | DB health probe | Powers `/health/ready`. |
+| **AspNetCore.HealthChecks.NpgSql** | PostgreSQL health probe | Powers `/health/ready`. |
 
 ### API contract
 
@@ -59,7 +59,7 @@ Every runtime dependency in this repository, why it was chosen, and what was rej
 | **xUnit** | Test runner | De-facto standard for .NET, better parallelization semantics than NUnit. |
 | **FluentAssertions** | Assertion syntax | Assertions read like sentences, error messages are helpful. |
 | **NSubstitute** | Mocking | Cleaner API than Moq; no lambda hell. |
-| **Testcontainers.MsSql** | Real SQL Server in integration tests | See ADR-006 — real DB > in-memory to catch query filters, migrations, transactions. |
+| **Testcontainers.PostgreSql** | Real PostgreSQL in integration tests | Real-provider coverage for query filters, migrations, transactions, and dashboard read models. |
 | **Microsoft.EntityFrameworkCore.InMemory** | Fast unit tests | Used only where behavior is provider-independent. |
 | **NetArchTest.Rules** | Layer boundary enforcement | Turns "please respect Clean Architecture" from a wiki page into a CI check. |
 | **Microsoft.AspNetCore.Mvc.Testing** | `WebApplicationFactory<T>` | Boots the real pipeline in-process for integration tests. |
@@ -127,12 +127,12 @@ Every runtime dependency in this repository, why it was chosen, and what was rej
 
 | Item | Purpose | Why |
 |---|---|---|
-| **SQL Server 2022** | Primary datastore | See [ADR-004](adr/004-sql-server-and-repository-abstraction.md). |
+| **PostgreSQL 17** | Sole runtime datastore | See [ADR-011](adr/011-postgresql-runtime-provider.md). |
 | **Docker** (multi-stage) | Reproducible builds + prod runtime | Backend uses the Debian-based .NET 8 runtime image as non-root; frontend uses `node:22-alpine`; both exclude local secrets and build output from image contexts. |
 | **docker-compose** (dev + prod) | Local orchestration | Fastest onramp for new contributors. |
 | **GitHub Actions** | CI pipeline | Free for public repos, tight integration, matrix jobs. |
 | **Dependabot** | Automated dependency PRs | Weekly, grouped by ecosystem. |
-| **Serilog → File / MSSQL sinks** (default) | Log delivery | Zero external dependency for dev; swappable for Seq/Loki in prod. |
+| **Serilog → Console / File sinks** | Log delivery | No database logging sink; business audit records are persisted separately in PostgreSQL. |
 
 ## What we deliberately did **not** add
 

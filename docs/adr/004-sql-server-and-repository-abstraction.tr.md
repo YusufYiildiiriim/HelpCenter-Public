@@ -4,9 +4,12 @@
 
 [English](004-sql-server-and-repository-abstraction.md) · [Türkçe](004-sql-server-and-repository-abstraction.tr.md)
 
-**Durum:** Kabul edildi
+**Durum:** [ADR-011](011-postgresql-runtime-provider.tr.md) ile geçersiz kılındı (2026-10-30)
 **Tarih:** 2026-08-09
 **Karar verici:** Yusuf Yıldırım
+
+> Tarihsel karar: Bu ADR başlangıçtaki SQL Server tercihini kaydeder. ADR-011 uyarınca
+> desteklenen tek runtime sağlayıcısı PostgreSQL'dir; bu dosya karar geçmişi için korunur.
 
 ## Bağlam
 

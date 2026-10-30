@@ -15,13 +15,13 @@ alternatifleri açıklar; somut patch sürümleri manifestlerde tutulur.
 | CQRS | MediatR | Küçük ve denenmiş yüzey; Wolverine saga/distributed messaging ihtiyacından ağır, elle dispatcher pipeline behavior'ları kaybettirir. |
 | Mapping | AutoMapper | Convention tabanlı DTO glue kodunu azaltır; v16 explicit `CreateMap` sürpriz eşlemeyi sınırlar. Mapster daha hızlı olsa da LINQ projection desteği daha zayıftır. |
 | Validation | FluentValidation | Composable/test edilebilir; service bağımlısı validator'lar için DataAnnotations'tan uygundur. |
-| ORM | EF Core 9 + SQL Server provider | LINQ, migration, global filter ve change tracking gerekir; okuma hot-path'i profiling gerektirirse Dapper yeniden değerlendirilir. |
+| ORM | EF Core 9 + Npgsql/PostgreSQL 17 | Tek runtime sağlayıcısıdır ([ADR-011](adr/011-postgresql-runtime-provider.tr.md)); migration ve LINQ sorguları PostgreSQL içindir. |
 | Dış kimlik | `BaseEntity.PublicId` + value generator | Her uygun entity DB'nin ürettiği rastgele `Guid` alır; kaldırılmış reversible `HashService` yerine public route'lar bunu kullanır. |
 | JWT | `Microsoft.AspNetCore.Authentication.JwtBearer` | In-box standardı; tek audience için Duende IdentityServer gereksizdir. |
 | Password | Argon2 + BCrypt.Net-Next | Yeni/değişen parola Argon2id (64 MiB, 3 iterasyon, parallelism 4); BCrypt yalnız legacy verify içindir. `NeedsRehash`in login'de çağrılmaması bilinen boşluktur. |
-| Observability | Serilog + File sink + SQL health check | Structured log, environment/thread enrichment, rolling fallback ve `/health/ready`. |
+| Observability | Serilog + File sink + PostgreSQL health check | Structured log, environment/thread enrichment, rolling fallback ve `/health/ready`. |
 | API contract | Swashbuckle + XML docs | OpenAPI 3/Swagger, frontend `openapi-typescript` üretimini besler; XML hem Swagger hem IntelliSense'tedir. |
-| Test | xUnit, FluentAssertions, NSubstitute, Testcontainers, EF InMemory, NetArchTest, MVC Testing | Unit/integration/layer testleri; gerçek SQL Server, provider farklarını yakalar. |
+| Test | xUnit, FluentAssertions, NSubstitute, Testcontainers.PostgreSql, EF InMemory, NetArchTest, MVC Testing | Gerçek PostgreSQL integration testleri provider davranışını doğrular. |
 | Statik analiz | Sonar, Meziantou, Roslynator, `Directory.Build.props` | OWASP/bakım/performance lintleri; nullable ve Release warnings-as-errors; alan-adına özgü ve ertelenmiş analyzer bulguları kademeli temizlik boyunca bloklamaz. |
 
 ## Frontend (Next.js 16)
@@ -40,11 +40,11 @@ alternatifleri açıklar; somut patch sürümleri manifestlerde tutulur.
 
 | Öğe | Amaç ve gerekçe |
 |---|---|
-| SQL Server 2022 | Birincil veri deposu; seçim için [ADR-004](adr/004-sql-server-and-repository-abstraction.tr.md). |
+| PostgreSQL 17 | Tek runtime veri deposu; [ADR-011](adr/011-postgresql-runtime-provider.tr.md). |
 | Multi-stage Docker | Tekrarlanabilir build/production; backend Debian .NET 8 non-root, frontend `node:22-alpine`; local secret/build output image contextinden dışlanır. |
 | docker-compose | Development ve production yerel orkestrasyonu; yeni katkıcı için en hızlı giriş. |
 | GitHub Actions + Dependabot | Public repo için CI ve haftalık, ekosisteme göre gruplanmış dependency PR'ları. |
-| Serilog File sink | Developmentda harici bağımlılıksız runtime teşhisi; prod observability backend'i için değiştirilebilir. AuditLog bunun yerine SQL Server'da iş/güvenlik kanıtıdır. |
+| Serilog Console/File sink | Runtime teşhisi; iş/güvenlik audit kayıtları PostgreSQL'de ayrı tutulur. |
 
 ## Bilinçli olarak eklenmeyenler
 

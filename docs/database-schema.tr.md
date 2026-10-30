@@ -4,10 +4,11 @@
 
 [English](database-schema.md) · [Türkçe](database-schema.tr.md)
 
-Bu belge güncel EF Core modelinin ürettiği SQL Server şemasını açıklar. Geliştiriciler ve
-operatörler için referanstır; şemayı değiştirmede migration'lar otoriter kaynaktır.
+> **Tarihsel referans:** Bu belge eski SQL Server şemasını açıklar ve aktif PostgreSQL şeması
+> değildir. Desteklenen tek runtime sağlayıcısı PostgreSQL 17'dir ([ADR-011](adr/011-postgresql-runtime-provider.tr.md));
+> aktif şema EF modeli ve `HelpCenter.Persistence/Migrations/20261030085737_InitialPostgreSql` ile tanımlanır.
 
-**Model kaynağı:** `HelpCenter.Persistence/Context/EfContext.cs` ve
+**Tarihsel model kaynağı:** `HelpCenter.Persistence/Context/EfContext.cs` ve SQL Server
 `20260919092938_RemoveAppLogsAndHardenAuditTrail` migration'ı.
 
 ## Varlık-ilişki diyagramı

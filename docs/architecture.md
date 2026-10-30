@@ -2,7 +2,7 @@
 
 **Style:** Clean Architecture (pragmatic interpretation) + CQRS via MediatR
 **Runtime:** ASP.NET Core 8 on Kestrel, containerized (Debian-based `aspnet:8.0` runtime image — see §4)
-**Data:** SQL Server 2022 via EF Core 9
+**Data:** PostgreSQL 17 via EF Core 9 and Npgsql (sole runtime provider; see ADR-011)
 **Front-end:** Next.js 16 (App Router, React 19, Tailwind 4)
 
 ---
@@ -32,7 +32,7 @@ graph TB
         CST[Constants<br/>AppResourceDefinitions · FeaturePackages]
     end
 
-    subgraph Persistence["HelpCenter.Persistence — SQL Server 2022"]
+    subgraph Persistence["HelpCenter.Persistence — PostgreSQL 17"]
         EF[EfContext · Configurations]
         REPO[IGenericRepository&lt;T&gt; · IUnitOfWork]
         MIG[Migrations]
@@ -104,7 +104,7 @@ sequenceDiagram
     participant H as Command handler
     participant Ru as *Rules (business rule)
     participant R as IUnitOfWork.Repository(T)
-    participant DB as SQL Server 2022
+    participant DB as PostgreSQL 17
 
     U->>W: POST /api/admin/role/create (JWT bearer)
     W->>W: CorrelationIdMiddleware sets/reads X-Correlation-Id
@@ -207,7 +207,7 @@ graph LR
     U["Browser<br/>Authorization: Bearer token"] -- HTTPS --> RP[Caddy<br/>TLS termination]
     RP --> UI[Next.js container<br/>standalone build<br/>node:22-alpine]
     RP --> API[WebApi container<br/>mcr.microsoft.com/dotnet/aspnet:8.0<br/>non-root $APP_UID]
-    API -- 1433 --> DB[(SQL Server 2022)]
+    API -- 5432 --> DB[(PostgreSQL 17)]
     API -- SMTP --> MAIL[Email provider]
     API -- OTLP (optional) --> OTEL[OpenTelemetry collector]
     API -- "/metrics" --> PROM[Prometheus scrape]
@@ -215,8 +215,8 @@ graph LR
 
 `docker-compose.prod.yml` exposes only Caddy on ports 80/443. Caddy obtains TLS certificates for
 `APP_DOMAIN`, then routes `/api/*`, `/requestHub*`, and `/health/*` to the API and all other traffic to Next.js.
-The API and SQL Server remain private to the Docker network. Production startup reads
-`SA_PASSWORD`, `JwtSettings__SecretKey`, the complete `SmtpSettings__*` set,
+The API and PostgreSQL remain private to the Docker network. Production startup reads
+`POSTGRES_PASSWORD`, `JwtSettings__SecretKey`, the complete `SmtpSettings__*` set,
 `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_APP_URL`, `AppSettings__FrontendUrl`, `APP_DOMAIN`, and
 `ACME_EMAIL` from the ignored root `.env`; connection, JWT-secret, SMTP, and origin settings have
 no committed fallback.
@@ -244,14 +244,14 @@ Development uses the same file and keeps direct localhost ports for local debugg
 | Rate limit | ASP.NET Core's native `RateLimiter` (`AddRateLimiter`/`UseRateLimiter`, no custom middleware class) | Partitioned by user id (or client IP as fallback). Named policies: `auth` 5/30s, `password` 3/5min, `public` 60/1min, `write` 30/1min, `upload` 15/1min, `heavy` 30/1min, `metrics` 30/1min, plus a 200/1min global fallback. |
 | Security headers | `SecurityHeadersMiddleware` (`HelpCenter.WebApi/Middleware/SecurityHeadersMiddleware.cs`) | Registered in the HTTP pipeline; supplies CSP/HSTS/X-Frame-Options and related headers. |
 | Config | Strongly-typed `*Options` classes | `ValidateDataAnnotations().ValidateOnStart()` — bad config = fail to boot |
-| Health / metrics | ASP.NET Core Health Checks + `AspNetCore.HealthChecks.SqlServer`; OpenTelemetry SDK (tracing + metrics) with a Prometheus scrape endpoint | `/health/live` (self), `/health/ready` (DB); `/metrics` (Prometheus, via `MapPrometheusScrapingEndpoint()`) requires a valid JWT and its own rate limit. OTLP trace export is optional, enabled only when `Otel:OtlpEndpoint` is configured. |
+| Health / metrics | ASP.NET Core Health Checks + `AspNetCore.HealthChecks.NpgSql`; OpenTelemetry SDK (tracing + metrics) with a Prometheus scrape endpoint | `/health/live` (self), `/health/ready` (PostgreSQL); `/metrics` (Prometheus, via `MapPrometheusScrapingEndpoint()`) requires a valid JWT and its own rate limit. OTLP trace export is optional, enabled only when `Otel:OtlpEndpoint` is configured. |
 
 ## 6. Testing pyramid
 
 ```
        ▲  E2E  (Playwright, planned)
        │
-     Integration  (Testcontainers.MsSql + WebApplicationFactory)
+     Integration  (Testcontainers.PostgreSql + WebApplicationFactory)
        │
     Application unit  (xUnit + NSubstitute + EF InMemory)
        │

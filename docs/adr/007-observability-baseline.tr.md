@@ -8,6 +8,10 @@
 **Tarih:** 2026-08-09
 **Karar verici:** Yusuf Yıldırım
 
+> Aşağıdaki SQL Server readiness/sink ayrıntıları ilk uygulamanın tarihsel kaydıdır. Güncel
+> readiness `AspNetCore.HealthChecks.NpgSql` ile PostgreSQL'i denetler; sağlayıcı kararı
+> [ADR-011](011-postgresql-runtime-provider.tr.md) içindedir.
+
 ## Bağlam
 
 Production sorununun anlamlı biçimi şudur: “Bir request geldi, bir iş yaptı, tamamlandı veya
