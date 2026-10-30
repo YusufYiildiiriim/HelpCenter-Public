@@ -7,6 +7,13 @@ try {
     }
     docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d --build db
     if ($LASTEXITCODE -ne 0) { throw 'Failed to start the development database.' }
+    $databaseReady = $false
+    for ($attempt = 0; $attempt -lt 30; $attempt++) {
+        docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml exec -T db pg_isready -U helpcenter -d HelpCenterDb *> $null
+        if ($LASTEXITCODE -eq 0) { $databaseReady = $true; break }
+        Start-Sleep -Seconds 1
+    }
+    if (-not $databaseReady) { throw 'Development PostgreSQL did not become ready.' }
     docker run --rm --network helpcenterdev_helpcenter-network --env-file .env -e ASPNETCORE_ENVIRONMENT=Development --mount "type=bind,source=$repositoryRoot,target=/workspace,readonly" mcr.microsoft.com/dotnet/sdk:8.0 bash /workspace/scripts/migrate-dev.sh
     if ($LASTEXITCODE -ne 0) { throw 'Failed to apply database migrations.' }
     docker compose --env-file .env -f dockerfiles/docker-compose.dev.yml up -d --build helpcenter.webapi
