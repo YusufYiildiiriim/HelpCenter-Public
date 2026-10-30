@@ -28,7 +28,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ requestId, ticket, onCon
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => router.back()}
-            aria-label="Geri don"
+            aria-label="Geri dön"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 text-slate-400 transition-all hover:border-slate-600 hover:bg-slate-800 hover:text-white active:scale-95"
           >
             <ArrowLeft size={18} />
