@@ -25,7 +25,9 @@ npm run dev
 
 Next.js yapılandırması kök `.env` dosyasından yalnız `NEXT_PUBLIC_*` alanlarını otomatik yükler.
 Mevcut süreç değişkenleri, Docker build argümanları ve CI değerleri önceliklidir.
-Ortak ayarları kökte tutun.
+Ortak frontend ayarlarını kökte tutun. Bu dosya backend PostgreSQL bağlantısını yapılandırmaz;
+Visual Studio WebApi debug için .NET User Secrets veya açıkça tanımlanmış süreç ortam değişkenleri,
+terminal komutları içinse `../scripts/with-env.sh` kullanılabilir.
 `src/proxy.ts`, `refresh_token` HttpOnly cookie'sini yalnız kaba bir rota geçidi olarak kullanır.
 Access token modül belleğinde kalır; korumalı layout'lar tokenı API üzerinden doğrular. Frontend
 JWT imzalama secret'ına ihtiyaç duymaz. CKEditor repo'nun GPL-3.0-only lisansı kapsamında çalışır;

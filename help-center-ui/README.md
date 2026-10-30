@@ -18,7 +18,9 @@ npm run dev
 
 Next.js configuration loads only NEXT_PUBLIC_* values from the repository-root .env automatically.
 Existing process variables take precedence, including Docker build args and CI variables.
-Keep shared settings in that root file.
+Keep shared frontend settings in that root file. This does not configure the backend PostgreSQL
+connection; Visual Studio WebApi debugging uses .NET User Secrets or explicitly configured process
+environment variables, while terminal commands can use the root wrapper `../scripts/with-env.sh`.
 
 `src/proxy.ts` uses the `refresh_token` HttpOnly cookie only as a coarse route gate. The access
 token stays in module memory and protected layouts verify it through the API; no frontend JWT
