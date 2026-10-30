@@ -74,8 +74,7 @@ public sealed class PostgreSqlWebApplicationFactory : WebApplicationFactory<Prog
             .UseNpgsql(_postgres.GetConnectionString())
             .Options;
         await using var dbContext = new EfContext(options);
-        // P3 replaces this temporary clean-schema bootstrap with the PostgreSQL initial migration.
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
     }
 
     private static void SetProcessConfiguration(string key, string value)
