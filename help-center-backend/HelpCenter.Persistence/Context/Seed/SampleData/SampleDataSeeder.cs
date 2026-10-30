@@ -1,3 +1,4 @@
+using HelpCenter.Domain.Entities;
 using HelpCenter.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,28 +30,25 @@ public static class SampleDataSeeder
     /// </summary>
     public static async Task<bool> SeedAsync(EfContext context, CancellationToken cancellationToken = default)
     {
-        if (await context.Companies.IgnoreQueryFilters().AnyAsync(cancellationToken))
-        {
-            return false;
-        }
+        var seeded = false;
 
         // 1. Projects & Modules (no dependencies)
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjects(), cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildModules(), cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjectModules(), cancellationToken);
-        await SeedRangeAsync(context, SampleProjectModuleSeed.BuildRequestSubjects(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjects(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleProjectModuleSeed.BuildModules(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleProjectModuleSeed.BuildProjectModules(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleProjectModuleSeed.BuildRequestSubjects(), cancellationToken);
 
         // 2. Accounts (staff + customers) — before Company/User/Customer
-        await SeedRangeAsync(context, SampleUserSeed.BuildStaffAccounts(), cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomerAccounts(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleUserSeed.BuildStaffAccounts(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomerAccounts(), cancellationToken);
 
         // 3. Companies & their licensed modules
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanies(), cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanyModules(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanies(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCompanyModules(), cancellationToken);
 
         // 4. Users & customers (tied to accounts)
-        await SeedRangeAsync(context, SampleUserSeed.BuildUsers(), cancellationToken);
-        await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomers(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleUserSeed.BuildUsers(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleCompanyCustomerSeed.BuildCustomers(), cancellationToken);
 
         // 5. User role/expert/project assignments
         var rolesByName = await context.Roles.IgnoreQueryFilters()
@@ -65,8 +63,8 @@ public static class SampleDataSeeder
                 _ => userRole.RoleId
             };
         }
-        await SeedRangeAsync(context, sampleUserRoles, cancellationToken);
-        await SeedRangeAsync(context, SampleUserSeed.BuildModuleExperts(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, sampleUserRoles, cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleUserSeed.BuildModuleExperts(), cancellationToken);
         var adminUserId = await context.Users.IgnoreQueryFilters()
             .Where(user => user.Account.Email == "admin@helpcenter.com")
             .Select(user => user.Id)
@@ -76,27 +74,37 @@ public static class SampleDataSeeder
         {
             userProject.UserId = adminUserId;
         }
-        await SeedRangeAsync(context, sampleUserProjects, cancellationToken);
+        seeded |= await SeedRangeAsync(context, sampleUserProjects, cancellationToken);
 
         // 6. Conversations & requests
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversations(), cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequests(), cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversationParticipants(), cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequestMessages(), cancellationToken);
-        await SeedRangeAsync(context, SampleRequestConversationSeed.BuildRequestHistories(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversations(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequests(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleRequestConversationSeed.BuildConversationParticipants(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleRequestConversationSeed.BuildCustomerRequestMessages(), cancellationToken);
+        seeded |= await SeedRangeAsync(context, SampleRequestConversationSeed.BuildRequestHistories(), cancellationToken);
 
-        return true;
+        return seeded;
     }
 
-    private static async Task SeedRangeAsync<T>(EfContext context, IReadOnlyList<T> entities, CancellationToken cancellationToken)
-        where T : class
+    private static async Task<bool> SeedRangeAsync<T>(EfContext context, IReadOnlyList<T> entities, CancellationToken cancellationToken)
+        where T : BaseEntity
     {
         if (entities.Count == 0)
         {
-            return;
+            return false;
         }
 
-        context.Set<T>().AddRange(entities);
+        var existingIds = await context.Set<T>().IgnoreQueryFilters()
+            .Select(entity => entity.Id)
+            .ToHashSetAsync(cancellationToken);
+        var missingEntities = entities.Where(entity => !existingIds.Contains(entity.Id)).ToArray();
+        if (missingEntities.Length == 0)
+        {
+            return false;
+        }
+
+        context.Set<T>().AddRange(missingEntities);
         await context.SaveChangesAsync(cancellationToken);
+        return true;
     }
 }

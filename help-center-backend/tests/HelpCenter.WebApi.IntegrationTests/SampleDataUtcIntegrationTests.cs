@@ -1,6 +1,6 @@
 using HelpCenter.Domain.Entities;
 using HelpCenter.Persistence.Context;
-using HelpCenter.Persistence.Context.Seed;
+using HelpCenter.Persistence.Context.Seed.SampleData;
 using HelpCenter.Persistence.Context.Seed.SystemDefaults;
 using HelpCenter.Persistence.Services;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +34,12 @@ public sealed class SampleDataUtcIntegrationTests : IAsyncLifetime
         {
             await setupContext.Database.MigrateAsync();
             await SystemDefaultsSeeder.SeedAsync(setupContext);
+
+            // Simulate a previous startup that persisted early seed batches before failing.
+            setupContext.AddRange(
+                SampleProjectModuleSeed.BuildProjects()[0],
+                SampleCompanyCustomerSeed.BuildCompanies()[0]);
+            await setupContext.SaveChangesAsync();
         }
 
         var services = new ServiceCollection()
@@ -48,6 +54,7 @@ public sealed class SampleDataUtcIntegrationTests : IAsyncLifetime
                 NullLogger<SampleDataSeedHostedService>.Instance);
 
             await sampleSeedService.StartAsync(CancellationToken.None);
+            await sampleSeedService.StartAsync(CancellationToken.None);
 
             await using var scope = services.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<EfContext>();
@@ -58,6 +65,8 @@ public sealed class SampleDataUtcIntegrationTests : IAsyncLifetime
             Assert.Equal(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), participant.JoinedAt);
             Assert.Equal(DateTimeKind.Utc, participant.JoinedAt.Kind);
             Assert.Equal(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), company.CreatedAt);
+            Assert.Equal(3, await context.Companies.CountAsync());
+            Assert.Equal(3, await context.CustomerRequests.CountAsync());
 
             var unspecifiedExpiry = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
             var refreshToken = new RefreshToken
@@ -71,7 +80,6 @@ public sealed class SampleDataUtcIntegrationTests : IAsyncLifetime
             var persistedToken = await context.RefreshTokens.SingleAsync();
             Assert.Equal(DateTime.SpecifyKind(unspecifiedExpiry, DateTimeKind.Utc), persistedToken.ExpiresAt);
             Assert.Equal(DateTimeKind.Utc, persistedToken.ExpiresAt.Kind);
-            Assert.Equal(3, await context.Companies.CountAsync());
         }
         finally
         {
