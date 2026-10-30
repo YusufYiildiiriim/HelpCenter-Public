@@ -223,6 +223,9 @@ Thumbs.db
 # Agents
 .agents/
 
+# Playwright MCP session artifacts
+.playwright-mcp/
+
 # Claude Code
 .claude/
 
