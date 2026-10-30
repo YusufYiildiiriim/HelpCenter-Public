@@ -61,7 +61,7 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
                     CustomerId = TestIds.FromInt(1),
                     ModuleId = TestIds.FromInt(1),
                     Title = "Minute boundary integration test",
-                    Description = "Preserve SQL Server minute-boundary averaging",
+                    Description = "Preserve original minute-boundary averaging semantics",
                     StatusId = RequestStatusConstants.Completed,
                     AssignedUserId = TestIds.FromInt(2),
                     CreatedAt = todayUtc.AddMinutes(59),

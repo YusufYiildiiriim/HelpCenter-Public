@@ -33,7 +33,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
             // Customer -> Account is already a cascading one-to-one relationship.
-            // Keeping this FK non-cascading avoids SQL Server's multiple-cascade-path
+            // This was originally required to avoid SQL Server's multiple-cascade-path
             // error while preserving the token row until it is explicitly revoked/removed.
             .OnDelete(DeleteBehavior.Restrict);
     }

@@ -18,8 +18,8 @@ namespace HelpCenter.Persistence.Context.Seed.SampleData;
 /// there is NO environment check here, only idempotent insertion logic.
 ///
 /// Sample entities carry fixed GUID identities so their cross-references remain deterministic.
-/// They are inserted through the normal EF Core pipeline; GUID primary keys are not SQL Server
-/// IDENTITY columns and therefore must not use IDENTITY_INSERT.
+/// They are inserted through the normal EF Core pipeline; GUID primary keys are ordinary model
+/// values and require no provider-specific identity override.
 /// </summary>
 public static class SampleDataSeeder
 {

@@ -22,7 +22,8 @@ namespace HelpCenter.Application.Tests.Features.Roles;
 /// The EF Core InMemory provider (see HandlerTestBase) generates no SQL; it runs LINQ directly over
 /// .NET collections — so an expression that could never actually be TRANSLATED to SQL (e.g. a nested
 /// collection projection, or computed properties like User.FirstName that proxy for Account) "works"
-/// silently in InMemory but blows up in production (SQL Server). This test uses SQLite (:memory:) —
+/// silently in InMemory but may fail when translated by the runtime PostgreSQL provider. This test
+/// uses SQLite (:memory:) —
 /// a provider that generates real SQL — to prove that the 4 handlers whose string-path Includes were
 /// removed and converted to projections on 2026-09-06 (GetMenuItemsQueryHandler,
 /// RequestCreatedEventHandler, GetRolesQueryHandler, UserPermissionsReader) really
