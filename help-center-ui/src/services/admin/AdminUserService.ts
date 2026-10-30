@@ -78,8 +78,18 @@ export const AdminUserService = {
     return response.data;
   },
 
-  updateRoles: async (id: string, roleIds: string[]): Promise<boolean> => {
-    const response = await api.put(`/api/admin/users/${id}`, { roleIds });
+  updateRoles: async (user: User, roleIds: string[]): Promise<boolean> => {
+    const response = await api.put(`/api/admin/users/${user.id}`, {
+      id: user.id,
+      rowVersion: user.rowVersion,
+      email: user.email,
+      name: user.name,
+      lastName: user.lastName,
+      username: user.username || "",
+      password: "",
+      roleIds,
+      isActive: user.isActive,
+    });
     return response.data;
   },
 };

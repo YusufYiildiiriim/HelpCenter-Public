@@ -221,17 +221,7 @@ export default function AdminUsersPage() {
 
     const handleSaveRoles = async (roleIds: string[]) => {
         if (!selectedUserForRoles) return;
-        await UserService.update(selectedUserForRoles.id, {
-            id: selectedUserForRoles.id,
-            rowVersion: selectedUserForRoles.rowVersion,
-            name: selectedUserForRoles.name,
-            lastName: selectedUserForRoles.lastName,
-            email: selectedUserForRoles.email,
-            username: selectedUserForRoles.username || "",
-            password: "",
-            roleIds,
-            isActive: selectedUserForRoles.isActive
-        });
+        await UserService.updateRoles(selectedUserForRoles, roleIds);
         toast.success(`${selectedUserForRoles.name} ${selectedUserForRoles.lastName} için roller güncellendi.`);
         await fetchInitialData();
     };
