@@ -139,7 +139,9 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
         var averageMinutes = await _efContext.CustomerRequests
             .AsNoTracking()
             .Where(request => request.StatusId == RequestStatusConstants.Completed && request.UpdatedAt.HasValue)
-            .Select(request => (double?)((request.UpdatedAt!.Value - request.CreatedAt).TotalMinutes))
+            .Select(request => (double?)(
+                Math.Floor((request.UpdatedAt!.Value - DateTime.UnixEpoch).TotalMinutes)
+                - Math.Floor((request.CreatedAt - DateTime.UnixEpoch).TotalMinutes)))
             .AverageAsync(cancellationToken);
 
         return (long)(averageMinutes ?? 0);
@@ -161,7 +163,9 @@ public sealed class StatisticsReadRepository : IStatisticsReadRepository
                     .Where(request => request.AssignedUserId == user.Id
                         && request.StatusId == RequestStatusConstants.Completed
                         && request.UpdatedAt.HasValue)
-                    .Select(request => (double?)((request.UpdatedAt!.Value - request.CreatedAt).TotalMinutes))
+                    .Select(request => (double?)(
+                        Math.Floor((request.UpdatedAt!.Value - DateTime.UnixEpoch).TotalMinutes)
+                        - Math.Floor((request.CreatedAt - DateTime.UnixEpoch).TotalMinutes)))
                     .Average() ?? 0)
             })
             .OrderByDescending(agent => agent.Assigned)

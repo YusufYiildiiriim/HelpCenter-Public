@@ -51,12 +51,25 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
                     Description = "P4 PostgreSQL dashboard coverage",
                     StatusId = RequestStatusConstants.Completed,
                     AssignedUserId = TestIds.FromInt(2),
-                    CreatedAt = todayUtc.AddHours(1),
-                    UpdatedAt = now,
+                    CreatedAt = todayUtc.AddHours(1).AddSeconds(30),
+                    UpdatedAt = todayUtc.AddHours(2).AddMinutes(1),
+                    IsActive = true
+                };
+                var boundaryRequest = new CustomerRequest
+                {
+                    TicketId = "TKT-P4-MINUTE-BOUNDARY",
+                    CustomerId = TestIds.FromInt(1),
+                    ModuleId = TestIds.FromInt(1),
+                    Title = "Minute boundary integration test",
+                    Description = "Preserve SQL Server minute-boundary averaging",
+                    StatusId = RequestStatusConstants.Completed,
+                    AssignedUserId = TestIds.FromInt(2),
+                    CreatedAt = todayUtc.AddMinutes(59),
+                    UpdatedAt = todayUtc.AddHours(1),
                     IsActive = true
                 };
 
-                db.CustomerRequests.Add(request);
+                db.CustomerRequests.AddRange(request, boundaryRequest);
                 db.RequestHistories.Add(new RequestHistory
                 {
                     RequestId = request.Id,
@@ -73,45 +86,45 @@ public sealed class StatisticsReadRepositoryIntegrationTests : IAsyncLifetime
             var statistics = readScope.ServiceProvider.GetRequiredService<IStatisticsReadRepository>();
 
             var dashboard = await statistics.GetDashboardStatsAsync();
-            Assert.Equal(4, dashboard["TotalRequests"]);
+            Assert.Equal(5, dashboard["TotalRequests"]);
             Assert.Equal(2, dashboard["ActiveRequests"]);
-            Assert.Equal(2, dashboard["CompletedRequests"]);
+            Assert.Equal(3, dashboard["CompletedRequests"]);
             Assert.Equal(5, dashboard["TotalMessages"]);
             Assert.Equal(4, dashboard["TotalCustomers"]);
             Assert.Equal(3, dashboard["TotalCompanies"]);
 
             var statuses = await statistics.GetStatusDistributionAsync();
-            Assert.Equal(2, Assert.Single(statuses, row => row.Id == RequestStatusConstants.Completed).Count);
+            Assert.Equal(3, Assert.Single(statuses, row => row.Id == RequestStatusConstants.Completed).Count);
 
             var modules = await statistics.GetModuleDistributionAsync();
-            Assert.Equal(2, Assert.Single(modules, row => row.Id == TestIds.FromInt(1)).Count);
+            Assert.Equal(3, Assert.Single(modules, row => row.Id == TestIds.FromInt(1)).Count);
 
             var companies = await statistics.GetCompanyTopNAsync();
             Assert.Equal(3, companies.Count);
-            Assert.Equal(4, companies.Sum(row => row.Count));
+            Assert.Equal(5, companies.Sum(row => row.Count));
 
             var dailyTrend = await statistics.GetDailyTrendAsync();
             Assert.Equal(30, dailyTrend.Count);
             var today = Assert.Single(dailyTrend, row => row.Date.Date == DateTime.UtcNow.Date);
-            Assert.Equal(1, today.Opened);
-            Assert.Equal(1, today.Closed);
+            Assert.Equal(2, today.Opened);
+            Assert.Equal(2, today.Closed);
 
-            Assert.Equal(120, await statistics.GetAvgResolutionMinutesAsync());
+            Assert.Equal(31, await statistics.GetAvgResolutionMinutesAsync());
 
             var agent = Assert.Single(await statistics.GetAgentPerformanceAsync());
             Assert.Equal(TestIds.FromInt(2), agent.UserId);
-            Assert.Equal(4, agent.Assigned);
-            Assert.Equal(2, agent.Completed);
-            Assert.Equal(120, agent.AvgResolutionMinutes);
+            Assert.Equal(5, agent.Assigned);
+            Assert.Equal(3, agent.Completed);
+            Assert.Equal(31, agent.AvgResolutionMinutes);
 
             var reopenStats = await statistics.GetReopenStatsAsync();
-            Assert.Equal(2, reopenStats.TotalCompleted);
+            Assert.Equal(3, reopenStats.TotalCompleted);
             Assert.Equal(1, reopenStats.Reopened);
-            Assert.Equal(50, reopenStats.RatePercent);
+            Assert.Equal(33, reopenStats.RatePercent);
 
             var weeklyOpened = await statistics.GetWeeklyOpenedAsync(14);
             Assert.Equal(14, weeklyOpened.Count);
-            Assert.Equal(1, Assert.Single(weeklyOpened, row => row.Date.Date == DateTime.UtcNow.Date).Count);
+            Assert.Equal(2, Assert.Single(weeklyOpened, row => row.Date.Date == DateTime.UtcNow.Date).Count);
 
             var recent = await statistics.GetRecentRequestsAsync(7);
             Assert.Contains(recent, row => row.TicketId == "TKT-P4-STATISTICS");
