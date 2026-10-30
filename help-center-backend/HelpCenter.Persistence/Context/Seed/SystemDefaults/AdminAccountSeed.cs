@@ -21,18 +21,18 @@ public static class AdminAccountSeed
                 Password = DefaultPasswordHash,
                 PhoneNumber = "+90 000 000 0000",
                 IsActive = true,
-                CreatedAt = new DateTime(2024, 1, 1)
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
 
         // 2. Admin User
         modelBuilder.Entity<User>().HasData(
-            new User { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), AccountId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+            new User { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), AccountId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // 3. Admin UserRole Mapping (User 1 -> Role 1 / Admin)
         modelBuilder.Entity<UserRole>().HasData(
-            new UserRole { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(1), RoleId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+            new UserRole { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(1), RoleId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
     }
 }

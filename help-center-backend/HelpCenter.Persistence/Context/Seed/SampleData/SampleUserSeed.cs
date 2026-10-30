@@ -25,7 +25,7 @@ public static class SampleUserSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 532 000 0002",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         // Agent 2 (Restricted customer representative - Only PRJ-1 and MOD-1)
         new Account
@@ -38,7 +38,7 @@ public static class SampleUserSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 532 000 0003",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         // Expert (Module technical expert - MOD-1 Accounting and MOD-4 API)
         new Account
@@ -51,37 +51,37 @@ public static class SampleUserSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 532 000 0004",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         }
     ];
 
     public static IReadOnlyList<User> BuildUsers() =>
     [
-        new User { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), AccountId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new User { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), AccountId = SeedIdentity.FromLegacyInt(3), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new User { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), AccountId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new User { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), AccountId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new User { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), AccountId = SeedIdentity.FromLegacyInt(3), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new User { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), AccountId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
     ];
 
     public static IReadOnlyList<UserRole> BuildUserRoles() =>
     [
-        new UserRole { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(2), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 1 -> Agent
-        new UserRole { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(3), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Agent 2 -> Agent
-        new UserRole { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), RoleId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }  // Expert -> Expert
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(2), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Agent 1 -> Agent
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(3), RoleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Agent 2 -> Agent
+        new UserRole { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), RoleId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }  // Expert -> Expert
     ];
 
     // Expert assignments: User 4 -> Module 1 & Module 4
     public static IReadOnlyList<ModuleExpert> BuildModuleExperts() =>
     [
-        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new ModuleExpert { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
     ];
 
     public static IReadOnlyList<UserProject> BuildUserProjects() =>
     [
-        new UserProject { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) },
-        new UserProject { PublicId = SeedIdentity.FromLegacyInt(5), Id = SeedIdentity.FromLegacyInt(5), UserId = SeedIdentity.FromLegacyInt(3), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), UserId = SeedIdentity.FromLegacyInt(1), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), UserId = SeedIdentity.FromLegacyInt(2), ProjectId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+        new UserProject { PublicId = SeedIdentity.FromLegacyInt(5), Id = SeedIdentity.FromLegacyInt(5), UserId = SeedIdentity.FromLegacyInt(3), ProjectId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
     ];
 }

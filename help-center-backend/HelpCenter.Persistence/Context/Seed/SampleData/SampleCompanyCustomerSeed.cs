@@ -27,7 +27,7 @@ public static class SampleCompanyCustomerSeed
             ContactPersonPhone = "+90 533 111 0001",
             ContactPersonUsername = "ahmet.yilmaz",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         new Company
         {
@@ -43,7 +43,7 @@ public static class SampleCompanyCustomerSeed
             ContactPersonPhone = "+90 533 222 0002",
             ContactPersonUsername = "mehmet.demir",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         new Company
         {
@@ -59,17 +59,17 @@ public static class SampleCompanyCustomerSeed
             ContactPersonPhone = "+90 533 333 0003",
             ContactPersonUsername = "can.ozturk",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         }
     ];
 
     // Licensed Department Modules
     public static IReadOnlyList<CompanyModule> BuildCompanyModules() =>
     [
-        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), CompanyId = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Acme -> Muhasebe
-        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), CompanyId = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Acme -> Stok
-        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), CompanyId = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Beta -> Stok
-        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), CompanyId = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }  // Beta -> API
+        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), CompanyId = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Acme -> Muhasebe
+        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), CompanyId = SeedIdentity.FromLegacyInt(1), ModuleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Acme -> Stok
+        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), CompanyId = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Beta -> Stok
+        new CompanyModule { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), CompanyId = SeedIdentity.FromLegacyInt(2), ModuleId = SeedIdentity.FromLegacyInt(4), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }  // Beta -> API
     ];
 
     // Customer Accounts (Id: 5..8)
@@ -86,7 +86,7 @@ public static class SampleCompanyCustomerSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 533 111 0001",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         // Acme Customer 2
         new Account
@@ -99,7 +99,7 @@ public static class SampleCompanyCustomerSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 533 111 0002",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         // Beta Customer 3
         new Account
@@ -112,7 +112,7 @@ public static class SampleCompanyCustomerSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 533 222 0002",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         },
         // Gamma Customer 4
         new Account
@@ -125,15 +125,15 @@ public static class SampleCompanyCustomerSeed
             Password = DefaultPasswordHash,
             PhoneNumber = "+90 533 333 0003",
             IsActive = true,
-            CreatedAt = new DateTime(2024, 1, 1)
+            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         }
     ];
 
     public static IReadOnlyList<Customer> BuildCustomers() =>
     [
-        new Customer { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), AccountId = SeedIdentity.FromLegacyInt(5), CompanyId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Ahmet -> Acme
-        new Customer { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), AccountId = SeedIdentity.FromLegacyInt(6), CompanyId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Ayse -> Acme
-        new Customer { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), AccountId = SeedIdentity.FromLegacyInt(7), CompanyId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }, // Mehmet -> Beta
-        new Customer { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), AccountId = SeedIdentity.FromLegacyInt(8), CompanyId = SeedIdentity.FromLegacyInt(3), IsActive = true, CreatedAt = new DateTime(2024, 1, 1) }  // Can -> Gamma
+        new Customer { PublicId = SeedIdentity.FromLegacyInt(1), Id = SeedIdentity.FromLegacyInt(1), AccountId = SeedIdentity.FromLegacyInt(5), CompanyId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Ahmet -> Acme
+        new Customer { PublicId = SeedIdentity.FromLegacyInt(2), Id = SeedIdentity.FromLegacyInt(2), AccountId = SeedIdentity.FromLegacyInt(6), CompanyId = SeedIdentity.FromLegacyInt(1), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Ayse -> Acme
+        new Customer { PublicId = SeedIdentity.FromLegacyInt(3), Id = SeedIdentity.FromLegacyInt(3), AccountId = SeedIdentity.FromLegacyInt(7), CompanyId = SeedIdentity.FromLegacyInt(2), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, // Mehmet -> Beta
+        new Customer { PublicId = SeedIdentity.FromLegacyInt(4), Id = SeedIdentity.FromLegacyInt(4), AccountId = SeedIdentity.FromLegacyInt(8), CompanyId = SeedIdentity.FromLegacyInt(3), IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }  // Can -> Gamma
     ];
 }

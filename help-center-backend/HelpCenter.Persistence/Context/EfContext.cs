@@ -284,11 +284,36 @@ public class EfContext : DbContext
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                    if (entry.Entity.CreatedAt == default)
+                        entry.Entity.CreatedAt = DateTime.UtcNow;
                     break;
                 case EntityState.Modified:
                     entry.Entity.UpdatedAt = DateTime.UtcNow;
                     break;
+            }
+        }
+
+        // PostgreSQL timestamptz values must be UTC. DateTimeKind.Unspecified is treated
+        // as UTC by this application's persistence contract; local values are converted.
+        // This also covers business timestamps such as ConversationParticipant.JoinedAt,
+        // which are not part of IAuditable and therefore bypass the audit timestamp handling.
+        foreach (var entry in ChangeTracker.Entries()
+                     .Where(entry => entry.State is EntityState.Added or EntityState.Modified))
+        {
+            foreach (var property in entry.Entity.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                         .Where(property => property.CanRead && property.CanWrite))
+            {
+                var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                if (propertyType != typeof(DateTime) || property.GetValue(entry.Entity) is not DateTime value)
+                    continue;
+
+                var utcValue = value.Kind switch
+                {
+                    DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+                    DateTimeKind.Local => value.ToUniversalTime(),
+                    _ => value
+                };
+                property.SetValue(entry.Entity, utcValue);
             }
         }
 

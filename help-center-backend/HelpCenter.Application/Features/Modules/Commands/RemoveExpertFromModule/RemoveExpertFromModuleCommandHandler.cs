@@ -19,7 +19,7 @@ public class RemoveExpertFromModuleCommandHandler : IRequestHandler<RemoveExpert
         RemoveExpertFromModuleRules.ModuleExpertShouldExist(expert);
 
         expert!.IsDeleted = true;
-        expert.UpdatedAt = DateTime.Now;
+        expert.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Repository<ModuleExpert>().UpdateAsync(expert, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);

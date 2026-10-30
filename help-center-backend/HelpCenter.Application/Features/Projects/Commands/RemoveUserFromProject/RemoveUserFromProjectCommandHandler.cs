@@ -19,7 +19,7 @@ public class RemoveUserFromProjectCommandHandler : IRequestHandler<RemoveUserFro
         RemoveUserFromProjectRules.ProjectAssignmentShouldExist(userProject);
 
         userProject!.IsDeleted = true;
-        userProject.UpdatedAt = DateTime.Now;
+        userProject.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Repository<UserProject>().UpdateAsync(userProject, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);

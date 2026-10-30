@@ -33,7 +33,7 @@ public class DeleteCustomerCommandHandler : IRequestHandler<DeleteCustomerComman
         };
 
         customer.IsDeleted = true;
-        customer.UpdatedAt = DateTime.Now;
+        customer.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Repository<Customer>().UpdateAsync(customer, cancellationToken);
         var after = new

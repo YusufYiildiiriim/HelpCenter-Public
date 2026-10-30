@@ -3,7 +3,7 @@
     "Name": "Account",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Email": "admin@helpcenter.com",
       "FirstName": "Admin",
@@ -27,7 +27,7 @@
     "Name": "CustomerRequestStatus",
     "Values": {
       "Id": "10000000-0000-4000-8000-000000000001",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Kullan\u0131c\u0131dan gelen talep cevaplanmay\u0131 bekliyor.",
       "IsActive": true,
@@ -45,7 +45,7 @@
     "Name": "CustomerRequestStatus",
     "Values": {
       "Id": "10000000-0000-4000-8000-000000000002",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Talep bir temsilci taraf\u0131ndan cevapland\u0131.",
       "IsActive": true,
@@ -63,7 +63,7 @@
     "Name": "CustomerRequestStatus",
     "Values": {
       "Id": "10000000-0000-4000-8000-000000000003",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Talep ba\u015Far\u0131yla kapat\u0131ld\u0131.",
       "IsActive": true,
@@ -81,7 +81,7 @@
     "Name": "CustomerRequestStatus",
     "Values": {
       "Id": "10000000-0000-4000-8000-000000000004",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Talep bir uzman taraf\u0131ndan inceleniyor.",
       "IsActive": true,
@@ -99,7 +99,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000015",
-      "CreatedAt": "2026-10-16T00:00:00",
+      "CreatedAt": "2026-10-16T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "ClipboardList",
@@ -122,7 +122,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": "Talep Takip",
       "Icon": "BarChart3",
@@ -145,7 +145,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000002",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "ClipboardList",
@@ -168,7 +168,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000003",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "Inbox",
@@ -191,7 +191,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000004",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": "Tan\u0131mlamalar",
       "Icon": "Building2",
@@ -214,7 +214,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000005",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "FolderKanban",
@@ -237,7 +237,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000006",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "Users",
@@ -260,7 +260,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000007",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "HelpCircle",
@@ -283,7 +283,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000008",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "BookOpen",
@@ -306,7 +306,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000010",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": "Sistem Ayarlar\u0131",
       "Icon": "ShieldCheck",
@@ -329,7 +329,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000011",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "LayoutGrid",
@@ -352,7 +352,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000012",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "MessageSquare",
@@ -375,7 +375,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000013",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "LayoutList",
@@ -398,7 +398,7 @@
     "Name": "MenuItem",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000014",
-      "CreatedAt": "2026-08-01T00:00:00",
+      "CreatedAt": "2026-08-01T00:00:00Z",
       "CreatedByAccountId": null,
       "GroupTitle": null,
       "Icon": "Building2",
@@ -422,7 +422,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
       "Address": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Email": "info@helpcenter.com",
       "FooterText": null,
@@ -444,7 +444,7 @@
     "Name": "Role",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "S\u00FCper Admin - Tam yetki",
       "IsActive": true,
@@ -462,7 +462,7 @@
     "Name": "Role",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000002",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "M\u00FC\u015Fteri Temsilcisi - Talep ve firma okuma/y\u00F6netme",
       "IsActive": true,
@@ -480,7 +480,7 @@
     "Name": "Role",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000003",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Son Kullan\u0131c\u0131 - Talep olu\u015Fturma ve mesajla\u015Fma",
       "IsActive": true,
@@ -498,7 +498,7 @@
     "Name": "Role",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000004",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "Description": "Yetkili Ki\u015Fi - Mod\u00FCl uzman\u0131, yaln\u0131zca atanan talepleri inceler",
       "IsActive": true,
@@ -517,7 +517,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -536,7 +536,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000002",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -555,7 +555,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000003",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -574,7 +574,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000004",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -593,7 +593,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000005",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -612,7 +612,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000006",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -631,7 +631,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000008",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -650,7 +650,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000009",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -669,7 +669,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000010",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -688,7 +688,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000011",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -707,7 +707,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000012",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -726,7 +726,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000013",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -745,7 +745,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000014",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -764,7 +764,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000015",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -783,7 +783,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000016",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -802,7 +802,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000020",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -821,7 +821,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000021",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -840,7 +840,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000022",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -859,7 +859,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000023",
       "AllowedFieldsJson": "[\u0022statusDistribution\u0022,\u0022dailyTrend\u0022]",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -878,7 +878,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000030",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -897,7 +897,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000040",
       "AllowedFieldsJson": null,
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -916,7 +916,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -933,7 +933,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000002",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -950,7 +950,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000003",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -967,7 +967,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000004",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -984,7 +984,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000005",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1001,7 +1001,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000006",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1018,7 +1018,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000007",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1035,7 +1035,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000008",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1052,7 +1052,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000009",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1069,7 +1069,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000010",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1086,7 +1086,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000011",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1103,7 +1103,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000012",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1120,7 +1120,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000013",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1137,7 +1137,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000014",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1154,7 +1154,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000015",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1171,7 +1171,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000016",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1188,7 +1188,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000017",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1205,7 +1205,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000018",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1222,7 +1222,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000019",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1239,7 +1239,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000020",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1256,7 +1256,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000021",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1273,7 +1273,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000022",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1290,7 +1290,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000023",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1307,7 +1307,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000024",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1324,7 +1324,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000025",
       "Action": "Delete",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1341,7 +1341,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000026",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1358,7 +1358,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000027",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1375,7 +1375,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000050",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1392,7 +1392,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000051",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1409,7 +1409,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000052",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1426,7 +1426,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000053",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1443,7 +1443,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000054",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1460,7 +1460,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000070",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1477,7 +1477,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000071",
       "Action": "Create",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1494,7 +1494,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000072",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1511,7 +1511,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000080",
       "Action": "Read",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1528,7 +1528,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000081",
       "Action": "Update",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1545,7 +1545,7 @@
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
       "AccountId": "00000000-0000-0000-0000-000000000001",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,
@@ -1561,7 +1561,7 @@
     "Name": "UserRole",
     "Values": {
       "Id": "00000000-0000-0000-0000-000000000001",
-      "CreatedAt": "2024-01-01T00:00:00",
+      "CreatedAt": "2024-01-01T00:00:00Z",
       "CreatedByAccountId": null,
       "IsActive": true,
       "IsDeleted": false,

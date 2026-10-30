@@ -18,7 +18,7 @@ public static class OrganizationSeed
                 TaxNumber = "1234567890",
                 TaxOffice = "Maslak V.D.",
                 IsActive = true,
-                CreatedAt = new DateTime(2024, 1, 1)
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
     }
