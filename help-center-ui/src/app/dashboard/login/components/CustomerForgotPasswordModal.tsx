@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AuthService } from "@/services/common/AuthService";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { isValidEmailAddress } from "@/lib/validation";
+import { useLocale } from "@/context/LocaleContext";
 
 interface CustomerForgotPasswordModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
   onClose,
   onSuccess,
 }) => {
+  const { t } = useLocale();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
@@ -33,11 +35,11 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
     e.preventDefault();
 
     if (!username.trim()) {
-      toast.error("Lütfen kullanıcı adınızı veya e-posta adresinizi girin.");
+      toast.error(t("enterEmailOrUsername"));
       return;
     }
     if (username.includes("@") && !isValidEmailAddress(username)) {
-      toast.error("Lütfen geçerli bir e-posta adresi girin.");
+      toast.error(t("enterValidEmail"));
       return;
     }
 
@@ -58,7 +60,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
     e.preventDefault();
 
     if (code.trim().length !== 6) {
-      toast.error("Doğrulama kodu 6 haneli olmalıdır.");
+      toast.error(t("invalidSixDigitCode"));
       return;
     }
 
@@ -79,19 +81,19 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
     e.preventDefault();
 
     if (newPassword.length < 6) {
-      toast.error("Şifre en az 6 karakter olmalıdır.");
+      toast.error(t("passwordMinimum6"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Şifreler uyuşmuyor. Lütfen kontrol edin.");
+      toast.error(t("passwordsMismatch"));
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await AuthService.resetPasswordWithCode({
+      await AuthService.resetPasswordWithCode({
         emailOrUsername: username.trim(),
         code: code.trim(),
         newPassword,
@@ -99,7 +101,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
         isCustomer: true,
       });
 
-      toast.success(res.message || "Şifreniz başarıyla yenilendi! Giriş ekranına aktarılıyorsunuz...");
+      toast.success(t("passwordResetSuccess"));
       setResetComplete(true);
 
       setTimeout(() => {
@@ -149,7 +151,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       setStep((prev) => (prev - 1) as 1 | 2);
                     }}
                     className="w-10 h-10 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer"
-                    title="Geri dön"
+                    title={t("back")}
                   >
                     <ArrowLeft size={20} />
                   </button>
@@ -159,17 +161,18 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                   </div>
                 )}
                 <div>
-                  <h2 className="text-xl font-black text-white tracking-tight">Şifremi Unuttum</h2>
+                  <h2 className="text-xl font-black text-white tracking-tight">{t("forgotPasswordTitle")}</h2>
                   <p className="text-xs text-slate-400 font-medium">
-                    {step === 1 && "1. Aşama: Kod Talebi"}
-                    {step === 2 && "2. Aşama: Onay Kodu Girişi"}
-                    {step === 3 && "3. Aşama: Yeni Şifre"}
+                    {step === 1 && `1. ${t("stepCodeRequest")}`}
+                    {step === 2 && `2. ${t("stepEnterCode")}`}
+                    {step === 3 && `3. ${t("stepNewPassword")}`}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleClose}
+                aria-label={t("close")}
                 className="w-10 h-10 rounded-2xl bg-slate-800/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X size={20} />
@@ -182,12 +185,12 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
               {step === 1 && (
                 <form onSubmit={handleSendCode} className="space-y-6">
                   <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                    Portal hesabınıza kayıtlı kullanıcı adı veya e-posta adresinizi girin. E-posta adresinize 6 haneli doğrulama kodu gönderilecektir.
+                    {t("customerForgotInstructions")}
                   </p>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
-                      Kullanıcı Adı veya E-Posta
+                      {t("emailOrUsername")}
                     </label>
                     <div className="relative group">
                       <AtSign
@@ -199,7 +202,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full pl-14 pr-6 py-4 bg-slate-800 border border-slate-700 rounded-[1.4rem] text-white focus:ring-8 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-500 font-bold text-sm"
-                        placeholder="Kullanıcı adı veya e-posta"
+                        placeholder={t("usernameOrEmailPlaceholder")}
                       />
                     </div>
                   </div>
@@ -210,7 +213,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       onClick={handleClose}
                       className="w-1/2 py-4 px-6 rounded-[1.4rem] border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                     >
-                      İptal
+                      {t("cancel")}
                     </button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -221,7 +224,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                     >
                       {loading ? <Loader2 className="animate-spin" size={20} /> : (
                         <>
-                          KODU GÖNDER
+                          {t("sendCode")}
                           <Send size={14} />
                         </>
                       )}
@@ -234,7 +237,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
               {step === 2 && (
                 <form onSubmit={handleVerifyCode} className="space-y-6">
                   <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-medium">Hesap: <strong className="text-slate-200">{username}</strong></span>
+                    <span className="text-slate-400 font-medium">{t("account")}: <strong className="text-slate-200">{username}</strong></span>
                     <button
                       type="button"
                       onClick={() => {
@@ -242,13 +245,13 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       }}
                       className="text-indigo-400 hover:underline font-bold text-xs cursor-pointer"
                     >
-                      Değiştir
+                      {t("change")}
                     </button>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
-                      E-Postanıza Gelen 6 Haneli Kod (OTP)
+                      {t("otpCodeLabel")}
                     </label>
                     <div className="relative group">
                       <KeyRound
@@ -273,7 +276,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       onClick={handleClose}
                       className="w-1/2 py-4 px-6 rounded-[1.4rem] border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                     >
-                      İptal
+                      {t("cancel")}
                     </button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -284,7 +287,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                     >
                       {loading ? <Loader2 className="animate-spin" size={20} /> : (
                         <>
-                          İLERLE
+                          {t("continueAction")}
                           <ArrowRight size={14} />
                         </>
                       )}
@@ -297,12 +300,12 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
               {step === 3 && (
                 <form onSubmit={handleResetPassword} className="space-y-6">
                   <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                    Kod başarıyla doğrulandı. Portal hesabınız için yeni şifrenizi belirleyin.
+                    {t("customerVerifiedResetInstruction")}
                   </p>
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
-                      Yeni Şifre
+                      {t("newPassword")}
                     </label>
                     <div className="relative group">
                       <Lock
@@ -315,14 +318,14 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full pl-14 pr-14 py-4 bg-slate-800 border border-slate-700 rounded-[1.4rem] text-white focus:ring-8 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-500 font-bold text-sm"
-                        placeholder="En az 6 karakter"
+                        placeholder={t("minPassword")}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
                         tabIndex={-1}
                         className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition-colors cursor-pointer"
-                        aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                        aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -331,7 +334,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
-                      Yeni Şifre Tekrar
+                      {t("confirmNewPassword")}
                     </label>
                     <div className="relative group">
                       <Lock
@@ -344,7 +347,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full pl-14 pr-6 py-4 bg-slate-800 border border-slate-700 rounded-[1.4rem] text-white focus:ring-8 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-500 font-bold text-sm"
-                        placeholder="Yeni şifrenizi tekrar girin"
+                        placeholder={t("confirmNewPasswordPlaceholder")}
                       />
                     </div>
                   </div>
@@ -355,7 +358,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       onClick={handleClose}
                       className="w-1/2 py-4 px-6 rounded-[1.4rem] border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                     >
-                      İptal
+                      {t("cancel")}
                     </button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -364,7 +367,7 @@ export const CustomerForgotPasswordModal: React.FC<CustomerForgotPasswordModalPr
                       type="submit"
                       className="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-[1.4rem] shadow-xl shadow-indigo-600/20 transition-all disabled:opacity-50 flex items-center justify-center text-[10px] uppercase tracking-widest cursor-pointer"
                     >
-                      {loading ? <Loader2 className="animate-spin" size={20} /> : "ŞİFREYİ SIFIRLA"}
+                      {loading ? <Loader2 className="animate-spin" size={20} /> : t("resetPassword")}
                     </motion.button>
                   </div>
                 </form>

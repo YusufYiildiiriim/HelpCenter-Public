@@ -10,9 +10,11 @@ import { usePageTitle } from "@/lib/usePageTitle";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { toApiUrl } from "@/lib/env";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { useLocale } from "@/context/LocaleContext";
 
 export default function AdminLoginPage() {
-  usePageTitle("Admin Girişi");
+  const { t } = useLocale();
+  usePageTitle(t("adminLogin"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -84,17 +86,17 @@ export default function AdminLoginPage() {
               <div className="text-center">
                 <h1 className="text-2xl font-black tracking-tight text-white">{orgName}</h1>
                 <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-300">
-                  Admin Paneli v2.0
+                  {t("adminPanelVersion")}
                 </span>
               </div>
             </div>
 
             <div className="mb-8 text-center">
-              <p className="text-sm font-medium text-slate-400">Lütfen yetkili bilgileri ile oturum açın.</p>
+              <p className="text-sm font-medium text-slate-400">{t("authorizedSignIn")}</p>
             </div>
 
             {error && (
-              <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-semibold text-red-400 animate-shake">
+              <div role="alert" className="mb-6 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-semibold text-red-400 animate-shake">
                 <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500 animate-pulse" />
                 {error}
               </div>
@@ -113,7 +115,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="mt-8 text-center text-sm font-medium text-slate-500">
-          {orgName} Admin Paneli v2.0.4 &copy; {new Date().getFullYear()}
+          {orgName} {t("adminPanelFooter")} &copy; {new Date().getFullYear()}
         </p>
       </div>
 

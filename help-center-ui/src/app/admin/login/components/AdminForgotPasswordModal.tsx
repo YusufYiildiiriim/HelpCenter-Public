@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Loader2, KeyRound, Eye, EyeOff, X, CheckCircle2, AlertCircle, ArrowLeft, Send, ArrowRight } from "lucide-react";
 import { AuthService } from "@/services/common/AuthService";
 import { getApiErrorMessage } from "@/lib/api/errors";
+import { useLocale } from "@/context/LocaleContext";
 
 interface AdminForgotPasswordModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
   onClose,
   onSuccess,
 }) => {
+  const { t } = useLocale();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -38,7 +40,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
     setSuccessMessage(null);
 
     if (!email.trim()) {
-      setError("Lütfen e-posta adresinizi veya kullanıcı adınızı girin.");
+      setError(t("enterEmailOrUsername"));
       return;
     }
 
@@ -63,7 +65,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
     setSuccessMessage(null);
 
     if (code.trim().length !== 6) {
-      setError("Doğrulama kodu 6 haneli sayısal kod olmalıdır.");
+      setError(t("invalidSixDigitCode"));
       return;
     }
 
@@ -88,19 +90,19 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
     setSuccessMessage(null);
 
     if (newPassword.length < 6) {
-      setError("Yeni şifre en az 6 karakter olmalıdır.");
+      setError(t("passwordMinimum6"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Şifreler uyuşmuyor. Lütfen tekrar kontrol edin.");
+      setError(t("passwordsMismatch"));
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await AuthService.resetPasswordWithCode({
+      await AuthService.resetPasswordWithCode({
         emailOrUsername: email.trim(),
         code: code.trim(),
         newPassword,
@@ -108,7 +110,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
         isCustomer: false,
       });
 
-      setSuccessMessage(res.message || "Şifreniz başarıyla sıfırlandı! Giriş ekranına aktarılıyorsunuz...");
+      setSuccessMessage(t("passwordResetSuccess"));
 
       setTimeout(() => {
         onSuccess(email.trim());
@@ -153,7 +155,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                   setSuccessMessage(null);
                 }}
                 className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                title="Geri dön"
+                title={t("back")}
               >
                 <ArrowLeft size={18} />
               </button>
@@ -163,17 +165,18 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
               </div>
             )}
             <div>
-              <h2 className="text-base font-black text-white">Şifremi Unuttum</h2>
+              <h2 className="text-base font-black text-white">{t("forgotPasswordTitle")}</h2>
               <p className="text-xs text-slate-400 font-medium">
-                {step === 1 && "Adım 1: Kod Talebi"}
-                {step === 2 && "Adım 2: Onay Kodunu Girin"}
-                {step === 3 && "Adım 3: Yeni Şifre Oluşturun"}
+                {step === 1 && `1. ${t("stepCodeRequest")}`}
+                {step === 2 && `2. ${t("stepEnterCode")}`}
+                {step === 3 && `3. ${t("stepNewPassword")}`}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
+            aria-label={t("close")}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
           >
             <X size={18} />
@@ -200,12 +203,12 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
           {step === 1 && (
             <form onSubmit={handleSendCode} className="space-y-5">
               <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                Sistemde kayıtlı e-posta adresinizi veya kullanıcı adınızı girin. Hesabınıza 6 haneli şifre sıfırlama doğrulama kodu gönderilecektir.
+                {t("adminForgotInstructions")}
               </p>
 
               <div className="space-y-1.5">
                 <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  E-Posta / Kullanıcı Adı
+                  {t("emailOrUsername")}
                 </label>
                 <div className="relative group/input">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 pointer-events-none group-focus-within/input:text-indigo-400 transition-colors">
@@ -215,7 +218,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                     type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@helpcenter.com veya kullanıcı adı"
+                    placeholder={t("adminForgotPlaceholder")}
                     className={inputClass}
                   />
                 </div>
@@ -227,7 +230,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                   onClick={handleClose}
                   className="w-1/2 py-3 px-4 rounded-xl border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  İptal
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
@@ -236,7 +239,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                 >
                   {loading ? <Loader2 className="animate-spin" size={18} /> : (
                     <>
-                      Kodu Gönder
+                      {t("sendCode")}
                       <Send size={14} />
                     </>
                   )}
@@ -249,7 +252,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
           {step === 2 && (
             <form onSubmit={handleVerifyCode} className="space-y-5">
               <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Hedef Hesap: <strong className="text-slate-200">{email}</strong></span>
+                <span className="text-slate-400 font-medium">{t("targetAccount")}: <strong className="text-slate-200">{email}</strong></span>
                 <button
                   type="button"
                   onClick={() => {
@@ -259,13 +262,13 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                   }}
                   className="text-indigo-400 hover:underline font-bold text-[11px] cursor-pointer"
                 >
-                  Değiştir
+                  {t("change")}
                 </button>
               </div>
 
               <div className="space-y-1.5">
                 <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  E-Postanıza Gelen 6 Haneli Kod (OTP)
+                  {t("otpCodeLabel")}
                 </label>
                 <div className="relative group/input">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 pointer-events-none group-focus-within/input:text-indigo-400 transition-colors">
@@ -289,7 +292,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                   onClick={handleClose}
                   className="w-1/2 py-3 px-4 rounded-xl border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  İptal
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
@@ -298,7 +301,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                 >
                   {loading ? <Loader2 className="animate-spin" size={18} /> : (
                     <>
-                      İlerle
+                      {t("continueAction")}
                       <ArrowRight size={14} />
                     </>
                   )}
@@ -311,12 +314,12 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
           {step === 3 && (
             <form onSubmit={handleResetPassword} className="space-y-5">
               <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                Kod başarıyla doğrulandı. Hesabınız için yeni şifrenizi belirleyin.
+                {t("adminVerifiedResetInstruction")}
               </p>
 
               <div className="space-y-1.5">
                 <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  Yeni Şifre
+                  {t("newPassword")}
                 </label>
                 <div className="relative group/input">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 pointer-events-none group-focus-within/input:text-indigo-400 transition-colors">
@@ -326,7 +329,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                     type={showPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="En az 6 karakter"
+                    placeholder={t("minPassword")}
                     className={inputClass}
                     required
                   />
@@ -335,7 +338,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                     onClick={() => setShowPassword((prev) => !prev)}
                     tabIndex={-1}
                     className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 hover:text-indigo-400 transition-colors cursor-pointer"
-                    aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -344,7 +347,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
 
               <div className="space-y-1.5">
                 <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  Yeni Şifre Tekrar
+                  {t("confirmNewPassword")}
                 </label>
                 <div className="relative group/input">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 pointer-events-none group-focus-within/input:text-indigo-400 transition-colors">
@@ -354,7 +357,7 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Yeni şifrenizi tekrar girin"
+                    placeholder={t("confirmNewPasswordPlaceholder")}
                     className={inputClass}
                     required
                   />
@@ -367,14 +370,14 @@ export const AdminForgotPasswordModal: React.FC<AdminForgotPasswordModalProps> =
                   onClick={handleClose}
                   className="w-1/2 py-3 px-4 rounded-xl border border-slate-700 bg-slate-800/60 font-black uppercase tracking-widest text-[10px] text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  İptal
+                  {t("cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !!successMessage}
                   className="w-1/2 flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-600 to-violet-600 py-3 font-black uppercase tracking-widest text-[10px] text-white shadow-lg shadow-indigo-600/20 transition-all hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 cursor-pointer"
                 >
-                  {loading ? <Loader2 className="animate-spin" size={18} /> : "Şifreyi Sıfırla"}
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : t("resetPassword")}
                 </button>
               </div>
             </form>

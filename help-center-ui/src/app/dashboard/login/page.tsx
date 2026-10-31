@@ -127,13 +127,13 @@ export default function DashboardLoginPage() {
 
               <div>
                 <div className="flex justify-between items-center px-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Şifre</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t("password")}</label>
                   <button 
                     type="button" 
                     onClick={() => setIsForgotPasswordOpen(true)}
                     className="text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:underline cursor-pointer"
                   >
-                    Şifremi Unuttum
+                    {t("forgotPassword")}
                   </button>
                 </div>
                 <div className="mt-2 sm:mt-3">
@@ -176,7 +176,7 @@ export default function DashboardLoginPage() {
                 <Loader2 className="animate-spin" size={22} />
               ) : (
                 <>
-                  DASHBOARD&apos;A GİRİŞ
+                  {t("dashboardSignIn")}
                   <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
                 </>
               )}

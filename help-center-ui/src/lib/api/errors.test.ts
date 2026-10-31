@@ -19,9 +19,12 @@ describe("localized API errors", () => {
 
   it("uses the selected locale for known machine error codes", () => {
     document.cookie = "hc_locale=en-US";
+    expect(getApiErrorMessage(apiError("InvalidCredentials", 401))).toBe("Incorrect username, email, or password.");
+    document.cookie = "hc_locale=en-US";
     expect(getApiErrorMessage(apiError("RequestSubjectLocked", 409))).toBe("This request subject is locked and cannot be changed.");
 
     document.cookie = "hc_locale=tr-TR";
+    expect(getApiErrorMessage(apiError("InvalidCredentials", 401))).toBe("Hatalı kullanıcı adı/e-posta veya şifre.");
     expect(getApiErrorMessage(apiError("RequestSubjectLocked", 409))).toBe("Bu talep konusu kilitli olduğu için değiştirilemiyor.");
   });
 
