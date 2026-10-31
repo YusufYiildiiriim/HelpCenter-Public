@@ -4,6 +4,8 @@ export interface PublicGuide {
   publicId: string;
   title: string;
   description: string;
+  requestedLocale?: string;
+  contentLocale?: string | null;
   module: string;
   youtubeUrl?: string | null;
   previousGuidePublicId?: string | null;

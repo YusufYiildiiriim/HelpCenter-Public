@@ -1,5 +1,7 @@
 import api from "@/lib/axios";
 
+export interface GuideTranslationText { locale: string; title: string; description: string }
+
 export interface GuideDocument {
   path: string;
   fileName: string;
@@ -9,6 +11,8 @@ export interface Guide {
   id: string;
   title: string;
   description: string;
+  sourceLocale?: string | null;
+  translations?: GuideTranslationText[];
   module: string;
   moduleId?: string;
   previousGuideId?: string | null;
@@ -23,6 +27,9 @@ export interface CreateGuideRequest {
   moduleId?: string;
   title: string;
   description: string;
+  sourceLocale: string;
+  translations: GuideTranslationText[];
+  englishFiles?: File[];
   module: string;
   previousGuideId?: string | null;
   youtubeUrl?: string | null;
@@ -39,8 +46,14 @@ export interface UpdateGuideRequest extends CreateGuideRequest {
 const buildGuideFormData = (data: CreateGuideRequest | UpdateGuideRequest): FormData => {
   const formData = new FormData();
   Object.entries(data).forEach(([key, value]) => {
-    if (key === "files" && value) {
-      (value as File[]).forEach((file) => formData.append("Files", file));
+    if ((key === "files" || key === "englishFiles") && value) {
+      (value as File[]).forEach((file) => formData.append(key === "files" ? "Files" : "EnglishFiles", file));
+    } else if (key === "translations" && Array.isArray(value)) {
+      (value as GuideTranslationText[]).forEach((item, index) => {
+        formData.append("Translations[" + index + "].Locale", item.locale);
+        formData.append("Translations[" + index + "].Title", item.title);
+        formData.append("Translations[" + index + "].Description", item.description);
+      });
     } else if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }

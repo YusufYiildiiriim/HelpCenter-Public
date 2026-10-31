@@ -886,6 +886,10 @@ namespace HelpCenter.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("SourceLocale")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -903,6 +907,66 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("FAQs");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.FAQTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FAQId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("RowVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("FAQId", "Locale")
+                        .IsUnique();
+
+                    b.ToTable("FAQTranslations");
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.Guide", b =>
@@ -954,6 +1018,10 @@ namespace HelpCenter.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("SourceLocale")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -977,6 +1045,121 @@ namespace HelpCenter.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Guides");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.GuideTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("GuideId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("RowVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("GuideId", "Locale")
+                        .IsUnique();
+
+                    b.ToTable("GuideTranslations");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.GuideTranslationDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("GuideTranslationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LastModifiedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("RowVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuideTranslationId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.ToTable("GuideTranslationDocuments");
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.MenuItem", b =>
@@ -2002,6 +2185,17 @@ namespace HelpCenter.Persistence.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("HelpCenter.Domain.Entities.FAQTranslation", b =>
+                {
+                    b.HasOne("HelpCenter.Domain.Entities.FAQ", "FAQ")
+                        .WithMany("Translations")
+                        .HasForeignKey("FAQId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FAQ");
+                });
+
             modelBuilder.Entity("HelpCenter.Domain.Entities.Guide", b =>
                 {
                     b.HasOne("HelpCenter.Domain.Entities.Module", "ModuleEntity")
@@ -2023,6 +2217,28 @@ namespace HelpCenter.Persistence.Migrations
                     b.Navigation("PreviousRequest");
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.GuideTranslation", b =>
+                {
+                    b.HasOne("HelpCenter.Domain.Entities.Guide", "Guide")
+                        .WithMany("Translations")
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.GuideTranslationDocument", b =>
+                {
+                    b.HasOne("HelpCenter.Domain.Entities.GuideTranslation", "GuideTranslation")
+                        .WithMany("Documents")
+                        .HasForeignKey("GuideTranslationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GuideTranslation");
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.MenuItem", b =>
@@ -2239,11 +2455,23 @@ namespace HelpCenter.Persistence.Migrations
                     b.Navigation("Documents");
                 });
 
+            modelBuilder.Entity("HelpCenter.Domain.Entities.FAQ", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("HelpCenter.Domain.Entities.Guide", b =>
                 {
                     b.Navigation("Documents");
 
                     b.Navigation("NextRequest");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("HelpCenter.Domain.Entities.GuideTranslation", b =>
+                {
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("HelpCenter.Domain.Entities.MenuItem", b =>

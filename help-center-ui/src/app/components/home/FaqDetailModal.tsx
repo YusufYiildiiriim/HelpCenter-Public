@@ -4,6 +4,7 @@ import React from "react";
 import { HelpCircle, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PublicFaq as Faq } from "@/services/public/PublicFaqService";
+import { useLocale } from "@/context/LocaleContext";
 
 interface FaqDetailModalProps {
   selectedFaq: Faq | null;
@@ -11,6 +12,7 @@ interface FaqDetailModalProps {
 }
 
 export const FaqDetailModal: React.FC<FaqDetailModalProps> = ({ selectedFaq, setSelectedFaq }) => {
+  const { locale, t } = useLocale();
   return (
     <AnimatePresence>
       {selectedFaq && (
@@ -61,6 +63,7 @@ export const FaqDetailModal: React.FC<FaqDetailModalProps> = ({ selectedFaq, set
             {/* Content */}
             <div className="flex-1 overflow-y-auto hide-scrollbar bg-obsidian-950/50">
               <div className="p-5 sm:p-8 md:p-10">
+                {selectedFaq.contentLocale && selectedFaq.contentLocale !== locale && <p className="mb-3 text-xs text-amber-300">{t("shownIn")} {selectedFaq.contentLocale}</p>}
                 <h1 className="text-lg sm:text-xl md:text-2xl font-black text-white mb-5 sm:mb-6 leading-tight tracking-tight">
                   {selectedFaq.title}
                 </h1>

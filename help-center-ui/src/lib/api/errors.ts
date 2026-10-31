@@ -33,6 +33,26 @@ const STATUS_MESSAGES: Record<number, string> = {
   504: SERVER_ERROR_MESSAGE,
 };
 
+const STATUS_MESSAGES_EN: Record<number, string> = {
+  400: "The submitted information is invalid. Check the fields and try again.",
+  401: "Your session is invalid or has expired. Sign in again.",
+  403: "You do not have permission to perform this action.",
+  404: "The requested record was not found.",
+  409: "This action could not be completed because the record has changed.",
+  422: "The submitted information could not be processed.",
+  429: "Too many requests. Try again shortly.",
+  500: "A temporary server problem occurred. Try again.", 502: "A temporary server problem occurred. Try again.",
+  503: "A temporary server problem occurred. Try again.", 504: "A temporary server problem occurred. Try again.",
+};
+
+function isEnglishLocale(): boolean {
+  return typeof document !== "undefined" && document.cookie.split("; ").some((value) => value === "hc_locale=en-US");
+}
+
+const ENGLISH_NETWORK_ERROR = "Could not connect to the server. Check your connection and try again.";
+const ENGLISH_TIMEOUT_ERROR = "The server response timed out. Try again.";
+const ENGLISH_GENERIC_ERROR = "Something went wrong. Try again.";
+
 function getResponseData(error: unknown): Partial<ApiResponse<unknown>> | undefined {
   if (!axios.isAxiosError(error)) return undefined;
   const data: unknown = error.response?.data;
@@ -82,21 +102,23 @@ export function isTimeoutError(error: unknown): boolean {
 }
 
 export function getApiErrorMessage(error: unknown): string {
-  if (isTimeoutError(error)) return TIMEOUT_ERROR_MESSAGE;
-  if (isNetworkError(error)) return NETWORK_ERROR_MESSAGE;
+  const english = isEnglishLocale();
+  if (isTimeoutError(error)) return english ? ENGLISH_TIMEOUT_ERROR : TIMEOUT_ERROR_MESSAGE;
+  if (isNetworkError(error)) return english ? ENGLISH_NETWORK_ERROR : NETWORK_ERROR_MESSAGE;
 
   const status = getApiErrorStatus(error);
-  if (status === 409 && getApiErrorCode(error) === "ConcurrencyConflict") {
-    return "Kayıt başka biri tarafından güncellendi. Sayfayı yenileyip tekrar deneyin.";
+  if (status === 409 && getApiErrorCode(error) === "ConcurrencyConflict")
+    return english ? "Another user updated this record. Refresh the page and try again." : "Kayıt başka biri tarafından güncellendi. Sayfayı yenileyip tekrar deneyin.";
+  if (status === 401 && getApiErrorCode(error) === "InvalidCredentials")
+    return english ? "Incorrect username, email, or password." : "Hatalı kullanıcı adı/e-posta veya şifre.";
+  if (status) {
+    const message = (english ? STATUS_MESSAGES_EN : STATUS_MESSAGES)[status];
+    if (message) return message;
   }
-  if (status === 401 && getApiErrorCode(error) === "InvalidCredentials") {
-    return "Hatalı kullanıcı adı/e-posta veya şifre.";
-  }
-  if (status && STATUS_MESSAGES[status]) return STATUS_MESSAGES[status];
 
   // Never render server-provided messages or Error.message. They can contain exception,
-  // proxy, database, or upstream-service details. The correlation id stays available for support.
-  return GENERIC_FALLBACK_MESSAGE;
+  // proxy, database, or upstream-service details. Keep the correlation id available for support.
+  return english ? ENGLISH_GENERIC_ERROR : GENERIC_FALLBACK_MESSAGE;
 }
 
 export function getApiErrorCorrelationId(error: unknown): string | null {

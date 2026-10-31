@@ -3,6 +3,8 @@ namespace HelpCenter.Domain.Entities
     public class Guide : BaseEntity
     {
         public string Title { get; set; } = string.Empty;
+        public string? SourceLocale { get; set; }
+        public virtual ICollection<GuideTranslation> Translations { get; set; } = new HashSet<GuideTranslation>();
         public string Description { get; set; } = string.Empty;
         public virtual ICollection<Document>? Documents { get; set; }
 

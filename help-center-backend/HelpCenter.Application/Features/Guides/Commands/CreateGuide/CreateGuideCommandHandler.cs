@@ -35,6 +35,8 @@ public class CreateGuideCommandHandler : IRequestHandler<CreateGuideCommand, boo
         var entity = _mapper.Map<Guide>(request);
         entity.IsActive = request.IsActive;
         entity.IsPublic = request.IsPublic;
+        entity.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)!;
+        SyncTranslations(entity, request.Translations ?? []);
 
         var module = await HelpCenter.Application.Features.Guides.GuideModuleResolver.ResolveAsync(_unitOfWork, request.ModuleId, request.Module, cancellationToken);
         entity!.ModuleId = module.Id;
@@ -49,11 +51,28 @@ public class CreateGuideCommandHandler : IRequestHandler<CreateGuideCommand, boo
             }
         }
 
+        if (request.EnglishFiles?.Count > 0)
+        {
+            var englishTranslation = entity.Translations.First(t => t.Locale == HelpCenter.Domain.Common.SupportedLocales.English);
+            foreach (var file in request.EnglishFiles)
+            {
+                var path = await _fileService.SaveFileAsync(file, "guides/en-US");
+                englishTranslation.Documents.Add(new GuideTranslationDocument { Path = path, FileName = file.FileName });
+            }
+        }
         await _unitOfWork.Repository<Guide>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
         _cache.Invalidate(CacheCategory.PublicGuides);
         _cache.Invalidate(CacheCategory.PublicModules);
         return true;
+    }
+
+    private static void SyncTranslations(Guide guide, IReadOnlyCollection<HelpCenter.Application.Common.Models.LocalizedTextInput> inputs)
+    {
+        var values = inputs.ToDictionary(x => HelpCenter.Domain.Common.SupportedLocales.Normalize(x.Locale)!, StringComparer.Ordinal);
+        values[guide.SourceLocale!] = new() { Title = guide.Title, Description = guide.Description };
+        foreach (var pair in values)
+            guide.Translations.Add(new GuideTranslation { Locale = pair.Key, Title = pair.Value.Title, Description = pair.Value.Description });
     }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { X, Edit3, Plus } from "lucide-react";
 import type { Module } from "@/services/admin/AdminModuleService";
 import type { Guide, GuideDocument } from "@/services/admin/AdminGuideService";
@@ -18,6 +18,9 @@ const CustomEditor = dynamic(() => import("@/components/CustomEditor"), {
 export interface GuideFormData {
   title: string;
   description: string;
+  sourceLocale: string;
+  translations: { locale: string; title: string; description: string }[];
+  englishFiles: FileList | null;
   module: string;
   previousGuideId: string | null;
   youtubeUrl: string;
@@ -53,6 +56,21 @@ export const GuideModal: React.FC<GuideModalProps> = ({
   editingId,
   loading
 }) => {
+  const [activeLocale, setActiveLocale] = useState(formData.sourceLocale || "tr-TR");
+  const sourceLocale = formData.sourceLocale || "";
+  const activeTranslation = formData.translations?.find((item) => item.locale === activeLocale);
+  const activeTitle = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? formData.title : activeTranslation?.title ?? "";
+  const activeDescription = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? formData.description : activeTranslation?.description ?? "";
+  const updateLocalizedField = (field: "title" | "description", value: string) => {
+    if (activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR")) { setFormData({ ...formData, [field]: value }); return; }
+    const translations = [...(formData.translations ?? [])];
+    const index = translations.findIndex((item) => item.locale === activeLocale);
+    const item = index >= 0 ? { ...translations[index] } : { locale: activeLocale, title: "", description: "" };
+    item[field] = value;
+    if (index >= 0) translations[index] = item; else translations.push(item);
+    setFormData({ ...formData, translations });
+  };
+
   const fieldConfig = useMemo(() => ({
     title: { label: "Soru / Başlık", rules: { required: true } },
     module: { label: "Kategori (Modül)", rules: { required: true } },
@@ -112,16 +130,12 @@ export const GuideModal: React.FC<GuideModalProps> = ({
             {/* Left Column: Basic Info */}
             <div className="lg:col-span-4 space-y-4">
               <div className="space-y-3">
-                <FormField
-                  name="title"
-                  label="Soru / Başlık"
-                  value={formData.title}
-                  onChange={handleChange}
-                  onBlur={register("title").onBlur}
-                  error={register("title").error}
-                  required
-                  placeholder="Örn: Sisteme nasıl giriş yapılır?"
-                />
+                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Kaynak dil</label>
+                <select aria-label="Rehber kaynak dili" value={sourceLocale} onChange={(event) => { setFormData({ ...formData, sourceLocale: event.target.value }); setActiveLocale(event.target.value || "tr-TR"); }} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+                  <option value="">Kaydı sınıflandırın…</option><option value="tr-TR">Türkçe (kaynak)</option><option value="en-US">English (source)</option>
+                </select>
+                {!sourceLocale && <p role="status" className="text-xs text-amber-300">Bu içeriğin kaynak dilini seçin. Eski metinler otomatik sınıflandırılmaz.</p>}
+                <FormField name="title" label={activeLocale === "tr-TR" ? "Başlık · Türkçe" : "Title · English"} value={activeTitle} onChange={(event) => updateLocalizedField("title", event.target.value)} onBlur={register("title").onBlur} error={register("title").error} required placeholder="Rehber başlığı" />
 
                 <ModalSelect
                     name="module"
@@ -155,25 +169,17 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dosya Ekle</label>
                   <div className="relative">
-                    <input
-                      type="file"
-                      id="file-upload"
-                      multiple
-                      onChange={(e) => setFormData({ ...formData, files: e.target.files })}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-all group shadow-sm"
-                    >
-                      <span className="text-xs font-bold text-slate-400 truncate mr-2">
-                        {formData.files && formData.files.length > 0
-                          ? `${formData.files.length} dosya seçildi`
-                          : "Henüz dosya seçilmedi"}
-                      </span>
-                      <div className="bg-linear-to-r from-indigo-600 to-violet-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider group-hover:from-indigo-500 group-hover:to-violet-500 transition-colors shrink-0">
-                        Dosya Seç
-                      </div>
+                    <input type="file" id="file-upload" multiple onChange={(e) => setFormData({ ...formData, files: e.target.files })} className="hidden" />
+                    <label htmlFor="file-upload" className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-all group shadow-sm">
+                      <span className="text-xs font-bold text-slate-400 truncate mr-2">{formData.files?.length ? formData.files.length + " source language file(s)" : "Source language files"}</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Seç</span>
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <input type="file" id="english-file-upload" multiple onChange={(e) => setFormData({ ...formData, englishFiles: e.target.files })} className="hidden" />
+                    <label htmlFor="english-file-upload" className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-all group shadow-sm">
+                      <span className="text-xs font-bold text-slate-400 truncate mr-2">{formData.englishFiles?.length ? formData.englishFiles.length + " English file(s)" : "English translation files"}</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Select</span>
                     </label>
                   </div>
                   {(formData.existingDocuments.length > 0 || (formData.files && formData.files.length > 0)) && (
@@ -240,14 +246,20 @@ export const GuideModal: React.FC<GuideModalProps> = ({
 
             {/* Right Column: Content Editor */}
             <div className="lg:col-span-8 flex flex-col h-full space-y-2">
+              <div role="tablist" aria-label="Rehber çeviri dilleri" className="flex gap-2">
+                {["tr-TR", "en-US"].map((locale) => {
+                  const ready = locale === sourceLocale || (!sourceLocale && locale === "tr-TR") || formData.translations?.some((item) => item.locale === locale && item.title && item.description);
+                  return <button key={locale} type="button" role="tab" aria-selected={activeLocale === locale} onClick={() => setActiveLocale(locale)} className={cn("rounded-lg border px-3 py-2 text-xs font-bold", activeLocale === locale ? "border-indigo-400 bg-indigo-500/20 text-white" : "border-slate-700 text-slate-400")}>{locale === "tr-TR" ? "Türkçe" : "English"} · {ready ? "Hazır" : "Çeviri eksik"}</button>;
+                })}
+              </div>
               <label className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                Rehber İçeriği
+                {activeLocale === "tr-TR" ? "Rehber içeriği · Türkçe" : "Guide content · English"}
                 <span className="text-[9px] font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-tighter border border-indigo-500/20">CKEditor 5 PRO</span>
               </label>
               <div className={cn("flex-1 min-h-105 border rounded-2xl overflow-hidden bg-slate-800/60", register("description").error ? "border-rose-500/70" : "border-slate-700")}>
                   <CustomEditor
-                  value={formData.description}
-                  onChange={(data) => setFormData({ ...formData, description: data })}
+                  value={activeDescription}
+                  onChange={(data) => updateLocalizedField("description", data)}
                   placeholder="Rehber içeriğini buraya yazın..."
                 />
               </div>

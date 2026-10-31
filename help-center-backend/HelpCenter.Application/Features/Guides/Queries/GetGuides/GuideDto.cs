@@ -5,6 +5,8 @@ public class GuideDto
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? SourceLocale { get; set; }
+    public List<HelpCenter.Application.Common.Models.LocalizedTextInput> Translations { get; set; } = new();
     public Guid? PreviousGuideId { get; set; }
     public Guid? ModuleId { get; set; }
     public string Module { get; set; } = string.Empty;

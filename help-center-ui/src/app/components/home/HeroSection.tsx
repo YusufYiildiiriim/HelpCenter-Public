@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { PublicProject } from "@/services/public/PublicProjectService";
 import type { PublicModule as Module } from "@/services/public/PublicModuleService";
 import { PortalSelect, type PortalSelectOption } from "./PortalSelect";
+import { useLocale } from "@/context/LocaleContext";
 
 export interface HeroSectionProps {
   searchTerm: string;
@@ -44,6 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   setSortBy,
   placeholder,
 }) => {
+  const { t } = useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ⌘K / Ctrl+K keyboard shortcut → focus search
@@ -59,37 +61,37 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   }, []);
 
   const activeCategoryTitle = useMemo(() => {
-    if (activeTab === "guide") return "Kullanım Kılavuzları & Başlangıç Rehberleri";
-    if (activeTab === "sss") return "Sıkça Sorulan Sorular & Çözümler";
-    return "Zihin Haritası & Süreç Akışları";
-  }, [activeTab]);
+    if (activeTab === "guide") return t("guideTitle");
+    if (activeTab === "sss") return t("faqTitle");
+    return t("flowTitle");
+  }, [activeTab, t]);
 
   const activeCategoryDesc = useMemo(() => {
     if (activeTab === "guide")
-      return "İlgili dokümantasyonları adım adım inceleyebilir veya PDF olarak indirebilirsiniz.";
+      return t("guideDescription");
     if (activeTab === "sss")
-      return "Sistem ve entegrasyonlar hakkında merak edilen soruların detaylı yanıtları.";
-    return "Tüm iş akış adımlarını baştan sona sıralı olarak takip edin.";
-  }, [activeTab]);
+      return t("faqDescription");
+    return t("flowDescription");
+  }, [activeTab, t]);
 
   const moduleOptions: PortalSelectOption<string>[] = useMemo(() => {
     return [
       { value: "", label: `Tüm Modüller (${modules.length})` },
       ...modules.map((m) => ({ value: m.name, label: m.name })),
     ];
-  }, [modules]);
+  }, [modules, t]);
 
   const sortOptions: PortalSelectOption<"newest" | "az" | "za">[] = [
-    { value: "newest", label: "En Yeni Güncellenen" },
-    { value: "az", label: "Başlığa Göre (A-Z)" },
-    { value: "za", label: "Başlığa Göre (Z-A)" },
+    { value: "newest", label: t("newestUpdated") },
+    { value: "az", label: t("sortAz") },
+    { value: "za", label: t("sortZa") },
   ];
 
   return (
     <section className="relative z-20 w-full space-y-4" data-purpose="navigation-and-search-layer">
       {/* Segmented Navigation Category Bar */}
       {setActiveTab && (
-        <nav aria-label="Portal Kategorileri" className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <nav aria-label={t("categories")} className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Tab 1: Kullanım Kılavuzları */}
           <button
             type="button"
@@ -128,7 +130,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   activeTab === "guide" ? "text-white" : "text-slate-300 group-hover:text-white"
                 )}
               >
-                Kullanım Kılavuzları
+                {t("guides")}
               </span>
             </div>
             <span
@@ -181,7 +183,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   activeTab === "sss" ? "text-white" : "text-slate-300 group-hover:text-white"
                 )}
               >
-                Sıkça Sorulan Sorular
+                {t("faq")}
               </span>
             </div>
             <span
@@ -229,7 +231,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   activeTab === "flow" ? "text-white" : "text-slate-300 group-hover:text-white"
                 )}
               >
-                Zihin Haritası / Süreçler
+                {t("flow")}
               </span>
             </div>
             <span
@@ -257,7 +259,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {activeCategoryTitle}
               </h2>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-md shrink-0">
-                Aktif Kategori
+                {t("activeCategory")}
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1 pl-4.5">{activeCategoryDesc}</p>
@@ -281,7 +283,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {setSortBy && (
             <div className="flex items-center justify-start lg:justify-end shrink-0">
               <PortalSelect<"newest" | "az" | "za">
-                label="Sıralama:"
+                label={t("sortLabel")}
                 value={sortBy}
                 onChange={setSortBy}
                 options={sortOptions}
@@ -304,8 +306,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-transparent border-none text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-0"
-            placeholder={placeholder || "HelpCenter içinde arama yapın, kılavuz veya çözüm sorgulayın..."}
-            aria-label="Kılavuzlarda ara"
+            placeholder={placeholder || t("searchPortal")}
+            aria-label={t("searchLabel")}
           />
         </div>
         <div className="flex items-center space-x-2 shrink-0">
@@ -314,7 +316,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             onClick={() => inputRef.current?.focus()}
             className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-xl shadow transition cursor-pointer"
           >
-            ARA
+            {t("searchButton")}
           </button>
         </div>
       </div>

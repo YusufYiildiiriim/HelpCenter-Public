@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useOrganization } from "@/context/OrganizationContext";
+import { useLocale } from "@/context/LocaleContext";
 
 interface HomeFooterProps {
   modulesCount?: number;
@@ -16,6 +17,7 @@ export const HomeFooter: React.FC<HomeFooterProps> = ({
   faqsCount = 0,
 }) => {
   const { orgName } = useOrganization();
+  const { t } = useLocale();
 
   return (
     <footer className="w-full space-y-4" data-purpose="footer-layer">
@@ -33,7 +35,7 @@ export const HomeFooter: React.FC<HomeFooterProps> = ({
               />
             </svg>
             <span className="font-bold text-white tabular-nums">{modulesCount}</span>
-            <span className="text-slate-400 uppercase text-[10px] tracking-wider">Modül</span>
+            <span className="text-slate-400 uppercase text-[10px] tracking-wider">{t("modulesLabel")}</span>
           </div>
 
           <div className="px-3 py-1.5 rounded-xl bg-obsidian-800/90 border border-slate-800 text-xs flex items-center space-x-2">
@@ -46,7 +48,7 @@ export const HomeFooter: React.FC<HomeFooterProps> = ({
               />
             </svg>
             <span className="font-bold text-white tabular-nums">{guidesCount}</span>
-            <span className="text-slate-400 uppercase text-[10px] tracking-wider">Kılavuz</span>
+            <span className="text-slate-400 uppercase text-[10px] tracking-wider">{t("guideLabel")}</span>
           </div>
 
           <div className="px-3 py-1.5 rounded-xl bg-obsidian-800/90 border border-slate-800 text-xs flex items-center space-x-2">
@@ -59,29 +61,29 @@ export const HomeFooter: React.FC<HomeFooterProps> = ({
               />
             </svg>
             <span className="font-bold text-white tabular-nums">{faqsCount}</span>
-            <span className="text-slate-400 uppercase text-[10px] tracking-wider">SSS</span>
+            <span className="text-slate-400 uppercase text-[10px] tracking-wider">{t("faqLabel")}</span>
           </div>
         </div>
 
         {/* Semantic Sub-footer Navigation Links */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400" data-purpose="footer-links">
           <Link className="hover:text-purple-300 transition" href="/dashboard">
-            Sistem Durumu
+            {t("systemStatus")}
           </Link>
           <span className="text-slate-700">•</span>
           <a className="hover:text-purple-300 transition" href="#gizlilik">
-            Gizlilik Politikası
+            {t("privacy")}
           </a>
           <span className="text-slate-700">•</span>
           <Link className="hover:text-purple-300 transition" href="/dashboard">
-            İletişim &amp; Destek
+            {t("contactSupport")}
           </Link>
         </div>
       </div>
 
       {/* Copyright Notice */}
       <div className="text-center text-slate-500 text-[11px] pt-1">
-        © {new Date().getFullYear()} {orgName || "HelpCenter Enterprise Portal"}. Tüm hakları saklıdır.
+        © {new Date().getFullYear()} {orgName || "HelpCenter Enterprise Portal"}. {t("copyright")}
       </div>
     </footer>
   );

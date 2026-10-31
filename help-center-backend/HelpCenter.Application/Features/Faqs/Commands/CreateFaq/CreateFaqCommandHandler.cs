@@ -32,11 +32,21 @@ public class CreateFaqCommandHandler : IRequestHandler<CreateFaqCommand, bool>
         faq.ModuleId = request.ModuleId;
         faq.IsActive = request.IsActive;
         faq.IsPublic = request.IsPublic;
+        faq.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)!;
+        SyncTranslations(faq, request.Translations ?? []);
 
         await _unitOfWork.Repository<FAQ>().AddAsync(faq, cancellationToken);
         await _unitOfWork.SaveAsync(cancellationToken);
 
         _cache.Invalidate(CacheCategory.PublicFaqs);
         return true;
+    }
+
+    private static void SyncTranslations(FAQ faq, IReadOnlyCollection<HelpCenter.Application.Common.Models.LocalizedTextInput> inputs)
+    {
+        var values = inputs.ToDictionary(x => HelpCenter.Domain.Common.SupportedLocales.Normalize(x.Locale)!, StringComparer.Ordinal);
+        values[faq.SourceLocale!] = new() { Title = faq.Title, Description = faq.Description };
+        foreach (var pair in values)
+            faq.Translations.Add(new FAQTranslation { Locale = pair.Key, Title = pair.Value.Title, Description = pair.Value.Description });
     }
 }

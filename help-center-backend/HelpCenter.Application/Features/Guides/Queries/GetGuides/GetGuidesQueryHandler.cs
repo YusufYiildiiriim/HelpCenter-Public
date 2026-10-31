@@ -32,7 +32,7 @@ public class GetGuidesQueryHandler : IRequestHandler<GetGuidesQuery, PaginatedRe
             request.PageSize,
             orderByKey: x => x.Title,
             cancellationToken: cancellationToken,
-            g => g.Documents!, g => g.ModuleEntity!);
+            g => g.Documents!, g => g.ModuleEntity!, g => g.Translations);
 
         var dtoItems = _mapper.Map<List<GuideDto>>(paginatedEntities.Items);
 

@@ -9,6 +9,7 @@ import type { PublicGuide as Guide } from "@/services/public/PublicGuideService"
 import type { PublicModule as Module } from "@/services/public/PublicModuleService";
 import { MindMapFlow } from "./MindMapFlow";
 import { Pagination } from "@/components/common/Pagination";
+import { useLocale } from "@/context/LocaleContext";
 
 interface PageInfo {
   currentPage: number;
@@ -102,6 +103,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
   onFaqsPageChange,
   onFaqsPageSizeChange,
 }) => {
+  const { t, locale } = useLocale();
   const guidesForMap = useMemo(() => {
     return allGuides && allGuides.length > 0 ? allGuides : filteredGuides;
   }, [allGuides, filteredGuides]);
@@ -110,23 +112,23 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
   const sortedGuides = useMemo(() => {
     const list = [...filteredGuides];
     if (sortBy === "az") {
-      list.sort((a, b) => a.title.localeCompare(b.title, "tr"));
+      list.sort((a, b) => a.title.localeCompare(b.title, locale));
     } else if (sortBy === "za") {
-      list.sort((a, b) => b.title.localeCompare(a.title, "tr"));
+      list.sort((a, b) => b.title.localeCompare(a.title, locale));
     }
     return list;
-  }, [filteredGuides, sortBy]);
+  }, [filteredGuides, sortBy, locale]);
 
   // Sort FAQs
   const sortedFaqs = useMemo(() => {
     const list = [...filteredFaqs];
     if (sortBy === "az") {
-      list.sort((a, b) => a.title.localeCompare(b.title, "tr"));
+      list.sort((a, b) => a.title.localeCompare(b.title, locale));
     } else if (sortBy === "za") {
-      list.sort((a, b) => b.title.localeCompare(a.title, "tr"));
+      list.sort((a, b) => b.title.localeCompare(a.title, locale));
     }
     return list;
-  }, [filteredFaqs, sortBy]);
+  }, [filteredFaqs, sortBy, locale]);
 
   return (
     <main
@@ -191,7 +193,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                               {guide.documents.length} Ek Dosya
                             </span>
                           ) : (
-                            <span className="text-[11px] text-slate-500">Standart Rehber</span>
+                            <span className="text-[11px] text-slate-500">{t("standardGuide")}</span>
                           )}
 
                           <button
@@ -199,7 +201,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                             onClick={() => setSelectedGuide(guide)}
                             className="text-purple-400 hover:text-purple-300 font-medium inline-flex items-center space-x-1 cursor-pointer transition ml-auto group-hover:translate-x-0.5"
                           >
-                            <span>İncele</span>
+                            <span>{t("review")}</span>
                             <svg
                               className="w-3.5 h-3.5 transition-transform"
                               fill="none"
@@ -215,11 +217,11 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                   })
                 ) : (
                   <EmptyBlock
-                    title="Kullanım Kılavuzu Bulunamadı"
+                    title={t("noGuides")}
                     hint={
                       selectedModule
                         ? `"${selectedModule}" modülü için arama kriterine uygun kılavuz bulunamadı.`
-                        : "Bu proje için henüz kullanım kılavuzu yayınlanmamış."
+                        : t("noGuideForProject")
                     }
                   />
                 )}
@@ -233,7 +235,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                 pageSize={guidesPagination.pageSize}
                 onPageChange={onGuidesPageChange}
                 onPageSizeChange={onGuidesPageSizeChange}
-                itemsLabel="kılavuz"
+                itemsLabel={locale === "tr-TR" ? "kılavuz" : "guide"}
                 containerClassName={cn(PAGINATION_CONTAINER_CLASS, contentLoading && "opacity-60 pointer-events-none")}
               />
             )}
@@ -265,7 +267,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                             >
                               {faq.moduleName || "Genel"}
                             </span>
-                            <span className="text-[11px] text-slate-400">SSS</span>
+                            <span className="text-[11px] text-slate-400">{t("faq")}</span>
                           </div>
 
                           <h3 className="text-sm font-semibold text-slate-100 group-hover:text-purple-300 transition-colors leading-snug">
@@ -275,7 +277,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
 
                         <div className="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between text-xs">
                           <span className="text-purple-400 group-hover:text-purple-300 font-medium inline-flex items-center space-x-1 transition ml-auto group-hover:translate-x-0.5">
-                            <span>Detayı Gör</span>
+                            <span>{t("faqDetails")}</span>
                             <svg
                               className="w-3.5 h-3.5 transition-transform"
                               fill="none"
@@ -291,8 +293,8 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                   })
                 ) : (
                   <EmptyBlock
-                    title="SSS İçeriği Bulunamadı"
-                    hint="Arama kriterlerinize uygun sıkça sorulan soru bulunamadı."
+                    title={t("noFaqs")}
+                    hint={t("translationMissing")}
                   />
                 )}
               </div>
@@ -305,7 +307,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                 pageSize={faqsPagination.pageSize}
                 onPageChange={onFaqsPageChange}
                 onPageSizeChange={onFaqsPageSizeChange}
-                itemsLabel="SSS"
+                itemsLabel={locale === "tr-TR" ? "SSS" : "FAQ"}
                 containerClassName={cn(PAGINATION_CONTAINER_CLASS, contentLoading && "opacity-60 pointer-events-none")}
               />
             )}
@@ -323,7 +325,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                   />
                 ) : (
                   <EmptyBlock
-                    title="Zihin Haritası Bulunamadı"
+                    title={t("noFlow")}
                     hint="Bu modül veya proje için zihin haritası süreç adımları henüz tanımlanmamış."
                   />
                 )}

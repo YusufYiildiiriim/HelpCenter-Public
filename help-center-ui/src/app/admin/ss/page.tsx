@@ -50,6 +50,8 @@ export default function FaqPage() {
   const [newFaq, setNewFaq] = useState<Faq>({
     title: "",
     description: "",
+    sourceLocale: "tr-TR",
+    translations: [],
     projectId: null,
     moduleId: null,
     isActive: true,
@@ -121,6 +123,10 @@ export default function FaqPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newFaq.sourceLocale) {
+      toast.error("Kaydetmeden önce içeriğin kaynak dilini seçin.");
+      return;
+    }
     try {
       if (editingId) {
         if (!newFaq.rowVersion) {
@@ -134,7 +140,7 @@ export default function FaqPage() {
         toast.success("Yeni soru başarıyla eklendi.");
       }
       setIsModalOpen(false);
-      setNewFaq({ title: "", description: "", projectId: null, moduleId: null, isActive: true, isPublic: false });
+      setNewFaq({ title: "", description: "", sourceLocale: "tr-TR", translations: [], projectId: null, moduleId: null, isActive: true, isPublic: false });
       setEditingId(null);
       fetchFaqs();
     } catch (err: unknown) {

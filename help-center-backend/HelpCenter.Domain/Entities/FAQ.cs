@@ -3,6 +3,8 @@ namespace HelpCenter.Domain.Entities
     public class FAQ : BaseEntity
     {
         public string Title { get; set; } = string.Empty;
+        public string? SourceLocale { get; set; }
+        public virtual ICollection<FAQTranslation> Translations { get; set; } = new HashSet<FAQTranslation>();
         public string Description { get; set; } = string.Empty;
         public bool IsPublic { get; set; } = false;
 

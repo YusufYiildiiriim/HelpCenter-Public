@@ -7,7 +7,10 @@ public class CreateGuideCommand : IRequest<bool>
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? SourceLocale { get; set; }
+    public List<LocalizedTextInput> Translations { get; set; } = new();
     public List<FileUpload>? Files { get; set; }
+    public List<FileUpload>? EnglishFiles { get; set; }
     private Guid? _previousGuideId;
     public Guid? PreviousGuideId
     {

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { useLocale } from "@/context/LocaleContext";
 
 interface LoginFormProps {
   email: string;
@@ -23,11 +24,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onForgotPassword
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useLocale();
 
   const values = { email, password };
   const { register, handleSubmit } = useValidatedForm<{ email: string; password: string }>(values, {
-    email: { label: "E-Posta / Kullanıcı Adı", rules: { required: true } },
-    password: { label: "Şifre", rules: { required: true } },
+    email: { label: t("loginName"), rules: { required: true } },
+    password: { label: t("password"), rules: { required: true } },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -39,7 +41,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
       <FormField
         name="email"
-        label="E-Posta / Kullanıcı Adı"
+        label={t("loginName")}
         autoComplete="username"
         value={email}
         onChange={handleChange}
@@ -47,12 +49,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         error={register("email").error}
         required
         icon={<Mail size={18} />}
-        placeholder="admin@helpcenter.com veya kullanıcı adı"
+        placeholder={t("loginName")}
       />
 
       <FormField
         name="password"
-        label="Şifre"
+        label={t("password")}
         autoComplete="current-password"
         type={showPassword ? "text" : "password"}
         value={password}
@@ -68,7 +70,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             onClick={() => setShowPassword((prev) => !prev)}
             tabIndex={-1}
             className="p-2 text-slate-500 hover:text-indigo-400 transition-colors"
-            aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+            aria-label={showPassword ? t("hidePassword") : t("showPassword")}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -78,14 +80,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       <div className="flex items-center justify-between py-2 text-sm">
         <label className="flex cursor-pointer items-center gap-2 select-none">
           <input type="checkbox" className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-500" />
-          <span className="font-medium text-slate-400">Beni hatırla</span>
+          <span className="font-medium text-slate-400">{t("remember")}</span>
         </label>
         <button
           type="button"
           onClick={onForgotPassword}
           className="font-bold text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer"
         >
-          Şifremi unuttum
+          {t("forgotPassword")}
         </button>
       </div>
 
@@ -98,7 +100,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <Loader2 className="animate-spin" size={20} />
         ) : (
           <>
-            Sisteme Giriş Yap
+            {t("signIn")}
             <ArrowRight size={18} className="transition-transform group-hover/btn:translate-x-1" />
           </>
         )}

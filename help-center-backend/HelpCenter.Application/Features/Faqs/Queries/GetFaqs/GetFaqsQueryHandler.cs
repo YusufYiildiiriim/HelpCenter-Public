@@ -33,7 +33,7 @@ public class GetFaqsQueryHandler : IRequestHandler<GetFaqsQuery, PaginatedRespon
             request.PageSize,
             orderByKey: x => x.Title,
             cancellationToken: cancellationToken,
-            x => x.Project!, x => x.Module!);
+            x => x.Project!, x => x.Module!, x => x.Translations);
 
         var dtoItems = _mapper.Map<List<FaqDto>>(paginatedEntities.Items);
 

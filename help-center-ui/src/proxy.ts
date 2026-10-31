@@ -17,9 +17,10 @@ export async function proxy(request: NextRequest) {
   const pathLocale = pathname.split("/")[1];
   const explicitLocale = pathLocale === "tr" || pathLocale === "en";
 
-  if (pathname === "/") {
+  const isLocalizedPublicPath = pathname === "/tr" || pathname.startsWith("/tr/") || pathname === "/en" || pathname.startsWith("/en/");
+  if (!isLocalizedPublicPath && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
     const target = request.nextUrl.clone();
-    target.pathname = "/" + localePath(locale);
+    target.pathname = "/" + localePath(locale) + (pathname === "/" ? "" : pathname);
     return NextResponse.redirect(target);
   }
 

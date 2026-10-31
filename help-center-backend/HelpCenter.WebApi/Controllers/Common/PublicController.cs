@@ -42,7 +42,7 @@ public class PublicController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 12)
     {
-        var response = await _mediator.Send(new GetPublicFaqsQuery(projectId, moduleId, search, pageNumber, pageSize));
+        var response = await _mediator.Send(new GetPublicFaqsQuery(projectId, moduleId, search, pageNumber, pageSize, GetRequestedLocale()));
         return Ok(response);
     }
 
@@ -61,8 +61,14 @@ public class PublicController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 12)
     {
-        var response = await _mediator.Send(new GetPublicGuidesQuery(projectId, module, search, pageNumber, pageSize));
+        var response = await _mediator.Send(new GetPublicGuidesQuery(projectId, module, search, pageNumber, pageSize, GetRequestedLocale()));
         return Ok(response);
+    }
+
+    private string GetRequestedLocale()
+    {
+        var raw = Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0];
+        return HelpCenter.Domain.Common.SupportedLocales.Normalize(raw) ?? HelpCenter.Domain.Common.SupportedLocales.Default;
     }
 
     [HttpGet("organization")]

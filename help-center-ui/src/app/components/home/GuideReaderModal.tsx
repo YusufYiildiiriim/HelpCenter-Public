@@ -5,6 +5,7 @@ import { BookOpen, ChevronRight, Zap, X, Play, ExternalLink, Maximize2, FileText
 import { motion, AnimatePresence } from "framer-motion";
 import type { PublicGuide as Guide } from "@/services/public/PublicGuideService";
 import { toApiUrl } from "@/lib/env";
+import { useLocale } from "@/context/LocaleContext";
 
 interface GuideReaderModalProps {
   selectedGuide: Guide | null;
@@ -23,6 +24,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
   handlePrevStep,
   getSequencedGuides,
 }) => {
+  const { locale, t } = useLocale();
   const sequencedGuides = useMemo<Guide[]>(() => {
     if (!selectedGuide) return [];
     return getSequencedGuides(selectedGuide.module);
@@ -88,7 +90,8 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                 {/* Left Column */}
                 <div className="lg:col-span-7 space-y-6">
                   <div className="bg-obsidian-850/80 border border-slate-800 rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 md:p-10">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight uppercase">
+                    {selectedGuide.contentLocale && selectedGuide.contentLocale !== locale && <p className="mb-3 text-xs text-amber-300">{t("shownIn")} {selectedGuide.contentLocale}</p>}
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white mb-4 sm:mb-6 leading-tight tracking-tight uppercase">
                       {selectedGuide.title}
                     </h1>
                     <div className="ck-content ck-content-dark max-w-none mb-6 sm:mb-8">

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import type { Faq } from "@/services/admin/AdminFaqService";
 import type { Project } from "@/services/admin/AdminProjectService";
 import type { Module } from "@/services/admin/AdminModuleService";
@@ -27,6 +27,21 @@ export const FaqModal: React.FC<FaqModalProps> = ({
   onSave,
   onClose
 }) => {
+  const [activeLocale, setActiveLocale] = useState(faq.sourceLocale || "tr-TR");
+  const sourceLocale = faq.sourceLocale || "";
+  const activeTranslation = faq.translations?.find((item) => item.locale === activeLocale);
+  const activeTitle = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? faq.title : activeTranslation?.title ?? "";
+  const activeDescription = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? faq.description : activeTranslation?.description ?? "";
+  const updateLocalizedField = (field: "title" | "description", value: string) => {
+    if (activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR")) { onFaqChange({ ...faq, [field]: value }); return; }
+    const translations = [...(faq.translations ?? [])];
+    const index = translations.findIndex((item) => item.locale === activeLocale);
+    const item = index >= 0 ? { ...translations[index] } : { locale: activeLocale, title: "", description: "" };
+    item[field] = value;
+    if (index >= 0) translations[index] = item; else translations.push(item);
+    onFaqChange({ ...faq, translations });
+  };
+
   const values = {
     title: faq.title,
     description: faq.description,
@@ -134,29 +149,19 @@ export const FaqModal: React.FC<FaqModalProps> = ({
             </FormField>
           </div>
 
-          <FormField
-            name="title"
-            label="Soru Başlığı"
-            value={faq.title}
-            onChange={handleChange}
-            onBlur={register("title").onBlur}
-            error={register("title").error}
-            required
-            placeholder="Müşterilerin en çok sorduğu soru nedir?"
-          />
-
-          <FormField
-            as="textarea"
-            name="description"
-            label="Cevap Metni"
-            rows={4}
-            value={faq.description}
-            onChange={handleChange}
-            onBlur={register("description").onBlur}
-            error={register("description").error}
-            required
-            placeholder="Detaylı bir cevap yazın..."
-          />
+          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Kaynak dil</label>
+          <select aria-label="SSS kaynak dili" value={sourceLocale} onChange={(event) => { onFaqChange({ ...faq, sourceLocale: event.target.value }); setActiveLocale(event.target.value || "tr-TR"); }} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+            <option value="">Kaydı sınıflandırın…</option><option value="tr-TR">Türkçe (zorunlu kaynak)</option><option value="en-US">English (source)</option>
+          </select>
+          {!sourceLocale && <p role="status" className="text-xs text-amber-300">Bu eski kaydın kaynak dili henüz sınıflandırılmamış. Kaydetmeden önce seçin.</p>}
+          <div role="tablist" aria-label="SSS çeviri dilleri" className="flex gap-2">
+            {["tr-TR", "en-US"].map((locale) => {
+              const translated = locale === sourceLocale || (locale === "tr-TR" && !sourceLocale) || faq.translations?.some((item) => item.locale === locale && item.title && item.description);
+              return <button key={locale} type="button" role="tab" aria-selected={activeLocale === locale} onClick={() => setActiveLocale(locale)} className={cn("rounded-lg border px-3 py-2 text-xs font-bold", activeLocale === locale ? "border-indigo-400 bg-indigo-500/20 text-white" : "border-slate-700 text-slate-400")}>{locale === "tr-TR" ? "Türkçe" : "English"} · {translated ? "Hazır" : "Çeviri eksik"}</button>;
+            })}
+          </div>
+          <FormField name="title" label={activeLocale === "tr-TR" ? "Soru başlığı · Türkçe" : "Question title · English"} value={activeTitle} onChange={(event) => updateLocalizedField("title", event.target.value)} onBlur={register("title").onBlur} error={register("title").error} required placeholder="Soru başlığı" />
+          <FormField as="textarea" name="description" label={activeLocale === "tr-TR" ? "Cevap metni · Türkçe" : "Answer · English"} rows={4} value={activeDescription} onChange={(event) => updateLocalizedField("description", event.target.value)} onBlur={register("description").onBlur} error={register("description").error} required placeholder="Cevap metni" />
 
           <div className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 p-4">
             <div>

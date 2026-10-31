@@ -28,6 +28,9 @@ public class EfContext : DbContext
     public DbSet<Domain.Entities.Module> Modules { get; set; } = default!;
     public DbSet<Guide> Guides { get; set; } = default!;
     public DbSet<FAQ> FAQs { get; set; } = default!;
+    public DbSet<FAQTranslation> FAQTranslations { get; set; } = default!;
+    public DbSet<GuideTranslation> GuideTranslations { get; set; } = default!;
+    public DbSet<GuideTranslationDocument> GuideTranslationDocuments { get; set; } = default!;
     public DbSet<RequestSubject> RequestSubjects { get; set; } = default!;
     public DbSet<User> Users { get; set; } = default!;
     public DbSet<Role> Roles { get; set; } = default!;
@@ -116,6 +119,29 @@ public class EfContext : DbContext
             b.Ignore(u => u.IsPasswordChangeRequired);
             b.Ignore(u => u.Username);
             b.Ignore(u => u.FullName);
+        });
+
+        modelBuilder.Entity<FAQ>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<Guide>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<FAQTranslation>(entity =>
+        {
+            entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(500).IsRequired();
+            entity.HasIndex(x => new { x.FAQId, x.Locale }).IsUnique();
+            entity.HasOne(x => x.FAQ).WithMany(x => x.Translations).HasForeignKey(x => x.FAQId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<GuideTranslation>(entity =>
+        {
+            entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(500).IsRequired();
+            entity.HasIndex(x => new { x.GuideId, x.Locale }).IsUnique();
+            entity.HasOne(x => x.Guide).WithMany(x => x.Translations).HasForeignKey(x => x.GuideId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<GuideTranslationDocument>(entity =>
+        {
+            entity.Property(x => x.Path).HasMaxLength(1000).IsRequired();
+            entity.Property(x => x.FileName).HasMaxLength(255).IsRequired();
+            entity.HasOne(x => x.GuideTranslation).WithMany(x => x.Documents).HasForeignKey(x => x.GuideTranslationId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Guide>().HasOne(g => g.ModuleEntity).WithMany().HasForeignKey(g => g.ModuleId).OnDelete(DeleteBehavior.Restrict);

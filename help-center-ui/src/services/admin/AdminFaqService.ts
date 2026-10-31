@@ -1,9 +1,13 @@
 import api from "@/lib/axios";
 
+export interface LocalizedText { locale: string; title: string; description: string }
+
 export interface Faq {
   id?: string;
   publicId?: string;
   title: string;
+  sourceLocale?: string | null;
+  translations?: LocalizedText[];
   description: string;
   projectId?: string | null;
   projectName?: string | null;

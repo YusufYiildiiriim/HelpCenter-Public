@@ -53,6 +53,9 @@ export default function GuidePage() {
   const [newGuide, setNewGuide] = useState<GuideFormData>({
     title: "",
     description: "",
+    sourceLocale: "tr-TR",
+    translations: [],
+    englishFiles: null as FileList | null,
     module: "",
     previousGuideId: null as string | null,
     youtubeUrl: "",
@@ -145,6 +148,8 @@ export default function GuidePage() {
       return;
     }
     
+    if (!newGuide.sourceLocale) { toast.error("Kaydetmeden önce içeriğin kaynak dilini seçin."); return; }
+
     const moduleObj = modules.find(m => m.name === newGuide.module);
     if (!moduleObj) {
       toast.error("Geçerli bir modül seçmelisiniz.");
@@ -154,6 +159,9 @@ export default function GuidePage() {
     const payload = {
       title: newGuide.title,
       description: newGuide.description,
+      sourceLocale: newGuide.sourceLocale,
+      translations: newGuide.translations,
+      englishFiles: newGuide.englishFiles ? Array.from(newGuide.englishFiles) : [],
       module: moduleObj.name,
       moduleId: moduleObj.id,
       previousGuideId: newGuide.previousGuideId,
@@ -192,6 +200,9 @@ export default function GuidePage() {
     setNewGuide({
       title: guide.title,
       description: guide.description,
+      sourceLocale: guide.sourceLocale ?? "",
+      translations: guide.translations ?? [],
+      englishFiles: null,
       module: guide.module,
       previousGuideId: guide.previousGuideId || null,
       youtubeUrl: guide.youtubeUrl || "",
@@ -211,6 +222,9 @@ export default function GuidePage() {
     setNewGuide({
       title: "",
       description: "",
+      sourceLocale: "tr-TR",
+      translations: [],
+      englishFiles: null,
       module: modules[0]?.name || "",
       previousGuideId: null,
       youtubeUrl: "",

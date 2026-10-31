@@ -8,4 +8,5 @@ public record GetPublicFaqsQuery(
     Guid? ModuleId = null,
     string? Search = null,
     int PageNumber = 1,
-    int PageSize = 12) : IRequest<PaginatedResponse<PublicFaqDto>>;
+    int PageSize = 12,
+    string Locale = HelpCenter.Domain.Common.SupportedLocales.Default) : IRequest<PaginatedResponse<PublicFaqDto>>;

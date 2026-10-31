@@ -14,9 +14,11 @@ import { usePageTitle } from "@/lib/usePageTitle";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { toApiUrl } from "@/lib/env";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { useLocale } from "@/context/LocaleContext";
 
 export default function DashboardLoginPage() {
-  usePageTitle("Müşteri Girişi");
+  const { t } = useLocale();
+  usePageTitle(t("customerLogin"));
 
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -41,8 +43,8 @@ export default function DashboardLoginPage() {
   }, []);
 
   const { register, handleSubmit } = useValidatedForm<typeof formData>(formData, {
-    username: { label: "Kullanıcı Adı veya E-posta", rules: { required: true } },
-    password: { label: "Şifre", rules: { required: true } },
+    username: { label: t("loginName"), rules: { required: true } },
+    password: { label: t("password"), rules: { required: true } },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -106,21 +108,21 @@ export default function DashboardLoginPage() {
               <img src={logoUrl} alt={`${orgName} Logo`} className="w-full h-full object-contain" />
             </motion.div>
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tighter">{orgName}</h1>
-            <p className="text-slate-400 mt-2 sm:mt-3 font-medium italic text-sm sm:text-base">Müşteri Portalı - Güvenli Giriş</p>
+            <p className="text-slate-400 mt-2 sm:mt-3 font-medium italic text-sm sm:text-base">{t("customerPortal")} - {t("signIn")}</p>
           </div>
 
           <form onSubmit={handleSubmit(handleLogin)} noValidate className="p-6 sm:p-12 space-y-6 sm:space-y-8">
             <div className="space-y-5 sm:space-y-6">
               <FormField
                 name="username"
-                label="Kullanıcı Adı veya E-posta"
+                label={t("loginName")}
                 value={formData.username}
                 onChange={handleChange}
                 onBlur={register("username").onBlur}
                 error={register("username").error}
                 required
                 icon={<AtSign size={20} />}
-                placeholder="Kullanıcı adı veya e-posta adresiniz"
+                placeholder={t("loginName")}
               />
 
               <div>
@@ -137,7 +139,7 @@ export default function DashboardLoginPage() {
                 <div className="mt-2 sm:mt-3">
                   <FormField
                     name="password"
-                    label="Şifre"
+                    label={t("password")}
                     hideLabel
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
@@ -153,7 +155,7 @@ export default function DashboardLoginPage() {
                         onClick={() => setShowPassword((prev) => !prev)}
                         tabIndex={-1}
                         className="p-2 text-slate-500 hover:text-indigo-400 transition-colors"
-                        aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                        aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>

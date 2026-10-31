@@ -4,6 +4,8 @@ export interface PublicFaq {
   publicId: string;
   title: string;
   description: string;
+  requestedLocale?: string;
+  contentLocale?: string | null;
   projectId?: string | null;
   projectName?: string | null;
   moduleId?: string | null;
