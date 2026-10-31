@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { NewRequestModal } from "@/app/dashboard/[companyId]/components/NewRequestModal";
+import { LocaleProvider } from "@/context/LocaleContext";
+
+vi.mock("next/navigation", () => ({ usePathname: () => "/dashboard/test", useRouter: () => ({ push: vi.fn() }) }));
 
 const props = {
   isOpen: true,
@@ -24,7 +27,7 @@ const props = {
 
 describe("NewRequestModal accessibility", () => {
   it("exposes a modal dialog and closes on Escape", () => {
-    render(<NewRequestModal {...props} />);
+    render(<LocaleProvider initialLocale="tr-TR"><NewRequestModal {...props} /></LocaleProvider>);
     expect(screen.getByRole("dialog", { name: "Yeni Destek Talebi" })).toHaveAttribute("aria-modal", "true");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(props.onClose).toHaveBeenCalledTimes(1);

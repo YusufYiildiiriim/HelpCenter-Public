@@ -12,6 +12,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { VerifyResponse } from "@/services/common/AuthService";
 import { useOrganization } from "@/context/OrganizationContext";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { useLocale } from "@/context/LocaleContext";
+import type { MessageKey } from "@/lib/i18n";
 
 interface SidebarItem {
   icon: LucideIcon;
@@ -43,6 +45,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   userInfo
 }) => {
   const { orgName, logoUrl } = useOrganization();
+  const { locale, t } = useLocale();
+  const groupKeys: Record<string, MessageKey> = {
+    "talep takip": "requestTracking", "tanımlamalar": "configuration", "sistem ayarları": "systemSettings", "genel": "adminPanel",
+  };
+  const itemKeys: Record<string, MessageKey> = {
+    "istatistikler": "statistics", "talepler": "adminRequests", "bana atananlar": "assignedRequests", "firmalar": "companies",
+    "projeler": "projects", "kullanıcılar": "users", "sss yönetimi": "faqManagement", "kullanım kılavuzu": "guideManagement",
+    "rol ve yetkiler": "rolesPermissions", "departman modülleri": "departmentModules", "talep konuları": "requestSubjects",
+    "talep durumları": "requestStatuses", "kurum bilgileri": "organizationSettings",
+  };
+  const localize = (value: string, keys: Record<string, MessageKey>) => {
+    const key = keys[value.trim().toLocaleLowerCase("tr-TR")];
+    return locale === "en-US" && key ? t(key) : value;
+  };
   const initials = useMemo(() => {
     const username = userInfo?.username || "Admin Kullanıcı";
     return username.substring(0, 2).toUpperCase();
@@ -89,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="min-w-0 overflow-hidden">
               <span className="block text-xl font-black leading-none tracking-tight text-white">{orgName}</span>
-              <span className="mt-1 block text-[10px] font-black uppercase tracking-widest text-indigo-400">Admin Panel</span>
+              <span className="mt-1 block text-[10px] font-black uppercase tracking-widest text-indigo-400">{t("adminPanel")}</span>
             </div>
           </div>
 
@@ -109,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <h3 className="flex items-center gap-2 px-3 text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-800" />
                 <span className="overflow-hidden whitespace-nowrap">
-                  {group.title}
+                  {localize(group.title, groupKeys)}
                 </span>
               </h3>
 
@@ -139,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         "flex-1 overflow-hidden whitespace-nowrap text-[13px] font-bold tracking-tight transition-all duration-300",
                         isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200"
                       )}>
-                        {item.label}
+                        {localize(item.label, itemKeys)}
                       </span>
                     </Link>
                   );
@@ -160,10 +176,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-slate-900 bg-emerald-500" />
             </div>
             <div className="min-w-0 overflow-hidden">
-              <p className="truncate text-[12px] font-black text-white">{userInfo?.username || "Admin Kullanıcı"}</p>
+              <p className="truncate text-[12px] font-black text-white">{userInfo?.username || t("adminUser")}</p>
               <p className="mt-1 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {userInfo?.role || "Sistem Yetkilisi"}
+                {locale === "en-US" && userInfo?.role === "Sistem Yetkilisi" ? t("systemAdministrator") : userInfo?.role || t("systemAdministrator")}
               </p>
             </div>
           </div>
@@ -174,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <LogOut size={19} className="shrink-0 transition-colors group-hover:text-red-400" />
             <span className="overflow-hidden whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all duration-300">
-              Güvenli Çıkış
+              {t("safeLogout")}
             </span>
           </button>
         </div>

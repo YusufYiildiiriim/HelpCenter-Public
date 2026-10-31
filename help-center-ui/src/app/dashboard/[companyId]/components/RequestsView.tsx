@@ -3,6 +3,8 @@ import { Plus, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CustomerRequest } from "@/services/customer/CustomerRequestService";
 import { RequestCard } from "./RequestCard";
+import { useLocale } from "@/context/LocaleContext";
+import { RequestStatus } from "@/lib/requestStatus";
 
 interface RequestsViewProps {
   activeView: "requests" | "history";
@@ -21,13 +23,14 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
   onNewRequest,
   companyId
 }) => {
+  const { t } = useLocale();
   const availableRequests = Array.isArray(requests) ? requests : [];
   const baseRequests = activeView === "requests"
-    ? availableRequests.filter(r => r.status !== "Tamamlandı")
-    : availableRequests.filter(r => r.status === "Tamamlandı");
+    ? availableRequests.filter(r => r.statusId !== RequestStatus.Completed)
+    : availableRequests.filter(r => r.statusId === RequestStatus.Completed);
 
   const filteredRequests = (activeView === "requests" && requestFilter !== "Hepsi"
-    ? baseRequests.filter(r => r.status === requestFilter)
+    ? baseRequests.filter(r => r.statusId === requestFilter)
     : baseRequests
   ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
@@ -36,10 +39,10 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/90 backdrop-blur-xl p-8 rounded-[2.5rem] border border-slate-800 shadow-xl shadow-slate-950/30">
             <div>
                 <h2 className="text-2xl font-black text-white tracking-tight">
-                    {activeView === "requests" ? "Aktif Destek Talepleri" : "Tamamlanan Talepler"}
+                    {activeView === "requests" ? t("activeSupportRequests") : t("completedRequests")}
                 </h2>
                 <p className="text-sm text-slate-400 font-medium mt-0.5">
-                    {activeView === "requests" ? "Şu an sistemde işlem gören destek kayıtlarınız." : "Geçmişte sonuçlandırılmış destek kayıtlarınız."}
+                    {activeView === "requests" ? t("activeSupportDescription") : t("completedSupportDescription")}
                 </p>
             </div>
             {activeView === "requests" && (
@@ -48,27 +51,31 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
                     onClick={onNewRequest}
                     className="relative z-10 bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-600/20 flex items-center gap-3 transition-all active:scale-95"
                 >
-                    <Plus size={22} /> Yeni Talep Oluştur
+                    <Plus size={22} /> {t("createNewRequest")}
                 </button>
             )}
         </div>
 
         {activeView === "requests" && (
             <div className="flex bg-slate-900/90 backdrop-blur-xl p-2 rounded-2xl border border-slate-800 shadow-xl shadow-slate-950/30 self-start overflow-x-auto no-scrollbar max-w-full">
-                {["Hepsi", "Cevap Bekliyor", "Cevaplandı"].map((f) => (
+                {[
+                  { id: "Hepsi", label: t("allRequests") },
+                  { id: RequestStatus.WaitingForReply, label: t("statusWaitingForReply") },
+                  { id: RequestStatus.Replied, label: t("statusReplied") },
+                ].map(({ id, label }) => (
                     <button 
-                        key={f}
-                        onClick={() => setRequestFilter(f)}
+                        key={id}
+                        onClick={() => setRequestFilter(id)}
                         className={cn(
                             "px-6 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap",
-                            requestFilter === f 
-                                ? f === "Cevap Bekliyor" ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" :
-                                  f === "Cevaplandı" ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" :
+                            requestFilter === id
+                                ? id === RequestStatus.WaitingForReply ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" :
+                                  id === RequestStatus.Replied ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" :
                                   "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10"
                                 : "text-slate-400 hover:text-white hover:bg-slate-800"
                         )}
                     >
-                        {f}
+                        {label}
                     </button>
                 ))}
             </div>
@@ -85,9 +92,9 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
                         {activeView === "history" ? <CheckCircle2 size={48} /> : <ShieldCheck size={48} />}
                     </div>
                     <h3 className="text-2xl font-black text-white">
-                        {activeView === "history" ? "Tamamlanan Talep Bulunmuyor" : "Aktif Talebiniz Bulunmuyor"}
+                        {activeView === "history" ? t("noCompletedRequests") : t("noActiveRequests")}
                     </h3>
-                    <p className="text-slate-400 mt-2 max-w-sm font-medium">Bu bölümde henüz listelenecek bir kayıt bulunmamaktadır.</p>
+                    <p className="text-slate-400 mt-2 max-w-sm font-medium">{t("emptyRequestList")}</p>
                 </div>
             )}
         </div>

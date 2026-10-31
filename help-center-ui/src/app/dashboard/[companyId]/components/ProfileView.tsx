@@ -3,6 +3,7 @@ import { User, Loader2, Save } from "lucide-react";
 import type { CustomerProfile } from "@/services/customer/CustomerProfileService";
 import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { useLocale } from "@/context/LocaleContext";
 
 interface ProfileViewProps {
   profile: CustomerProfile | null;
@@ -17,14 +18,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onSubmit,
   loading
 }) => {
+  const { t } = useLocale();
   const values = useMemo(
     () => ({ firstName: profile?.firstName || "", lastName: profile?.lastName || "" }),
     [profile]
   );
 
   const { register, handleSubmit } = useValidatedForm<typeof values>(values, {
-    firstName: { label: "Ad", rules: { required: true } },
-    lastName: { label: "Soyad", rules: { required: true } },
+    firstName: { label: t("firstName"), rules: { required: true } },
+    lastName: { label: t("lastName"), rules: { required: true } },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -40,8 +42,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     <User size={40} />
                 </div>
                 <div>
-                    <h2 className="text-3xl font-black text-white tracking-tight">Profil Ayarları</h2>
-                    <p className="text-slate-400 font-medium">Hesap bilgilerinizi buradan görüntüleyebilir ve güncelleyebilirsiniz.</p>
+                    <h2 className="text-3xl font-black text-white tracking-tight">{t("profileSettings")}</h2>
+                    <p className="text-slate-400 font-medium">{t("profileDescription")}</p>
                 </div>
             </div>
 
@@ -49,7 +51,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <FormField
                         name="firstName"
-                        label="Ad"
+                        label={t("firstName")}
                         value={profile?.firstName || ""}
                         onChange={handleChange}
                         onBlur={register("firstName").onBlur}
@@ -58,7 +60,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     />
                     <FormField
                         name="lastName"
-                        label="Soyad"
+                        label={t("lastName")}
                         value={profile?.lastName || ""}
                         onChange={handleChange}
                         onBlur={register("lastName").onBlur}
@@ -66,7 +68,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         required
                     />
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-Posta (Değiştirilemez)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t("immutableEmail")}</label>
                         <input 
                             disabled
                             value={profile?.email || ""}
@@ -81,7 +83,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-5 rounded-2xl font-black shadow-xl shadow-indigo-600/20 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {loading ? <Loader2 className="animate-spin" size={24} /> : (
-                            <><Save size={20} /> Değişiklikleri Kaydet</>
+                        <><Save size={20} /> {t("saveChanges")}</>
                         )}
                     </button>
                 </div>

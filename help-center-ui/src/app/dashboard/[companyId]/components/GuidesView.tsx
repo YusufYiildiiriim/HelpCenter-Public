@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { BookOpen, ChevronRight, PlayCircle, FileText, Search, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CustomerGuide } from "@/services/customer/CustomerGuideService";
+import { useLocale } from "@/context/LocaleContext";
 
 interface GuidesViewProps {
   guides: CustomerGuide[];
@@ -16,6 +17,7 @@ interface GuideDetailModalProps {
 }
 
 const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onClose }) => {
+  const { t } = useLocale();
   const [current, setCurrent] = useState(guide);
 
   const next = guides.find(g => g.previousGuidePublicId === current.publicId);
@@ -36,6 +38,7 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
           </div>
           <button
             onClick={onClose}
+            aria-label={t("close")}
             className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
           >
             <X size={20} />
@@ -51,7 +54,7 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
               className="flex items-center gap-2 text-sm font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 mb-5 hover:bg-red-500/20 transition-all w-fit"
             >
               <PlayCircle size={18} className="fill-red-400" />
-              Video Rehberi İzle
+              {t("watchVideoGuide")}
             </a>
           )}
 
@@ -62,7 +65,7 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
 
           {current.documents && current.documents.length > 0 && (
             <div className="mt-6 space-y-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Ekler</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{t("attachmentsList")}</p>
               {current.documents.map((doc, i) => (
                 <a
                   key={i}
@@ -86,14 +89,14 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             <ChevronDown className="rotate-90" size={16} />
-            Önceki Adım
+            {t("previousStep")}
           </button>
           <button
             onClick={() => next && setCurrent(next)}
             disabled={!next}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
-            Sonraki Adım
+            {t("nextStep")}
             <ChevronDown className="-rotate-90" size={16} />
           </button>
         </div>
@@ -103,6 +106,7 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
 };
 
 export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
+  const { t } = useLocale();
   const [search, setSearch] = useState("");
   const [selectedModule, setSelectedModule] = useState("Hepsi");
   const [selectedGuide, setSelectedGuide] = useState<CustomerGuide | null>(null);
@@ -130,8 +134,8 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="bg-slate-900/90 backdrop-blur-xl p-8 rounded-[2.5rem] border border-slate-800 shadow-xl shadow-slate-950/30 space-y-5">
           <div>
-            <h2 className="text-2xl font-black text-white tracking-tight">Rehberler</h2>
-            <p className="text-sm text-slate-400 font-medium mt-0.5">Ürün ve hizmetlerimize ait kullanım rehberleri.</p>
+            <h2 className="text-2xl font-black text-white tracking-tight">{t("guides")}</h2>
+            <p className="text-sm text-slate-400 font-medium mt-0.5">{t("guidesDescription")}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -139,7 +143,7 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Rehberlerde ara..."
+                placeholder={t("guideSearch")}
                 className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-2xl text-sm font-medium text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
               />
             </div>
@@ -155,7 +159,7 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
                       : "text-slate-400 hover:text-white hover:bg-slate-700"
                   )}
                 >
-                  {m}
+                  {m === "Hepsi" ? t("allRequests") : m}
                 </button>
               ))}
             </div>
@@ -165,7 +169,7 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
         {filtered.length === 0 ? (
           <div className="bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-slate-800 p-12 text-center">
             <BookOpen size={40} className="text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 font-bold">Rehber bulunamadı.</p>
+            <p className="text-slate-400 font-bold">{t("noGuideResults")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

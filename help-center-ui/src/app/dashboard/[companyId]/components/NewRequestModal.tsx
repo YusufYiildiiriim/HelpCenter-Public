@@ -5,6 +5,7 @@ import type { CustomerModule } from "@/services/customer/CustomerModuleService";
 import type { CustomerRequestSubject } from "@/services/customer/CustomerRequestSubjectService";
 import { FormField } from "@/components/common/FormField";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { useLocale } from "@/context/LocaleContext";
 
 export interface NewRequestFormData {
   title: string;
@@ -53,17 +54,18 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
   submitting,
   menuRef
 }) => {
+  const { t } = useLocale();
   const values = useMemo(
     () => ({ title: newRequest.title, requestSubjectId: newRequest.requestSubjectId, moduleId: newRequest.moduleId, description: newRequest.description }),
     [newRequest.title, newRequest.requestSubjectId, newRequest.moduleId, newRequest.description]
   );
 
   const fieldConfig = useMemo(() => ({
-    title: { label: "Talep Başlığı", rules: { required: true } },
-    requestSubjectId: { label: "Talep Konusu", rules: { required: true } },
-    moduleId: { label: "İlgili Modül", rules: { required: true } },
-    description: { label: "Detaylı Açıklama", rules: { required: true } },
-  }), []);
+    title: { label: t("requestTitle"), rules: { required: true } },
+    requestSubjectId: { label: t("requestSubject"), rules: { required: true } },
+    moduleId: { label: t("relatedModule"), rules: { required: true } },
+    description: { label: t("detailedDescription"), rules: { required: true } },
+  }), [t]);
 
   const { register, handleSubmit, reset, errors, submitAttempted } = useValidatedForm<typeof values>(values, fieldConfig);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -104,7 +106,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
   }, [isOpen, onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setNewRequest({ ...newRequest, [e.target.name]: e.target.value });
+    setNewRequest((current) => ({ ...current, [e.target.name]: e.target.value }));
   };
 
   if (!isOpen) return null;
@@ -118,14 +120,14 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                         <Send size={20} />
                     </div>
                     <div>
-                        <h2 id="new-request-modal-title" className="text-xl font-black text-white tracking-tight">Yeni Destek Talebi</h2>
-                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Teknik Destek Hattı</p>
+                        <h2 id="new-request-modal-title" className="text-xl font-black text-white tracking-tight">{t("newRequestTitle")}</h2>
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t("technicalSupport")}</p>
                     </div>
                 </div>
                 <button
                     ref={closeButtonRef}
                     type="button"
-                    aria-label="Yeni destek talebi penceresini kapat"
+                    aria-label={t("closeNewRequest")}
                     onClick={onClose}
                     className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                 >
@@ -136,32 +138,32 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="p-6 space-y-4">
                 {submitAttempted && Object.keys(errors).length > 0 && (
                     <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-bold text-red-300">
-                        Lütfen zorunlu alanları doldurun.
+                        {t("requiredFieldsNotice")}
                     </div>
                 )}
                 <FormField
                     name="title"
-                    label="Talep Başlığı"
+                    label={t("requestTitle")}
                     value={newRequest.title}
                     onChange={handleChange}
                     onBlur={register("title").onBlur}
                     error={register("title").error}
                     required
-                    placeholder="Örn: SQL Yedekleme Hatası"
+                    placeholder={t("requestTitlePlaceholder")}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                         as="select"
                         name="requestSubjectId"
-                        label="Talep Konusu"
+                        label={t("requestSubject")}
                         value={newRequest.requestSubjectId}
                         onChange={handleChange}
                         onBlur={register("requestSubjectId").onBlur}
                         error={register("requestSubjectId").error}
                         required
                     >
-                        <option value="">Seçiniz...</option>
+                        <option value="">{t("selectOption")}</option>
                         {subjects.map((subject) => (
                             <option key={subject.id} value={subject.id}>{subject.name}</option>
                         ))}
@@ -169,14 +171,14 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                     <FormField
                         as="select"
                         name="moduleId"
-                        label="İlgili Modül"
+                        label={t("relatedModule")}
                         value={newRequest.moduleId}
                         onChange={handleChange}
                         onBlur={register("moduleId").onBlur}
                         error={register("moduleId").error}
                         required
                     >
-                        <option value="">Seçiniz...</option>
+                        <option value="">{t("selectOption")}</option>
                         {modules.map((module) => (
                             <option key={module.id} value={module.id}>{module.name}</option>
                         ))}
@@ -186,9 +188,9 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                 <FormField
                     as="select"
                     name="priority"
-                    label="Aciliyet / Öncelik"
+                    label={t("priorityLabel")}
                     value={newRequest.priority}
-                    onChange={(e) => setNewRequest({ ...newRequest, priority: Number(e.target.value) })}
+                    onChange={(e) => setNewRequest((current) => ({ ...current, priority: Number(e.target.value) }))}
                     className={cn(
                         "font-bold",
                         newRequest.priority === 3 ? "text-red-400" :
@@ -197,28 +199,28 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                         "text-slate-300"
                     )}
                 >
-                    <option value={0}>Düşük (İvediliği Yok)</option>
-                    <option value={1}>Normal (Standart)</option>
-                    <option value={2}>Yüksek (Hızlı Çözüm Gerekli)</option>
-                    <option value={3}>Kritik (Sistem Kesintisi / Acil)</option>
+                    <option value={0}>{t("priorityLowOption")}</option>
+                    <option value={1}>{t("priorityNormalOption")}</option>
+                    <option value={2}>{t("priorityHighOption")}</option>
+                    <option value={3}>{t("priorityCriticalOption")}</option>
                 </FormField>
 
                 <FormField
                     as="textarea"
                     name="description"
-                    label="Detaylı Açıklama"
+                    label={t("detailedDescription")}
                     rows={3}
                     value={newRequest.description}
                     onChange={handleChange}
                     onBlur={register("description").onBlur}
                     error={register("description").error}
                     required
-                    placeholder="Yaşadığınız sorunu detaylandırın..."
+                    placeholder={t("requestDescriptionPlaceholder")}
                 />
 
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dosya Ekleri</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t("fileAttachments")}</label>
                         <div className="relative" ref={menuRef}>
                             <button 
                                 type="button"
@@ -226,7 +228,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                                 className="flex items-center gap-1.5 text-[10px] font-black text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-widest"
                             >
                                 <Paperclip size={14} />
-                                Dosya Ekle
+                                {t("addFile")}
                             </button>
 
                             {isFileTypeMenuOpen && (
@@ -253,7 +255,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                                         className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-indigo-500/10 text-slate-300 hover:text-indigo-400 transition-all text-[10px] font-bold"
                                     >
                                         <ImageIcon size={14} className="text-indigo-400" />
-                                        Görsel
+                                        {t("imageFile")}
                                     </button>
                                 </div>
                             )}
@@ -265,7 +267,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                             {selectedFiles.map((file, index) => (
                                 <div key={index} className="flex items-center gap-1.5 bg-slate-800 text-slate-300 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-700">
                                     <span className="max-w-[100px] truncate">{file.name}</span>
-                                    <button type="button" aria-label={`${file.name} ekini kaldır`} onClick={() => removeFile(index)} className="hover:text-red-400 transition-colors">
+                                    <button type="button" aria-label={`${file.name} ${t("removeAttachment")}`} onClick={() => removeFile(index)} className="hover:text-red-400 transition-colors">
                                         <X size={12} />
                                     </button>
                                 </div>
@@ -289,7 +291,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                         onClick={onClose}
                         className="flex-1 px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                     >
-                        Vazgeç
+                        {t("cancel")}
                     </button>
                     <button
                         disabled={submitting}
@@ -297,7 +299,7 @@ export const NewRequestModal: React.FC<NewRequestModalProps> = ({
                     >
                         {submitting ? <Loader2 className="animate-spin" size={18} /> : (
                             <>
-                                Talebi Gönder
+                                {t("submitRequest")}
                                 <Send size={16} />
                             </>
                         )}

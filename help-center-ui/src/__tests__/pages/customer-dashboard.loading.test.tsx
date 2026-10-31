@@ -2,13 +2,14 @@ import React, { StrictMode } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CompanyDashboardPage from '@/app/dashboard/[companyId]/page';
+import { LocaleProvider } from '@/context/LocaleContext';
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(), verify: vi.fn(), requests: vi.fn(), profile: vi.fn(),
   modules: vi.fn(), subjects: vi.fn(), guides: vi.fn(),
 }));
 const router = { push: mocks.push };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboard/50000000-0000-4000-8000-000000000001' }));
 vi.mock('@/lib/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/services/common/AuthService', () => ({ AuthService: { verify: mocks.verify, logout: vi.fn() } }));
 vi.mock('@/services/customer/CustomerRequestService', () => ({ CustomerRequestService: { getMyRequests: mocks.requests } }));
@@ -31,7 +32,7 @@ async function mountDashboard(strict = true) {
   const params = Promise.resolve({ companyId: '50000000-0000-4000-8000-000000000001' });
   let view!: ReturnType<typeof render>;
   await act(async () => {
-    const page = <CompanyDashboardPage params={params} />;
+    const page = <LocaleProvider initialLocale="tr-TR"><CompanyDashboardPage params={params} /></LocaleProvider>;
     view = render(strict ? <StrictMode>{page}</StrictMode> : page);
   });
   return view;
@@ -57,7 +58,7 @@ describe('customer dashboard loading lifecycle', () => {
     expect(screen.getByText('New request form')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Profilim/ }));
     expect(screen.getByText('Loaded profile')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Rehberler/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Kullanım Kılavuzları/ }));
     expect(screen.getByText('Loaded guides')).toBeInTheDocument();
   });
 
