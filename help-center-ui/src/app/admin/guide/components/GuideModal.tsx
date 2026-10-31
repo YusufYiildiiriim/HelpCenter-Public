@@ -37,7 +37,7 @@ interface GuideModalProps {
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
   formData: GuideFormData;
-  setFormData: (data: GuideFormData) => void;
+  setFormData: React.Dispatch<React.SetStateAction<GuideFormData>>;
   modules: Module[];
   guides: Guide[];
   editingId: string | null;
@@ -62,13 +62,17 @@ export const GuideModal: React.FC<GuideModalProps> = ({
   const activeTitle = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? formData.title : activeTranslation?.title ?? "";
   const activeDescription = activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR") ? formData.description : activeTranslation?.description ?? "";
   const updateLocalizedField = (field: "title" | "description", value: string) => {
-    if (activeLocale === sourceLocale || (!sourceLocale && activeLocale === "tr-TR")) { setFormData({ ...formData, [field]: value }); return; }
-    const translations = [...(formData.translations ?? [])];
-    const index = translations.findIndex((item) => item.locale === activeLocale);
-    const item = index >= 0 ? { ...translations[index] } : { locale: activeLocale, title: "", description: "" };
-    item[field] = value;
-    if (index >= 0) translations[index] = item; else translations.push(item);
-    setFormData({ ...formData, translations });
+    setFormData((current) => {
+      if (activeLocale === current.sourceLocale || (!current.sourceLocale && activeLocale === "tr-TR")) {
+        return { ...current, [field]: value };
+      }
+      const translations = [...(current.translations ?? [])];
+      const index = translations.findIndex((item) => item.locale === activeLocale);
+      const item = index >= 0 ? { ...translations[index] } : { locale: activeLocale, title: "", description: "" };
+      item[field] = value;
+      if (index >= 0) translations[index] = item; else translations.push(item);
+      return { ...current, translations };
+    });
   };
 
   const fieldConfig = useMemo(() => ({
@@ -93,7 +97,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
   }, [isOpen, reset]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((current) => ({ ...current, [e.target.name]: e.target.value }));
   };
 
   const safeModules = Array.isArray(modules) ? modules : [];
@@ -131,7 +135,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
             <div className="lg:col-span-4 space-y-4">
               <div className="space-y-3">
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Kaynak dil</label>
-                <select aria-label="Rehber kaynak dili" value={sourceLocale} onChange={(event) => { setFormData({ ...formData, sourceLocale: event.target.value }); setActiveLocale(event.target.value || "tr-TR"); }} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
+                <select aria-label="Rehber kaynak dili" value={sourceLocale} onChange={(event) => { setFormData((current) => ({ ...current, sourceLocale: event.target.value })); setActiveLocale(event.target.value || "tr-TR"); }} className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white">
                   <option value="">Kaydı sınıflandırın…</option><option value="tr-TR">Türkçe (kaynak)</option><option value="en-US">English (source)</option>
                 </select>
                 {!sourceLocale && <p role="status" className="text-xs text-amber-300">Bu içeriğin kaynak dilini seçin. Eski metinler otomatik sınıflandırılmaz.</p>}
@@ -142,7 +146,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                     label="Kategori (Modül)"
                     value={formData.module}
                     options={[{ value: "", label: "Modül Seçin" }, ...safeModules.map(m => ({ value: m.name, label: m.name })), ...(safeModules.length === 0 ? [{ value: "Genel", label: "Genel" }] : [])]}
-                    onValueChange={(value) => setFormData({ ...formData, module: value, previousGuideId: null })}
+                    onValueChange={(value) => setFormData((current) => ({ ...current, module: value, previousGuideId: null }))}
                     onBlur={register("module").onBlur}
                     error={register("module").error}
                   />
@@ -161,7 +165,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                       label="Önceki Adım (Zincirleme)"
                       value={String(formData.previousGuideId ?? "")}
                       options={[{ value: "", label: "Bağlantı Yok (İlk Adım)" }, ...safeGuides.filter(g => g.module === formData.module && g.id !== editingId).map(g => ({ value: String(g.id), label: g.title }))]}
-                      onValueChange={(value) => setFormData({ ...formData, previousGuideId: value || null })}
+                      onValueChange={(value) => setFormData((current) => ({ ...current, previousGuideId: value || null }))}
                     />
                   </div>
                 </div>
@@ -169,14 +173,14 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dosya Ekle</label>
                   <div className="relative">
-                    <input type="file" id="file-upload" multiple onChange={(e) => setFormData({ ...formData, files: e.target.files })} className="hidden" />
+                    <input type="file" id="file-upload" multiple onChange={(e) => setFormData((current) => ({ ...current, files: e.target.files }))} className="hidden" />
                     <label htmlFor="file-upload" className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-all group shadow-sm">
                       <span className="text-xs font-bold text-slate-400 truncate mr-2">{formData.files?.length ? formData.files.length + " source language file(s)" : "Source language files"}</span>
                       <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Seç</span>
                     </label>
                   </div>
                   <div className="relative">
-                    <input type="file" id="english-file-upload" multiple onChange={(e) => setFormData({ ...formData, englishFiles: e.target.files })} className="hidden" />
+                    <input type="file" id="english-file-upload" multiple onChange={(e) => setFormData((current) => ({ ...current, englishFiles: e.target.files }))} className="hidden" />
                     <label htmlFor="english-file-upload" className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-all group shadow-sm">
                       <span className="text-xs font-bold text-slate-400 truncate mr-2">{formData.englishFiles?.length ? formData.englishFiles.length + " English file(s)" : "English translation files"}</span>
                       <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Select</span>
@@ -209,7 +213,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                     </div>
                     <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                        onClick={() => setFormData((current) => ({ ...current, isActive: !current.isActive }))}
                         className={cn(
                             "w-12 h-6 rounded-full transition-all relative",
                             formData.isActive ? "bg-emerald-500" : "bg-slate-700"
@@ -229,7 +233,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
                     </div>
                     <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, isPublic: !formData.isPublic })}
+                        onClick={() => setFormData((current) => ({ ...current, isPublic: !current.isPublic }))}
                         className={cn(
                             "w-12 h-6 rounded-full transition-all relative",
                             formData.isPublic ? "bg-indigo-500" : "bg-slate-700"
@@ -258,6 +262,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({
               </label>
               <div className={cn("flex-1 min-h-105 border rounded-2xl overflow-hidden bg-slate-800/60", register("description").error ? "border-rose-500/70" : "border-slate-700")}>
                   <CustomEditor
+                  key={activeLocale}
                   value={activeDescription}
                   onChange={(data) => updateLocalizedField("description", data)}
                   placeholder="Rehber içeriğini buraya yazın..."
