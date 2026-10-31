@@ -35,7 +35,8 @@ public class CreateGuideCommandHandler : IRequestHandler<CreateGuideCommand, boo
         var entity = _mapper.Map<Guide>(request);
         entity.IsActive = request.IsActive;
         entity.IsPublic = request.IsPublic;
-        entity.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)!;
+        entity.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
         SyncTranslations(entity, request.Translations ?? []);
 
         var module = await HelpCenter.Application.Features.Guides.GuideModuleResolver.ResolveAsync(_unitOfWork, request.ModuleId, request.Module, cancellationToken);

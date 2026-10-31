@@ -32,7 +32,8 @@ public class CreateFaqCommandHandler : IRequestHandler<CreateFaqCommand, bool>
         faq.ModuleId = request.ModuleId;
         faq.IsActive = request.IsActive;
         faq.IsPublic = request.IsPublic;
-        faq.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)!;
+        faq.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
         SyncTranslations(faq, request.Translations ?? []);
 
         await _unitOfWork.Repository<FAQ>().AddAsync(faq, cancellationToken);
