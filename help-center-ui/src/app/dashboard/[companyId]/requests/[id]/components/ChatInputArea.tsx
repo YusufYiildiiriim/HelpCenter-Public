@@ -1,8 +1,11 @@
 import React from "react";
+import { useLocale } from "@/context/LocaleContext";
+import { isCompletedRequest } from "@/lib/requestStatus";
 import { Paperclip, FileText, FileSpreadsheet, Image as ImageIcon, Send, Loader2, X, CheckCircle2 } from "lucide-react";
 
 interface ChatInputAreaProps {
   status?: string;
+  statusId?: string;
   selectedFiles: File[];
   removeFile: (index: number) => void;
   isFileTypeMenuOpen: boolean;
@@ -20,6 +23,7 @@ interface ChatInputAreaProps {
 
 export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
   status,
+  statusId,
   selectedFiles,
   removeFile,
   isFileTypeMenuOpen,
@@ -34,12 +38,13 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
   sending,
   menuRef
 }) => {
-  if (status === "Tamamlandı") {
+  const { t } = useLocale();
+  if (isCompletedRequest(statusId, status)) {
     return (
       <div className="p-8 bg-slate-900/50 border-t border-slate-800 text-center">
           <p className="text-slate-400 font-bold text-sm uppercase tracking-widest italic flex items-center justify-center gap-3">
               <CheckCircle2 size={18} />
-              Bu talep sonuçlandırıldığı için yeni mesaj gönderilemez.
+              {t("requestResolvedNoNewMessage")}
           </p>
       </div>
     );
@@ -57,7 +62,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                          <FileSpreadsheet size={14} />}
                         <span className="max-w-[150px] truncate">{file.name}</span>
 
-                        <button onClick={() => removeFile(index)} className="hover:text-red-400 transition-colors">
+                        <button type="button" onClick={() => removeFile(index)} aria-label={t("removeSelectedFile")} className="hover:text-red-400 transition-colors">
                             <X size={14} />
                         </button>
                     </div>
@@ -73,7 +78,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 <button 
                     type="button"
                     onClick={() => setIsFileTypeMenuOpen(!isFileTypeMenuOpen)}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                    aria-label={t("addAttachment")} title={t("addAttachment")} className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
                 >
                     <Paperclip size={20} />
                 </button>
@@ -81,7 +86,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 {isFileTypeMenuOpen && (
                     <div className="absolute bottom-full mb-4 left-0 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-2 w-48 animate-in fade-in zoom-in slide-in-from-bottom-4 z-50">
                         <div className="p-2 mb-1 border-b border-slate-700">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Dosya Türü Seçin</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{t("selectAttachmentType")}</span>
                         </div>
                         <button 
                             type="button"
@@ -91,7 +96,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                             <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400">
                                 <FileText size={16} />
                             </div>
-                            PDF Dosyası
+                            {t("pdfFile")}
                         </button>
                         <button 
                             type="button"
@@ -101,7 +106,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                                 <FileSpreadsheet size={16} />
                             </div>
-                            Excel Dosyası
+                            {t("excelFile")}
                         </button>
                         <button 
                             type="button"
@@ -111,7 +116,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                             <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
                                 <ImageIcon size={16} />
                             </div>
-                            Görsel / Fotoğraf
+                            {t("imageFile")}
                         </button>
                     </div>
                 )}
@@ -129,12 +134,12 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
             <input 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={selectedFiles.length > 0 ? "Mesajınızı buraya yazın veya gönderin..." : "Mesajınızı buraya yazın..."}
+                aria-label={t("sendMessage")} placeholder={selectedFiles.length > 0 ? t("sendMessageWithAttachmentsPlaceholder") : t("sendMessagePlaceholder")}
                 className="flex-1 bg-transparent border-none outline-none text-white text-sm font-bold placeholder:text-slate-500 py-3"
             />
             <button 
                 disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
+                type="submit" aria-label={t("sendMessage")} className="bg-indigo-600 hover:bg-indigo-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
             >
                 {sending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
             </button>

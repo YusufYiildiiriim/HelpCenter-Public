@@ -13,6 +13,8 @@ export const messages = {
   "tr-TR": {
     dateLabel: "Tarih", messageSingular: "Mesaj", messagePlural: "Mesaj", fileSingular: "Dosya", filePlural: "Dosya", viewDetails: "Detayları Görüntüle",
     closeRequest: "Talebi Kapat", requestCompleted: "Talep Tamamlandı", requestConversation: "Talep Yazışmaları",
+    sendMessagePlaceholder: "Mesajınızı buraya yazın...", sendMessageWithAttachmentsPlaceholder: "Mesajınızı buraya yazın veya gönderin...", sendMessage: "Mesaj gönder", addAttachment: "Ek dosya ekle", removeSelectedFile: "Seçili dosyayı kaldır", selectAttachmentType: "Dosya türü seçin", pdfFile: "PDF dosyası", excelFile: "Excel dosyası",
+    requestResolvedNoNewMessage: "Bu talep sonuçlandırıldığı için yeni mesaj gönderilemez.", rating: "Değerlendirme", rateServiceTitle: "Talebi Sonuçlandır", serviceRatingPrompt: "Size verdiğimiz hizmeti nasıl değerlendirirsiniz?", ratingVeryBad: "Çok Kötü", ratingBad: "Kötü", ratingAverage: "Orta", ratingGood: "İyi", ratingExcellent: "Mükemmel", feedbackOptional: "Geri bildiriminiz (Opsiyonel)", feedbackPlaceholder: "Eklemek istediğiniz bir not var mı?", cancelAction: "Vazgeç", saveAndClose: "Kaydet ve Kapat", loadingMessages: "Mesajlar yükleniyor...", sessionInfoMissing: "Oturum bilgisi bulunamadı.", requestClosedSuccess: "Talebiniz başarıyla kapatıldı. Geri bildiriminiz için teşekkürler!",
     speakingWithSupport: "Müşteri Hizmetleri ile Görüşüyorsunuz", requestStatus: "Talep durumu",
     priorityCritical: "Kritik", priorityHigh: "Yüksek", priorityNormal: "Normal", priorityLow: "Düşük",
     statusWaitingForReply: "Cevap Bekliyor", statusReplied: "Cevaplandı", statusCompleted: "Tamamlandı", statusUnderReview: "Teknik İncelemede",
@@ -73,6 +75,8 @@ export const messages = {
   "en-US": {
     dateLabel: "Date", messageSingular: "message", messagePlural: "messages", fileSingular: "file", filePlural: "files", viewDetails: "View details",
     closeRequest: "Close request", requestCompleted: "Request completed", requestConversation: "Request conversation",
+    sendMessagePlaceholder: "Write your message here...", sendMessageWithAttachmentsPlaceholder: "Write your message here or attach files...", sendMessage: "Send message", addAttachment: "Add attachment", removeSelectedFile: "Remove selected file", selectAttachmentType: "Select file type", pdfFile: "PDF file", excelFile: "Excel file",
+    requestResolvedNoNewMessage: "This request is closed, so new messages cannot be sent.", rating: "Rating", rateServiceTitle: "Close request", serviceRatingPrompt: "How would you rate the service you received?", ratingVeryBad: "Very poor", ratingBad: "Poor", ratingAverage: "Average", ratingGood: "Good", ratingExcellent: "Excellent", feedbackOptional: "Your feedback (Optional)", feedbackPlaceholder: "Would you like to leave a note?", cancelAction: "Cancel", saveAndClose: "Save and close", loadingMessages: "Loading messages...", sessionInfoMissing: "Session information was not found.", requestClosedSuccess: "Your request was closed. Thank you for your feedback!",
     speakingWithSupport: "You are speaking with customer support", requestStatus: "Request status",
     priorityCritical: "Critical", priorityHigh: "High", priorityNormal: "Normal", priorityLow: "Low",
     statusWaitingForReply: "Waiting for reply", statusReplied: "Replied", statusCompleted: "Completed", statusUnderReview: "Under technical review",

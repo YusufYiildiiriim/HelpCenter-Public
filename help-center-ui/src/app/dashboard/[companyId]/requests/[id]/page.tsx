@@ -10,6 +10,7 @@ import type { CustomerRequest, TicketMessage } from "@/services/customer/Custome
 import { CustomerRequestService } from "@/services/customer/CustomerRequestService";
 import { signalRService } from "@/services/common/signalrService";
 import { useAuth } from "@/context/AuthContext";
+import { useLocale } from "@/context/LocaleContext";
 import { getApiErrorMessage, isForbiddenError, isNotFoundError } from "@/lib/api/errors";
 import { isPublicId } from "@/lib/publicId";
 
@@ -23,6 +24,7 @@ import { CloseTicketModal } from "./components/CloseTicketModal";
 export default function CustomerTicketChatPage({ params }: { params: Promise<{ companyId: string, id: string }> }) {
     const resolvedParams = use(params);
     const { userInfo } = useAuth();
+    const { t } = useLocale();
     const router = useRouter();
     const requestId = resolvedParams.id;
     const hasValidRequestId = isPublicId(requestId);
@@ -160,7 +162,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
         if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
 
         if (!userInfo) {
-            toast.error("Oturum bilgisi bulunamadı.");
+            toast.error(t("sessionInfoMissing"));
             return;
         }
 
@@ -193,7 +195,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
         setIsClosing(true);
         try {
             await CustomerRequestService.close({ publicId: requestId, note: closingNote, rating });
-            toast.success("Talebiniz başarıyla kapatıldı. Geri bildiriminiz için teşekkürler!", { id: "request-closed" });
+            toast.success(t("requestClosedSuccess"), { id: "request-closed" });
             router.push(`/dashboard/${resolvedParams.companyId}`);
         } catch (err: unknown) {
             console.error("Error closing ticket:", err);
@@ -248,7 +250,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
                     error={error}
                     onRetry={fetchTicketDetail}
                     variant="inline"
-                    loadingMessage="Mesajlar yükleniyor..."
+                    loadingMessage={t("loadingMessages")}
                     className="flex-1"
                 >
                     <ChatMessageList
@@ -259,6 +261,7 @@ export default function CustomerTicketChatPage({ params }: { params: Promise<{ c
 
                 {!isNotFound && <ChatInputArea
                     status={ticket?.status}
+                    statusId={ticket?.statusId}
                     selectedFiles={selectedFiles}
                     removeFile={removeFile}
                     isFileTypeMenuOpen={isFileTypeMenuOpen}
