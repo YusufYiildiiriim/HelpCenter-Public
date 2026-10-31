@@ -39,12 +39,12 @@ public sealed class EmailBackgroundService : BackgroundService
             {
                 case EmailJobType.NewRequest:
                     await emailService.SendNewRequestNotificationAsync(
-                        job.ToEmail, job.RecipientName, job.SenderName, job.RequestTitle, stoppingToken);
+                        job.ToEmail, job.RecipientName, job.SenderName, job.RequestTitle, job.Locale, stoppingToken);
                     break;
 
                 case EmailJobType.ExpertAssigned:
                     await emailService.SendExpertAssignedNotificationAsync(
-                        job.ToEmail, job.RecipientName, job.SenderName, job.RequestTitle, stoppingToken);
+                        job.ToEmail, job.RecipientName, job.SenderName, job.RequestTitle, job.Locale, stoppingToken);
                     break;
             }
 

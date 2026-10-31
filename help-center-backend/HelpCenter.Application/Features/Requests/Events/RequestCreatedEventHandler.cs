@@ -32,10 +32,10 @@ public class RequestCreatedEventHandler : INotificationHandler<RequestCreatedNot
         var agentContacts = await _unitOfWork.Repository<UserRole>().SelectAsync(
             ur => ur.Role.Name == "Agent" && ur.IsActive &&
                   ur.User != null && ur.User.IsActive && ur.User.Account != null,
-            ur => new { ur.User!.Account.Email, ur.User.Account.FullName },
+            ur => new { ur.User!.Account.Email, ur.User.Account.FullName, ur.User.Account.PreferredLocale },
             cancellationToken: cancellationToken);
 
-        var agentList = agentContacts.Select(a => (a.Email, a.FullName));
+        var agentList = agentContacts.Select(a => (a.Email, a.FullName, a.PreferredLocale));
 
         // Writes to the queue — mail sending is done in the background by EmailBackgroundService
         _emailDispatcher.EnqueueAgentNotifications(evt.CustomerFullName, evt.RequestTitle, agentList);

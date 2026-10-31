@@ -62,7 +62,7 @@ public class RolePermissionProjectionTranslationTests : IDisposable
 
     private async Task<Guid> SeedAgentUserWithReadPermissionAsync()
     {
-        var account = new Account { Email = "ali@test.com", Username = "ali", FirstName = "Ali", LastName = "Agent", Password = "x", CreatedAt = DateTime.UtcNow };
+        var account = new Account { Email = "ali@test.com", Username = "ali", FirstName = "Ali", LastName = "Agent", Password = "x", PreferredLocale = "en-US", CreatedAt = DateTime.UtcNow };
         _db.Accounts.Add(account);
         await _db.SaveChangesAsync();
 
@@ -119,8 +119,8 @@ public class RolePermissionProjectionTranslationTests : IDisposable
         emailDispatcher.Received(1).EnqueueAgentNotifications(
             "Test Customer",
             "Test Request",
-            Arg.Is<IEnumerable<(string Email, string FullName)>>(agents =>
-                agents.Any(a => a.Email == "ali@test.com" && a.FullName == "Ali Agent")));
+            Arg.Is<IEnumerable<(string Email, string FullName, string? Locale)>>(agents =>
+                agents.Any(a => a.Email == "ali@test.com" && a.FullName == "Ali Agent" && a.Locale == "en-US")));
     }
 
     [Fact]

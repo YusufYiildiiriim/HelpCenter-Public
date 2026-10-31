@@ -22,6 +22,7 @@ public class EmailService : IEmailService
         string agentName,
         string customerName,
         string requestTitle,
+        string? locale = null,
         CancellationToken cancellationToken = default)
     {
         if (_smtp == null || string.IsNullOrWhiteSpace(_smtp.Host))
@@ -30,19 +31,20 @@ public class EmailService : IEmailService
             return;
         }
 
+        var english = HelpCenter.Domain.Common.SupportedLocales.Normalize(locale) == HelpCenter.Domain.Common.SupportedLocales.English;
         var body = $"""
             <html>
             <body style="font-family:Arial,sans-serif;color:#333;">
-              <h2 style="color:#1e40af;">Yeni Talep Bildirimi</h2>
-              <p>Merhaba <strong>{agentName}</strong>,</p>
-              <p><strong>{customerName}</strong> tarafından yeni bir talep oluşturuldu:</p>
+              <h2 style="color:#1e40af;">{(english ? "New request notification" : "Yeni Talep Bildirimi")}</h2>
+              <p>{(english ? "Hello" : "Merhaba")} <strong>{agentName}</strong>,</p>
+              <p>{(english ? $"A new request was created by <strong>{customerName}</strong>:" : $"<strong>{customerName}</strong> tarafından yeni bir talep oluşturuldu:")}</p>
               <table style="border-collapse:collapse;margin-top:12px;">
                 <tr>
-                  <td style="padding:6px 12px;background:#f1f5f9;font-weight:bold;">Talep Başlığı</td>
+                  <td style="padding:6px 12px;background:#f1f5f9;font-weight:bold;">{(english ? "Request title" : "Talep Başlığı")}</td>
                   <td style="padding:6px 12px;">{requestTitle}</td>
                 </tr>
               </table>
-              <p style="margin-top:20px;">Lütfen sisteme giriş yaparak talebi inceleyin.</p>
+              <p style="margin-top:20px;">{(english ? "Sign in to HelpCenter to review this request." : "Lütfen sisteme giriş yaparak talebi inceleyin.")}</p>
             </body>
             </html>
             """;
@@ -50,7 +52,7 @@ public class EmailService : IEmailService
         using var message = new MailMessage
         {
             From = new MailAddress(_smtp.SenderEmail, _smtp.DisplayName),
-            Subject = $"[HelpCenter] Yeni Talep: {requestTitle}",
+            Subject = english ? $"[HelpCenter] New request: {requestTitle}" : $"[HelpCenter] Yeni Talep: {requestTitle}",
             Body = body,
             IsBodyHtml = true
         };
@@ -70,6 +72,7 @@ public class EmailService : IEmailService
         string expertName,
         string agentName,
         string requestTitle,
+        string? locale = null,
         CancellationToken cancellationToken = default)
     {
         if (_smtp == null || string.IsNullOrWhiteSpace(_smtp.Host))
@@ -78,19 +81,20 @@ public class EmailService : IEmailService
             return;
         }
 
+        var english = HelpCenter.Domain.Common.SupportedLocales.Normalize(locale) == HelpCenter.Domain.Common.SupportedLocales.English;
         var body = $"""
             <html>
             <body style="font-family:Arial,sans-serif;color:#333;">
-              <h2 style="color:#1e40af;">Talep Yönlendirme Bildirimi</h2>
-              <p>Merhaba <strong>{expertName}</strong>,</p>
-              <p><strong>{agentName}</strong> tarafından size yeni bir talep yönlendirildi:</p>
+              <h2 style="color:#1e40af;">{(english ? "Request assignment notification" : "Talep Yönlendirme Bildirimi")}</h2>
+              <p>{(english ? "Hello" : "Merhaba")} <strong>{expertName}</strong>,</p>
+              <p>{(english ? $"A new request was assigned to you by <strong>{agentName}</strong>:" : $"<strong>{agentName}</strong> tarafından size yeni bir talep yönlendirildi:")}</p>
               <table style="border-collapse:collapse;margin-top:12px;">
                 <tr>
-                  <td style="padding:6px 12px;background:#f1f5f9;font-weight:bold;">Talep Başlığı</td>
+                  <td style="padding:6px 12px;background:#f1f5f9;font-weight:bold;">{(english ? "Request title" : "Talep Başlığı")}</td>
                   <td style="padding:6px 12px;">{requestTitle}</td>
                 </tr>
               </table>
-              <p style="margin-top:20px;">Lütfen sisteme giriş yaparak talebi inceleyin.</p>
+              <p style="margin-top:20px;">{(english ? "Sign in to HelpCenter to review this request." : "Lütfen sisteme giriş yaparak talebi inceleyin.")}</p>
             </body>
             </html>
             """;
@@ -98,7 +102,7 @@ public class EmailService : IEmailService
         using var message = new MailMessage
         {
             From = new MailAddress(_smtp.SenderEmail, _smtp.DisplayName),
-            Subject = $"[HelpCenter] Size Yönlendirilen Talep: {requestTitle}",
+            Subject = english ? $"[HelpCenter] Request assigned to you: {requestTitle}" : $"[HelpCenter] Size Yönlendirilen Talep: {requestTitle}",
             Body = body,
             IsBodyHtml = true
         };
@@ -117,6 +121,7 @@ public class EmailService : IEmailService
         string toEmail,
         string userName,
         string code,
+        string? locale = null,
         CancellationToken cancellationToken = default)
     {
         if (_smtp == null || string.IsNullOrWhiteSpace(_smtp.Host) || string.IsNullOrWhiteSpace(_smtp.SenderEmail))
@@ -127,21 +132,22 @@ public class EmailService : IEmailService
 
         try
         {
+            var english = HelpCenter.Domain.Common.SupportedLocales.Normalize(locale) == HelpCenter.Domain.Common.SupportedLocales.English;
             var body = $"""
                 <html>
                 <body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px; color: #1e293b;">
                   <div style="max-width: 480px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 32px; border: 1px solid #e2e8f0;">
-                    <h2 style="color: #4f46e5; margin-top: 0; font-size: 20px;">HelpCenter Şifre Sıfırlama Kodu</h2>
-                    <p>Merhaba <strong>{userName}</strong>,</p>
-                    <p>Hesabınızın şifresini sıfırlama talebinde bulundunuz. Aşağıdaki 6 haneli doğrulama kodunu kullanabilirsiniz:</p>
+                    <h2 style="color: #4f46e5; margin-top: 0; font-size: 20px;">{(english ? "HelpCenter password reset code" : "HelpCenter Şifre Sıfırlama Kodu")}</h2>
+                    <p>{(english ? "Hello" : "Merhaba")} <strong>{userName}</strong>,</p>
+                    <p>{(english ? "You requested a password reset. Use this 6-digit verification code:" : "Hesabınızın şifresini sıfırlama talebinde bulundunuz. Aşağıdaki 6 haneli doğrulama kodunu kullanabilirsiniz:")}</p>
                     <div style="text-align: center; margin: 28px 0;">
                       <span style="font-size: 32px; font-weight: 800; tracking: 6px; letter-spacing: 6px; color: #4f46e5; background-color: #eef2ff; padding: 12px 24px; border-radius: 12px; display: inline-block;">
                         {code}
                       </span>
                     </div>
-                    <p style="font-size: 13px; color: #64748b;">Bu kod <strong>15 dakika</strong> boyunca geçerlidir. Eğer bu talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayın.</p>
+                    <p style="font-size: 13px; color: #64748b;">{(english ? "This code is valid for <strong>15 minutes</strong>. If you did not request it, you can ignore this email." : "Bu kod <strong>15 dakika</strong> boyunca geçerlidir. Eğer bu talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayın.")}</p>
                     <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
-                    <p style="font-size: 11px; color: #94a3b8; text-align: center;">HelpCenter Güvenlik Ekibi</p>
+                    <p style="font-size: 11px; color: #94a3b8; text-align: center;">{(english ? "HelpCenter Security Team" : "HelpCenter Güvenlik Ekibi")}</p>
                   </div>
                 </body>
                 </html>
@@ -150,7 +156,7 @@ public class EmailService : IEmailService
             using var message = new MailMessage
             {
                 From = new MailAddress(_smtp.SenderEmail, _smtp.DisplayName),
-                Subject = "[HelpCenter] Şifre Sıfırlama Doğrulama Kodu",
+                Subject = english ? "[HelpCenter] Password reset verification code" : "[HelpCenter] Şifre Sıfırlama Doğrulama Kodu",
                 Body = body,
                 IsBodyHtml = true
             };

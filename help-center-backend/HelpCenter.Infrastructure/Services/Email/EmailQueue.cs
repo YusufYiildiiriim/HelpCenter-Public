@@ -9,7 +9,8 @@ public record EmailJob(
     string ToEmail,
     string RecipientName,
     string RequestTitle,
-    string SenderName = ""
+    string SenderName = "",
+    string Locale = HelpCenter.Domain.Common.SupportedLocales.Default
 );
 
 public sealed class EmailQueue

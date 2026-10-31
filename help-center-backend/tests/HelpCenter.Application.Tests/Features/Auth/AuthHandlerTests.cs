@@ -248,13 +248,16 @@ public class AuthHandlerTests : HandlerTestBase
     public async Task ForgotPassword_should_store_otp_and_dispatch_email()
     {
         CreateTestUser("forgot@test.com", "forgot", "pwd");
+        Db.Accounts.Single(account => account.Email == "forgot@test.com").PreferredLocale = "en-US";
+        Db.SaveChanges();
+        Db.ChangeTracker.Clear();
 
         var handler = new ForgotPasswordCommandHandler(Uow, _emailService, _cacheService);
         var result = await handler.Handle(new ForgotPasswordCommand { EmailOrUsername = "forgot@test.com", IsCustomer = false }, CancellationToken.None);
 
         result.Should().BeTrue();
         _cacheService.Received().Set(Arg.Is<string>(k => k.Contains("forgot@test.com")), Arg.Any<string>(), Arg.Any<TimeSpan>());
-        await _emailService.Received(1).SendPasswordResetCodeAsync("forgot@test.com", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _emailService.Received(1).SendPasswordResetCodeAsync("forgot@test.com", Arg.Any<string>(), Arg.Any<string>(), "en-US", Arg.Any<CancellationToken>());
     }
 
     [Fact]

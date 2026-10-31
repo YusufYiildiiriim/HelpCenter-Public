@@ -55,7 +55,7 @@ public class ConsultExpertCommandHandler : IRequestHandler<ConsultExpertCommand,
         foreach (var domainEvent in customerRequest.DomainEvents)
         {
             if (domainEvent is ExpertAssignedEvent evt)
-                _emailDispatcher.EnqueueExpertNotification(evt.ExpertEmail, evt.ExpertFullName, evt.AgentFullName, evt.RequestTitle);
+                _emailDispatcher.EnqueueExpertNotification(evt.ExpertEmail, evt.ExpertFullName, evt.AgentFullName, evt.RequestTitle, expert.Account.PreferredLocale);
         }
         customerRequest.ClearDomainEvents();
 

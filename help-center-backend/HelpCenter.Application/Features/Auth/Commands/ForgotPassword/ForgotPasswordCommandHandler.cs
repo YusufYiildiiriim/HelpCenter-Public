@@ -25,6 +25,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
         string? targetEmail = null;
         string? userName = null;
+        string? targetLocale = null;
 
         if (request.IsCustomer)
         {
@@ -38,6 +39,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
             targetEmail = customer!.Account.Email;
             userName = customer.Account.FullName ?? customer.Account.Username ?? customer.Account.Email;
+            targetLocale = customer.Account.PreferredLocale;
         }
         else
         {
@@ -51,6 +53,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
             targetEmail = user!.Account.Email;
             userName = user.Account.FullName ?? user.Account.Username ?? user.Account.Email;
+            targetLocale = user.Account.PreferredLocale;
         }
 
         ForgotPasswordRules.AccountShouldHaveEmail(targetEmail);
@@ -68,7 +71,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
             _cache.Set(emailCacheKey, code, codeLifetime);
         }
 
-        await _emailService.SendPasswordResetCodeAsync(targetEmail!, userName, code, cancellationToken);
+        await _emailService.SendPasswordResetCodeAsync(targetEmail!, userName, code, targetLocale, cancellationToken);
 
         return true;
     }
