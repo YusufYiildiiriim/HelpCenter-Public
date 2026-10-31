@@ -95,7 +95,10 @@ public class GetPublicGuidesQueryHandler : IRequestHandler<GetPublicGuidesQuery,
                 dto.Description = translation.Description;
                 dto.ContentLocale = translation.Locale;
                 var localized = localizedGuideDocs.FirstOrDefault(t => t.Id == translation.Id);
-                if (localized is not null) dto.Documents = localized.Documents.Select(d => new PublicGuideDocumentDto { Path = d.Path, FileName = d.FileName }).ToList();
+                var translationDocuments = localized?.Documents
+                    .Select(d => new PublicGuideDocumentDto { Path = d.Path, FileName = d.FileName })
+                    .ToList();
+                if (translationDocuments is { Count: > 0 }) dto.Documents = translationDocuments;
                 else if (guide.SourceLocale != translation.Locale) dto.Documents = new();
             }
             else if (guide.SourceLocale is not null)

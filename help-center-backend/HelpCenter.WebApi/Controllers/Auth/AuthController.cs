@@ -124,7 +124,22 @@ public class AuthController : ControllerBase
     {
         var account = await GetCurrentAccountAsync(cancellationToken);
         if (account is null) return NotFound();
-        return Ok(new { locale = account.PreferredLocale });
+
+        var locale = SupportedLocales.Normalize(account.PreferredLocale);
+        if (string.Equals(User.FindFirst(ClaimTypes.Role)?.Value, "Customer", StringComparison.OrdinalIgnoreCase))
+        {
+            var companyIdValue = User.FindFirst(AppClaimTypes.CompanyId)?.Value;
+            if (Guid.TryParse(companyIdValue, out var companyId))
+            {
+                var company = await _unitOfWork.Repository<Company>().FirstOrDefaultAsync(
+                    x => x.Id == companyId, cancellationToken: cancellationToken);
+                locale ??= SupportedLocales.Normalize(company?.DefaultLocale);
+            }
+
+            locale ??= SupportedLocales.Default;
+        }
+
+        return Ok(new { locale });
     }
 
     [HttpPut("language-preference")]

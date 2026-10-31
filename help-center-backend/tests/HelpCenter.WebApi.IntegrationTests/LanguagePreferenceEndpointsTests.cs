@@ -56,6 +56,46 @@ public sealed class LanguagePreferenceEndpointsTests(PostgreSqlWebApplicationFac
         Assert.Equal("tr-TR", await ReadLocaleAsync(update));
     }
 
+    [Fact]
+    public async Task Customer_language_preference_falls_back_to_company_default_locale()
+    {
+        await IntegrationAuthTestData.EnsureSeededAsync(factory);
+
+        string previousLocale;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<EfContext>();
+            var customer = await db.Customers.Where(item => item.AccountId == db.Accounts
+                    .Where(account => account.Email == IntegrationAuthTestData.CustomerEmail)
+                    .Select(account => account.Id).Single())
+                .Select(item => new { item.CompanyId, item.AccountId }).SingleAsync();
+            var company = await db.Companies.SingleAsync(item => item.Id == customer.CompanyId);
+            var account = await db.Accounts.SingleAsync(item => item.Id == customer.AccountId);
+            previousLocale = company.DefaultLocale;
+            company.DefaultLocale = "en-US";
+            account.PreferredLocale = null;
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var client = await LoginAsync(IntegrationAuthTestData.CustomerEmail, customer: true);
+            using var preference = await client.GetAsync("/api/auth/language-preference");
+            preference.EnsureSuccessStatusCode();
+            Assert.Equal("en-US", await ReadLocaleAsync(preference));
+        }
+        finally
+        {
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EfContext>();
+            var company = await db.Companies.SingleAsync(item => item.Name == "Integration test company");
+            var account = await db.Accounts.SingleAsync(item => item.Email == IntegrationAuthTestData.CustomerEmail);
+            company.DefaultLocale = previousLocale;
+            account.PreferredLocale = null;
+            await db.SaveChangesAsync();
+        }
+    }
+
     private async Task<HttpClient> LoginAsync(string email, bool customer)
     {
         var client = factory.CreateClient();
