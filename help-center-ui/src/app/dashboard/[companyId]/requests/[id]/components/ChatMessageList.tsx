@@ -1,4 +1,5 @@
 import React from "react";
+import { formatLocaleTime } from "@/lib/localeFormat";
 import { MessageSquare, FileText, Image as ImageIcon, FileSpreadsheet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toApiUrl } from "@/lib/env";
@@ -34,7 +35,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                             {msg.senderName}
                         </span>
                         <span className="text-[10px] text-slate-500 font-medium">
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {formatLocaleTime(msg.createdAt)}
                         </span>
                     </div>
                     <div 

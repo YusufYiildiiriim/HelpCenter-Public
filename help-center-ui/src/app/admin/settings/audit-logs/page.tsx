@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/lib/permissions";
+import { formatLocaleDateTime } from "@/lib/localeFormat";
 import { ApiStateView } from "@/components/common/ApiStateView";
 import { DataTable } from "@/components/common/DataTable";
 import { isForbiddenError } from "@/lib/api/errors";
@@ -30,7 +31,7 @@ type AuditFilters = {
 };
 
 const columns: ColumnDef<AuditRow>[] = [
-  { accessorKey: "occurredAt", header: "Zaman", cell: info => new Date(info.getValue<string>()).toLocaleString("tr-TR") },
+  { accessorKey: "occurredAt", header: "Zaman", cell: info => formatLocaleDateTime(info.getValue<string>()) },
   { accessorKey: "eventType", header: "Olay" },
   { accessorKey: "actorDisplayName", header: "İşlemi yapan" },
   { accessorKey: "targetType", header: "Hedef türü" },

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { animate } from "framer-motion";
+import { formatLocaleNumber } from "@/lib/localeFormat";
 
 interface AnimatedCounterProps {
   value: number;
@@ -33,7 +34,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 
   return (
     <span className={className}>
-      {display.toLocaleString("tr-TR")}
+      {formatLocaleNumber(display)}
       {suffix}
     </span>
   );

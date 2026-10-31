@@ -1,4 +1,5 @@
 import React from "react";
+import { formatLocaleTime } from "@/lib/localeFormat";
 import { Lock, FileText, Image as ImageIcon, FileSpreadsheet, CheckCheck, Check } from "lucide-react";
 import type { AdminTicketMessage } from "@/services/admin/AdminRequestService";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ msg }) => {
                 {msg.senderName}
             </span>
             <span className="text-[9px] md:text-[10px] text-slate-600 font-medium shrink-0">
-                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {formatLocaleTime(msg.createdAt)}
             </span>
             {msg.isAgent && msg.type !== 1 && (
                 msg.isRead

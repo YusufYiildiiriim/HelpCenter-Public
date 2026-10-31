@@ -12,6 +12,7 @@ import { usePageTitle } from "@/lib/usePageTitle";
 import { DataTable } from "@/components/common/DataTable";
 import { ApiStateView } from "@/components/common/ApiStateView";
 import { isForbiddenError } from "@/lib/api/errors";
+import { formatLocaleDateTime } from "@/lib/localeFormat";
 import type { ExportColumn } from "@/utils/csvExport";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -139,7 +140,7 @@ export default function AdminRequestsPage() {
 
     const formatDate = (date: string) => {
         if (!date) return "-";
-        return new Date(date).toLocaleString("tr-TR", {
+        return formatLocaleDateTime(date, {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",

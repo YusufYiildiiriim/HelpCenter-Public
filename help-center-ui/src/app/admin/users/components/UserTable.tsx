@@ -2,6 +2,7 @@ import React from "react";
 import { Mail, Edit, Trash2, Users, Shield, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { User } from "@/services/admin/AdminUserService";
+import { formatLocaleDate } from "@/lib/localeFormat";
 
 interface UserTableProps {
   loading: boolean;
@@ -85,7 +86,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       {user.createdAt && (
                         <p className="text-[10px] font-mono text-slate-400 flex items-center gap-1 mt-0.5">
                           <Clock size={10} />
-                          {new Date(user.createdAt).toLocaleDateString("tr-TR")}
+                          {formatLocaleDate(user.createdAt)}
                         </p>
                       )}
                     </div>

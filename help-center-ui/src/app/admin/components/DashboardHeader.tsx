@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Users, LayoutGrid, CalendarDays, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatLocaleDate } from "@/lib/localeFormat";
 
 const quickActions = [
   { label: "Firma Ekle", icon: Plus, href: "/admin/companies" },
@@ -12,7 +13,7 @@ const quickActions = [
 ];
 
 export const DashboardHeader: React.FC = () => {
-  const today = new Date().toLocaleDateString("tr-TR", {
+  const today = formatLocaleDate(new Date(), {
     weekday: "long",
     day: "numeric",
     month: "long",

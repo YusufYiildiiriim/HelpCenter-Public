@@ -1,4 +1,5 @@
 import React from "react";
+import { formatLocaleDate } from "@/lib/localeFormat";
 import Link from "next/link";
 import { MessageSquare, FileText, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ request, companyId }) 
                 <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full uppercase tracking-widest">{request.ticketId}</span>
                     <span className="text-[10px] font-black text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full uppercase tracking-widest">{request.requestSubjectName}</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tarih: {new Date(request.createdAt).toLocaleDateString('tr-TR')}</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tarih: {formatLocaleDate(request.createdAt)}</span>
                 </div>
                 <h4 className="text-xl font-black text-white mt-3 group-hover:text-indigo-400 transition-colors leading-snug">{request.title}</h4>
             </div>

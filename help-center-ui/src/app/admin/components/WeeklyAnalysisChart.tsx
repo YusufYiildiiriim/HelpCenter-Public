@@ -6,6 +6,7 @@ import { Activity, TrendingUp, TrendingDown } from "lucide-react";
 import type { DailyOpenedCount } from "@/services/admin/AdminStatisticsService";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { formatLocaleNumber } from "@/lib/localeFormat";
 
 interface WeeklyAnalysisChartProps {
   points?: DailyOpenedCount[] | null;
@@ -77,7 +78,7 @@ export const WeeklyAnalysisChart: React.FC<WeeklyAnalysisChartProps> = ({ points
           </div>
         </div>
         <div className="text-right">
-          <p className="font-mono text-2xl font-bold tabular-nums tracking-tight text-white">{total.toLocaleString("tr-TR")}</p>
+          <p className="font-mono text-2xl font-bold tabular-nums tracking-tight text-white">{formatLocaleNumber(total)}</p>
           <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Toplam</p>
         </div>
       </div>

@@ -4,18 +4,19 @@ import type { AdminRequest } from "@/services/admin/AdminRequestService";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getRequestPriorityLabel } from "@/lib/request-priority";
+import { formatLocaleDateTime } from "@/lib/localeFormat";
 
 interface RequestCardProps {
   request: AdminRequest;
 }
 
 export const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
-  const createdDate = new Intl.DateTimeFormat("tr-TR", {
+  const createdDate = formatLocaleDateTime(request.createdAt, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit"
-  }).format(new Date(request.createdAt));
+  });
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_34px_rgba(15,23,42,0.08)] md:p-5">

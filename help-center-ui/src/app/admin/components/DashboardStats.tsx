@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AdminStatistics } from "@/services/admin/AdminStatisticsService";
 import { AnimatedCounter } from "./AnimatedCounter";
+import { formatLocaleNumber } from "@/lib/localeFormat";
 
 interface DashboardStatsProps {
   stats: AdminStatistics | null;
@@ -285,7 +286,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading, 
               <p className="mt-1.5 text-[10px] font-medium text-slate-400">
                 {showCompletedRequests ? (
                   <>
-                    <span className="font-semibold text-emerald-400">{completed.toLocaleString("tr-TR")}</span>{" "}
+                    <span className="font-semibold text-emerald-400">{formatLocaleNumber(completed)}</span>{" "}
                     kapanan · <span className="font-semibold text-slate-300">{completionRate}%</span> tamamlandı
                   </>
                 ) : (

@@ -7,6 +7,7 @@ import type { TicketFlow as TicketFlowData } from "@/services/admin/AdminStatist
 import { AnimatedCounter } from "./AnimatedCounter";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { formatLocaleNumber } from "@/lib/localeFormat";
 
 interface TicketFlowProps {
   flow?: TicketFlowData | null;
@@ -191,7 +192,7 @@ export const TicketFlow: React.FC<TicketFlowProps> = ({ flow, loading }) => {
                   <div className="mt-1 h-5 w-10 animate-pulse rounded bg-white/8" />
                 ) : (
                   <p className="mt-1 font-mono text-xl font-bold tabular-nums tracking-tight text-white">
-                    {s.count.toLocaleString("tr-TR")}
+                    {formatLocaleNumber(s.count)}
                   </p>
                 )}
                 <p className="text-[9px] font-semibold text-slate-600">

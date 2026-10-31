@@ -16,6 +16,7 @@ import { ApiStateView } from "@/components/common/ApiStateView";
 import { getApiErrorMessage, isForbiddenError } from "@/lib/api/errors";
 import type { ExportColumn } from "@/utils/csvExport";
 import { cn } from "@/lib/utils";
+import { formatLocaleDate } from "@/lib/localeFormat";
 
 // Modular Components
 import { UserHeader } from "./components/UserHeader";
@@ -246,7 +247,7 @@ export default function AdminUsersPage() {
                             <p className="text-sm font-bold text-white tracking-tight truncate">{user.name} {user.lastName}</p>
                             {user.createdAt && (
                                 <p className="text-[10px] font-mono text-slate-400 mt-0.5">
-                                    {new Date(user.createdAt).toLocaleDateString("tr-TR")}
+                                    {formatLocaleDate(user.createdAt)}
                                 </p>
                             )}
                         </div>
@@ -333,7 +334,7 @@ export default function AdminUsersPage() {
         { header: "E-posta", key: "email" },
         { header: "Roller", key: (u: User) => (u.userRoles?.map((ur) => ur.roleName) || []).join(", ") },
         { header: "Durum", key: (u: User) => (u.isActive ? "Aktif" : "Pasif") },
-        { header: "Oluşturulma", key: (u: User) => (u.createdAt ? new Date(u.createdAt).toLocaleDateString("tr-TR") : "-") },
+        { header: "Oluşturulma", key: (u: User) => (u.createdAt ? formatLocaleDate(u.createdAt) : "-") },
     ], []);
 
     return (
