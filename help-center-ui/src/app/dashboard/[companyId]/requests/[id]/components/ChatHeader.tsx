@@ -3,7 +3,8 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { CustomerRequest } from "@/services/customer/CustomerRequestService";
-import { getRequestStatusLabel, isCompletedRequest } from "@/lib/requestStatus";
+import { getRequestStatusLabel, isCompletedRequest, RequestStatus } from "@/lib/requestStatus";
+import { useLocale } from "@/context/LocaleContext";
 
 interface ChatHeaderProps {
   onBack: () => void;
@@ -18,8 +19,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   ticket, 
   onCloseTicket 
 }) => {
-  const statusLabel = getRequestStatusLabel(ticket?.statusId, ticket?.status);
+  const { locale, t } = useLocale();
+  const statusLabel = getRequestStatusLabel(ticket?.statusId, ticket?.status, locale);
   const isCompleted = isCompletedRequest(ticket?.statusId, ticket?.status);
+  const priorityLabel = ticket?.priority === 3 ? t("priorityCritical") : ticket?.priority === 2 ? t("priorityHigh") : ticket?.priority === 1 ? t("priorityNormal") : t("priorityLow");
   return (
     <div className="p-6 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -31,7 +34,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             </button>
             <div>
                 <div className="flex items-center gap-2">
-                    <h2 className="font-black text-white tracking-tight">Talep Yazışmaları</h2>
+                    <h2 className="font-black text-white tracking-tight">{t("requestConversation")}</h2>
                     <span className="text-[10px] font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">#{ticket?.ticketId ?? requestId}</span>
                     {ticket && (
                         <span className={cn(
@@ -41,21 +44,19 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                             ticket.priority === 1 ? "bg-indigo-500/10 text-indigo-400" :
                             "bg-slate-800 text-slate-400"
                         )}>
-                            {ticket.priority === 3 ? "KRİTİK" :
-                             ticket.priority === 2 ? "YÜKSEK" :
-                             ticket.priority === 1 ? "NORMAL" : "DÜŞÜK"}
+                            {priorityLabel}
                         </span>
                     )}
                     {ticket?.status && (
                         <span
-                            aria-label={`Talep durumu: ${ticket.status}`}
+                            aria-label={`${t("requestStatus")}: ${statusLabel}`}
                             className={cn(
                                 "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter border",
                     isCompleted
                                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                    : ticket.status === "Cevaplandı"
+                                    : ticket.statusId === RequestStatus.Replied
                                         ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                                        : statusLabel === "Teknik İncelemede"
+                                        : ticket.statusId === RequestStatus.UnderTechnicalReview
                                             ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                                             : "bg-slate-800 text-slate-300 border-slate-700"
                             )}
@@ -64,7 +65,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                         </span>
                     )}
                 </div>
-                <p className="text-xs text-slate-400 font-medium">Müşteri Hizmetleri ile Görüşüyorsunuz</p>
+                <p className="text-xs text-slate-400 font-medium">{t("speakingWithSupport")}</p>
             </div>
         </div>
 
@@ -75,12 +76,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
                     className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20 active:scale-95"
                 >
                     <CheckCircle2 size={16} />
-                    Talebi Kapat
+                    {t("closeRequest")}
                 </button>
             ) : (
                 <div className="bg-slate-800 text-slate-400 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-slate-700">
                     <CheckCircle2 size={16} />
-                    Talep Tamamlandı
+                    {t("requestCompleted")}
                 </div>
             )}
         </div>

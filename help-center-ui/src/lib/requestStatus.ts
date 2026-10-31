@@ -13,8 +13,27 @@ export const requestStatusLabels: Record<string, string> = {
   [RequestStatus.UnderTechnicalReview]: "Teknik İncelemede",
 };
 
-export function getRequestStatusLabel(statusId?: string, fallback?: string): string {
-  return (statusId && requestStatusLabels[statusId]) || fallback || "Durum bilinmiyor";
+const requestStatusLabelsEn: Record<string, string> = {
+  [RequestStatus.WaitingForReply]: "Waiting for reply",
+  [RequestStatus.Replied]: "Replied",
+  [RequestStatus.Completed]: "Completed",
+  [RequestStatus.UnderTechnicalReview]: "Under technical review",
+};
+
+export function getRequestStatusLabel(statusId?: string, fallback?: string, locale: "tr-TR" | "en-US" = "tr-TR"): string {
+  if (statusId && locale === "en-US" && requestStatusLabelsEn[statusId]) return requestStatusLabelsEn[statusId];
+  if (statusId && requestStatusLabels[statusId]) return requestStatusLabels[statusId];
+  if (locale === "en-US") {
+    const fallbackTranslations: Record<string, string> = {
+      "Cevap Bekliyor": "Waiting for reply",
+      "Cevaplandı": "Replied",
+      "Tamamlandı": "Completed",
+      "Teknik İncelemede": "Under technical review",
+      "Durum bilinmiyor": "Unknown status",
+    };
+    return fallbackTranslations[fallback ?? ""] ?? fallback ?? "Unknown status";
+  }
+  return fallback || "Durum bilinmiyor";
 }
 
 export function isCompletedRequest(statusId?: string, status?: string): boolean {

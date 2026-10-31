@@ -28,3 +28,13 @@ export function formatLocaleTime(value: Date | string | number, options: Intl.Da
 export function formatLocaleNumber(value: number, options?: Intl.NumberFormatOptions, locale = getActiveLocale()): string {
   return new Intl.NumberFormat(locale, options).format(value);
 }
+
+export function formatLocaleCount(
+  value: number,
+  labels: { one?: string; other: string },
+  locale = getActiveLocale(),
+): string {
+  const category = new Intl.PluralRules(locale).select(value);
+  const label = category === "one" ? labels.one ?? labels.other : labels.other;
+  return `${formatLocaleNumber(value, undefined, locale)} ${label}`;
+}

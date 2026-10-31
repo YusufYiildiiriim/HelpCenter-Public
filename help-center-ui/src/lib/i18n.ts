@@ -11,6 +11,11 @@ export const LOCALE_CONFIG: Record<Locale, { path: LocalePath; label: string; na
 
 export const messages = {
   "tr-TR": {
+    dateLabel: "Tarih", messageSingular: "Mesaj", messagePlural: "Mesaj", fileSingular: "Dosya", filePlural: "Dosya", viewDetails: "Detayları Görüntüle",
+    closeRequest: "Talebi Kapat", requestCompleted: "Talep Tamamlandı", requestConversation: "Talep Yazışmaları",
+    speakingWithSupport: "Müşteri Hizmetleri ile Görüşüyorsunuz", requestStatus: "Talep durumu",
+    priorityCritical: "Kritik", priorityHigh: "Yüksek", priorityNormal: "Normal", priorityLow: "Düşük",
+    statusWaitingForReply: "Cevap Bekliyor", statusReplied: "Cevaplandı", statusCompleted: "Tamamlandı", statusUnderReview: "Teknik İncelemede",
     language: "Dil", project: "Proje:", choose: "Seçin", projects: "Projeler",
     supportCenter: "Kurumsal Bilgi Bankası ve Destek Merkezi", createRequest: "Talep Oluştur",
     adminLogin: "Yönetici Girişi", noProjects: "Henüz proje bulunmuyor.",
@@ -42,6 +47,11 @@ export const messages = {
     close: "Kapat", faqDetail: "SSS Detayı", guideDetail: "Rehber Detayı", notFound: "İçerik bulunamadı.",
   },
   "en-US": {
+    dateLabel: "Date", messageSingular: "message", messagePlural: "messages", fileSingular: "file", filePlural: "files", viewDetails: "View details",
+    closeRequest: "Close request", requestCompleted: "Request completed", requestConversation: "Request conversation",
+    speakingWithSupport: "You are speaking with customer support", requestStatus: "Request status",
+    priorityCritical: "Critical", priorityHigh: "High", priorityNormal: "Normal", priorityLow: "Low",
+    statusWaitingForReply: "Waiting for reply", statusReplied: "Replied", statusCompleted: "Completed", statusUnderReview: "Under technical review",
     language: "Language", project: "Project:", choose: "Choose", projects: "Projects",
     supportCenter: "Knowledge Base and Support Center", createRequest: "Create a request",
     adminLogin: "Admin sign in", noProjects: "No projects are available yet.",
