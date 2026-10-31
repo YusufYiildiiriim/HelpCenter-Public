@@ -2,9 +2,11 @@ import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SupportTabs } from '@/app/components/home/SupportTabs';
+import { LocaleProvider } from '@/context/LocaleContext';
 import type { PublicFaq } from '@/services/public/PublicFaqService';
 
 vi.mock('@/app/components/home/MindMapFlow', () => ({ MindMapFlow: () => null }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
   motion: {
@@ -28,12 +30,12 @@ describe('FAQ card identity', () => {
       activeTab: 'sss' as const, loading: false, filteredFaqs: faqs,
       filteredGuides: [], setSelectedGuide: vi.fn(), onSelectFaq,
     };
-    const { rerender } = render(<SupportTabs {...props} sortBy="newest" />);
+    const { rerender } = render(<LocaleProvider initialLocale="tr-TR"><SupportTabs {...props} sortBy="newest" /></LocaleProvider>);
     const zebra = screen.getByRole('button', { name: 'Zebra SSS detayını aç' });
     const alpha = screen.getByRole('button', { name: 'Alpha SSS detayını aç' });
     zebra.focus();
 
-    rerender(<SupportTabs {...props} sortBy="az" />);
+    rerender(<LocaleProvider initialLocale="tr-TR"><SupportTabs {...props} sortBy="az" /></LocaleProvider>);
 
     expect(screen.getByRole('button', { name: 'Zebra SSS detayını aç' })).toBe(zebra);
     expect(screen.getByRole('button', { name: 'Alpha SSS detayını aç' })).toBe(alpha);

@@ -11,7 +11,7 @@ describe("locale formatting", () => {
   });
 
   it("uses the persisted locale for numbers and handles invalid dates", () => {
-    document.cookie = "hc_locale=en-US";
+    document.cookie = "hc_locale=en-US; Path=/";
     expect(formatLocaleNumber(1234.5)).toBe("1,234.5");
     expect(formatLocaleDate("invalid")).toBe("—");
   });

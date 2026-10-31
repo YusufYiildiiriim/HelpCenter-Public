@@ -57,7 +57,7 @@ const CODE_MESSAGES: Record<string, { tr: string; en: string }> = {
   AccountInactive: { tr: "Hesabınız etkin değil.", en: "Your account is inactive." },
   CustomerInactive: { tr: "Müşteri hesabınız etkin değil. Firma yöneticinizle iletişime geçin.", en: "Your customer account is inactive. Contact your company administrator." },
   UserInactive: { tr: "Kullanıcı hesabınız etkin değil.", en: "Your user account is inactive." },
-  InvalidCredentials: { tr: "Hatalı kullanıcı adı, e-posta veya şifre.", en: "Incorrect username, email, or password." },
+  InvalidCredentials: { tr: "Hatalı kullanıcı adı/e-posta veya şifre.", en: "Incorrect username, email, or password." },
   InvalidIdentifier: { tr: "E-posta adresi veya kullanıcı adı girin.", en: "Enter an email address or username." },
   InvalidResetCode: { tr: "Doğrulama kodu hatalı. Kontrol edip tekrar deneyin.", en: "The verification code is incorrect. Check it and try again." },
   ResetCodeExpired: { tr: "Doğrulama kodunun süresi doldu. Yeni bir kod isteyin.", en: "The verification code expired. Request a new one." },
@@ -83,7 +83,7 @@ const CODE_MESSAGES: Record<string, { tr: string; en: string }> = {
   RequestNotBelongToCustomer: { tr: "Bu talep hesabınıza ait değil.", en: "This request does not belong to your account." },
   DashboardAccessForbidden: { tr: "Bu firma paneline erişim yetkiniz yok.", en: "You do not have access to this company dashboard." },
   ReportsAccessForbidden: { tr: "Raporlara erişim yetkiniz yok.", en: "You do not have permission to access reports." },
-  ConcurrencyConflict: { tr: "Kayıt başka biri tarafından güncellendi. Yenileyip tekrar deneyin.", en: "Another user updated this record. Refresh and try again." },
+  ConcurrencyConflict: { tr: "Kayıt başka biri tarafından güncellendi. Sayfayı yenileyip tekrar deneyin.", en: "Another user updated this record. Refresh the page and try again." },
   ValidationError: { tr: "Gönderilen bilgileri kontrol edin.", en: "Check the submitted information." },
   UnsupportedLocale: { tr: "Desteklenmeyen dil seçimi.", en: "The selected language is not supported." },
 };
