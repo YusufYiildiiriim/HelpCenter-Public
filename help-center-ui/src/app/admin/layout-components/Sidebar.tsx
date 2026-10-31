@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import type { VerifyResponse } from "@/services/common/AuthService";
 import { useOrganization } from "@/context/OrganizationContext";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 interface SidebarItem {
   icon: LucideIcon;
@@ -150,6 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer Profile & Logout */}
         <div className="relative z-10 mt-auto border-t border-slate-900/70 p-3">
+          <LanguageSwitcher className="mb-2 w-full justify-between border-slate-800 bg-slate-900/45 text-slate-300 shadow-none" />
           <div className="mb-2 flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/45 px-3 py-3">
             <div className="relative shrink-0">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-slate-950">

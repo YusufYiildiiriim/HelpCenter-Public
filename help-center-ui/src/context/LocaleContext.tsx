@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { getAccessToken } from "@/lib/authSession";
@@ -22,6 +22,7 @@ function writeLocaleCookie(locale: Locale) {
 
 export function LocaleProvider({ initialLocale, children }: { initialLocale: Locale; children: React.ReactNode }) {
   const [locale, updateLocale] = useState<Locale>(initialLocale);
+  const restoredSessionToken = useRef<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const routeLocale = localeFromPath(pathname.split("/")[1]);
@@ -40,7 +41,9 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
 
     const restoreAccountLocale = () => {
       if (routeLocale) return;
-      if (!getAccessToken()) return;
+      const token = getAccessToken();
+      if (!token || restoredSessionToken.current === token) return;
+      restoredSessionToken.current = token;
       void api.get<{ locale?: string | null }>("/api/auth/language-preference")
         .then(({ data }) => {
           const saved = localeFromPreference(data.locale);
@@ -49,12 +52,14 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
             updateLocale(saved);
           }
         })
-        .catch(() => undefined);
+        .catch(() => {
+          if (restoredSessionToken.current === token) restoredSessionToken.current = null;
+        });
     };
 
-    window.addEventListener("helpcenter:login-success", restoreAccountLocale);
+    window.addEventListener("helpcenter:session-ready", restoreAccountLocale);
     restoreAccountLocale();
-    return () => window.removeEventListener("helpcenter:login-success", restoreAccountLocale);
+    return () => window.removeEventListener("helpcenter:session-ready", restoreAccountLocale);
   }, [routeLocale]);
 
   useEffect(() => {

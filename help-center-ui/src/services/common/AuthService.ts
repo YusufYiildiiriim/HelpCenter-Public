@@ -51,7 +51,7 @@ function storeLoginAccessToken(response: LoginResponse): void {
   const token = response.accessToken ?? response.token;
   if (!token) throw new Error("Login response did not contain an access token.");
   setAccessToken(token, response.accessTokenExpiresAt);
-  if (typeof window !== "undefined") window.dispatchEvent(new Event("helpcenter:login-success"));
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("helpcenter:session-ready"));
 }
 
 export interface MenuItemDto {
@@ -93,7 +93,12 @@ export const AuthService = {
 
     // Share only an in-flight request for the same session; never cache permissions.
     const promise = api.get<VerifyResponse>("/api/auth/verify")
-      .then((response) => response.data)
+      .then((response) => {
+        if (response.data.authenticated && typeof window !== "undefined") {
+          window.dispatchEvent(new Event("helpcenter:session-ready"));
+        }
+        return response.data;
+      })
       .finally(() => {
         if (pendingVerification?.promise === promise) pendingVerification = null;
       });
