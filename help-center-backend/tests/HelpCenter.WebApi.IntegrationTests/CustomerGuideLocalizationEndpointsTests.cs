@@ -21,6 +21,7 @@ public sealed class CustomerGuideLocalizationEndpointsTests(PostgreSqlWebApplica
         var unique = Guid.NewGuid().ToString("N");
         var localizedTitle = $"QA localized guide {unique}";
         var companyFallbackTitle = $"QA company fallback guide {unique}";
+        var sourceOnlyTitle = $"QA source-only guide {unique}";
         string previousLocale;
 
         using (var scope = factory.Services.CreateScope())
@@ -75,7 +76,19 @@ public sealed class CustomerGuideLocalizationEndpointsTests(PostgreSqlWebApplica
                 Documents = new List<GuideTranslationDocument>()
             });
 
-            db.Guides.AddRange(localizedGuide, companyFallbackGuide);
+            var sourceOnlyGuide = new Guide
+            {
+                Title = sourceOnlyTitle,
+                Description = "Turkish source-only content",
+                SourceLocale = "tr-TR",
+                Module = "QA",
+                Documents = new List<Document>
+                {
+                    new() { Path = "/qa/qa-source-only-tr.pdf", FileName = "qa-source-only-tr.pdf" }
+                }
+            };
+
+            db.Guides.AddRange(localizedGuide, companyFallbackGuide, sourceOnlyGuide);
             await db.SaveChangesAsync();
         }
 
@@ -91,6 +104,7 @@ public sealed class CustomerGuideLocalizationEndpointsTests(PostgreSqlWebApplica
             Assert.Equal("en-US", englishGuide.GetProperty("contentLocale").GetString());
             Assert.Equal("/qa/qa-en.pdf", englishGuide.GetProperty("documents")[0].GetProperty("path").GetString());
             Assert.Empty(FindByTitle(englishBody.RootElement, companyFallbackTitle).GetProperty("documents").EnumerateArray());
+            Assert.Empty(FindByTitle(englishBody.RootElement, sourceOnlyTitle).GetProperty("documents").EnumerateArray());
 
             client.DefaultRequestHeaders.AcceptLanguage.Clear();
             client.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("tr-TR"));
@@ -107,6 +121,9 @@ public sealed class CustomerGuideLocalizationEndpointsTests(PostgreSqlWebApplica
             Assert.Equal("en-US", companyFallback.GetProperty("contentLocale").GetString());
             Assert.Equal("Company default translation", companyFallback.GetProperty("description").GetString());
             Assert.Empty(companyFallback.GetProperty("documents").EnumerateArray());
+            var sourceOnly = FindByTitle(turkishBody.RootElement, sourceOnlyTitle);
+            Assert.Equal("/qa/qa-source-only-tr.pdf",
+                sourceOnly.GetProperty("documents")[0].GetProperty("path").GetString());
         }
         finally
         {

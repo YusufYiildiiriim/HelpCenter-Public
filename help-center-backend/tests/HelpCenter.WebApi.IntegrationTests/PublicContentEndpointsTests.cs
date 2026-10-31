@@ -59,6 +59,65 @@ public sealed class PublicContentEndpointsTests(PostgreSqlWebApplicationFactory 
         Assert.Equal(seed.GuideModuleName, items[0].GetProperty("module").GetString());
     }
 
+    [Fact]
+    public async Task PublicGuides_DoNotReturnSourceLanguageDocumentsForAnotherRequestedLocale()
+    {
+        var unique = Guid.NewGuid().ToString("N");
+        var title = $"QA source-only guide {unique}";
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<EfContext>();
+            db.Guides.Add(new Guide
+            {
+                Title = title,
+                Description = "Turkish source content",
+                SourceLocale = "tr-TR",
+                Module = "QA",
+                IsPublic = true,
+                IsActive = true,
+                Documents = new List<Document>
+                {
+                    new() { Path = $"/qa/source-only-{unique}.pdf", FileName = "source-only.pdf" }
+                }
+            });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var client = factory.CreateClient();
+            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US");
+            using var englishResponse = await client.GetAsync(
+                $"/api/public/guides?search={Uri.EscapeDataString(title)}&pageNumber=1&pageSize=10");
+            Assert.Equal(HttpStatusCode.OK, englishResponse.StatusCode);
+            using var englishBody = JsonDocument.Parse(await englishResponse.Content.ReadAsStringAsync());
+            var englishGuide = englishBody.RootElement.GetProperty("items").EnumerateArray().Single();
+            Assert.Equal("en-US", englishGuide.GetProperty("requestedLocale").GetString());
+            Assert.Equal("tr-TR", englishGuide.GetProperty("contentLocale").GetString());
+            Assert.Empty(englishGuide.GetProperty("documents").EnumerateArray());
+
+            client.DefaultRequestHeaders.AcceptLanguage.Clear();
+            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("tr-TR");
+            using var turkishResponse = await client.GetAsync(
+                $"/api/public/guides?search={Uri.EscapeDataString(title)}&pageNumber=1&pageSize=10");
+            Assert.Equal(HttpStatusCode.OK, turkishResponse.StatusCode);
+            using var turkishBody = JsonDocument.Parse(await turkishResponse.Content.ReadAsStringAsync());
+            var turkishGuide = turkishBody.RootElement.GetProperty("items").EnumerateArray().Single();
+            Assert.Equal("tr-TR", turkishGuide.GetProperty("requestedLocale").GetString());
+            Assert.Single(turkishGuide.GetProperty("documents").EnumerateArray());
+            Assert.Equal($"/qa/source-only-{unique}.pdf",
+                turkishGuide.GetProperty("documents")[0].GetProperty("path").GetString());
+        }
+        finally
+        {
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EfContext>();
+            var guide = db.Guides.Single(item => item.Title == title);
+            db.Remove(guide);
+            await db.SaveChangesAsync();
+        }
+    }
+
     private async Task<PublicContentSeed> SeedPublicContentAsync()
     {
         using var scope = factory.Services.CreateScope();

@@ -62,18 +62,28 @@ public class GetCustomerGuidesQueryHandler : IRequestHandler<GetCustomerGuidesQu
                 var localizedDocuments = localized?.Documents
                     .Select(document => new PublicGuideDocumentDto { Path = document.Path, FileName = document.FileName })
                     .ToList();
-                if (localizedDocuments is { Count: > 0 })
+                if (translation.Locale == requestedLocale && localizedDocuments is { Count: > 0 })
                 {
                     dto.Documents = localizedDocuments;
                 }
-                else if (SupportedLocales.Normalize(guide.SourceLocale) != translation.Locale)
+                else if (translation.Locale == requestedLocale
+                    && SupportedLocales.Normalize(guide.SourceLocale) == requestedLocale)
+                {
+                    dto.Documents = guide.Documents?
+                        .Select(document => new PublicGuideDocumentDto { Path = document.Path, FileName = document.FileName })
+                        .ToList() ?? new List<PublicGuideDocumentDto>();
+                }
+                else
                 {
                     dto.Documents = new List<PublicGuideDocumentDto>();
                 }
             }
             else
             {
-                dto.ContentLocale = SupportedLocales.Normalize(guide.SourceLocale);
+                var fallbackLocale = SupportedLocales.Normalize(guide.SourceLocale);
+                dto.ContentLocale = fallbackLocale;
+                if (fallbackLocale != requestedLocale)
+                    dto.Documents = new List<PublicGuideDocumentDto>();
             }
         }
 
