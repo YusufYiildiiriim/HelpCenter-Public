@@ -24,13 +24,22 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
   const [locale, updateLocale] = useState<Locale>(initialLocale);
   const pathname = usePathname();
   const router = useRouter();
+  const routeLocale = localeFromPath(pathname.split("/")[1]);
 
   useEffect(() => {
+    // A localized public URL is the source of truth, including on direct links.
+    // Cookies and account preferences select the locale only on unprefixed routes.
+    if (routeLocale) {
+      updateLocale(routeLocale);
+      return;
+    }
+
     const cookieLocale = document.cookie.split("; ").find((item) => item.startsWith(COOKIE_NAME + "="))?.split("=")[1];
     const preferred = localeFromPreference(cookieLocale ? decodeURIComponent(cookieLocale) : null);
     if (preferred) updateLocale(preferred);
 
     const restoreAccountLocale = () => {
+      if (routeLocale) return;
       if (!getAccessToken()) return;
       void api.get<{ locale?: string | null }>("/api/auth/language-preference")
         .then(({ data }) => {
@@ -46,7 +55,7 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
     window.addEventListener("helpcenter:login-success", restoreAccountLocale);
     restoreAccountLocale();
     return () => window.removeEventListener("helpcenter:login-success", restoreAccountLocale);
-  }, []);
+  }, [routeLocale]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
