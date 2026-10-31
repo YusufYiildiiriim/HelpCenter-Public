@@ -6,6 +6,7 @@ public class UpdateCompanyCommand : IRequest<bool>
 {
     public Guid PublicId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? DefaultLocale { get; set; }
     public string Address { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Mail { get; set; } = string.Empty;

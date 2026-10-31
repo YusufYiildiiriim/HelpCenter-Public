@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
+using HelpCenter.Domain.Common;
 using MediatR;
 
 namespace HelpCenter.Application.Features.Companies.Commands.UpdateCompany;
@@ -38,7 +39,11 @@ public class UpdateCompanyCommandHandler : IRequestHandler<UpdateCompanyCommand,
         await _rules.CompanyNameShouldBeUniqueAsync(request.Name, companyEntity!.Id, cancellationToken);
 
         _unitOfWork.SetOriginalVersion(companyEntity!, request.RowVersion);
+        var existingLocale = companyEntity!.DefaultLocale;
         _mapper.Map(request, companyEntity);
+        companyEntity.DefaultLocale = request.DefaultLocale is null
+            ? existingLocale
+            : SupportedLocales.Normalize(request.DefaultLocale) ?? throw new ArgumentException("UnsupportedLocale");
 
         var moduleIds = request.ModuleIds;
         if (request.ProjectId.HasValue && moduleIds != null)

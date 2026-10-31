@@ -64,6 +64,10 @@ namespace HelpCenter.Persistence.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
+                    b.Property<string>("PreferredLocale")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("ProfilePicture")
                         .HasColumnType("text");
 
@@ -193,6 +197,13 @@ namespace HelpCenter.Persistence.Migrations
 
                     b.Property<Guid?>("CreatedByAccountId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("DefaultLocale")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("tr-TR");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");

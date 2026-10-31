@@ -65,7 +65,8 @@ public class AdminCompaniesController : ControllerBase
             RowVersion = request.RowVersion,
             Password = request.Password,
             ContactPersonUsername = request.ContactPersonUsername,
-            ProjectId = request.ProjectId
+            ProjectId = request.ProjectId,
+            DefaultLocale = request.DefaultLocale
         };
 
         var response = await _mediator.Send(command);
@@ -88,7 +89,8 @@ public class AdminCompaniesController : ControllerBase
         Guid RowVersion,
         string? Password = null,
         string? ContactPersonUsername = null,
-        Guid? ProjectId = null);
+        Guid? ProjectId = null,
+        string? DefaultLocale = null);
 
     [HttpDelete("{publicId}")]
     [HasPermission(AppResources.Companies, PermissionActions.Delete)]

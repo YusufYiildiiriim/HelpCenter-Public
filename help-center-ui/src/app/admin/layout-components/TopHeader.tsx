@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Menu } from "lucide-react";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 interface TopHeaderProps {
   onOpenMobileMenu: () => void;
@@ -19,7 +20,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({ onOpenMobileMenu }) => {
         </button>
       </div>
 
-      <div className="hidden h-10 w-px bg-slate-100 lg:block" />
+      <div className="flex items-center gap-4"><LanguageSwitcher /><div className="hidden h-10 w-px bg-slate-100 lg:block" /></div>
     </header>
   );
 };

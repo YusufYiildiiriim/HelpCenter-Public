@@ -51,6 +51,7 @@ function storeLoginAccessToken(response: LoginResponse): void {
   const token = response.accessToken ?? response.token;
   if (!token) throw new Error("Login response did not contain an access token.");
   setAccessToken(token, response.accessTokenExpiresAt);
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("helpcenter:login-success"));
 }
 
 export interface MenuItemDto {
@@ -110,6 +111,7 @@ export const AuthService = {
       await api.post("/api/auth/logout", undefined, { skipAuthRefresh: true });
     } finally {
       clearAccessToken();
+      if (typeof window !== "undefined") window.localStorage.removeItem("hc-authenticated");
       broadcastLogout();
     }
   },

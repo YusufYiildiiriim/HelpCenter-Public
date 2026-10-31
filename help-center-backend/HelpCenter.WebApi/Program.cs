@@ -6,6 +6,8 @@ using HelpCenter.WebApi.Hubs;
 using HelpCenter.WebApi.Logging;
 using HelpCenter.WebApi.ServiceRegistration;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.AddLoggingServices(builder.Configuration);
 
 builder.Services.AddValidatedOptions(builder.Configuration);
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("tr-TR"), new CultureInfo("en-US") };
+    options.DefaultRequestCulture = new RequestCulture("tr-TR");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -55,6 +64,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseRequestLocalization();
 app.UseCors("AllowNextJs");
 app.UseMiddleware<HelpCenter.WebApi.Middleware.SecurityHeadersMiddleware>();
 app.UseWebApiConfiguration();

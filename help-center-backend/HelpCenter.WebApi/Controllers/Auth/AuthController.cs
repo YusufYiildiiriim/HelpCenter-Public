@@ -14,6 +14,7 @@ using HelpCenter.Application.Features.Roles.Queries;
 using HelpCenter.Application.Features.Roles.Queries.GetUserPermissions;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
+using HelpCenter.Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -115,6 +116,53 @@ public class AuthController : ControllerBase
             CompanyPublicId = company.PublicId
         });
     }
+
+
+    [HttpGet("language-preference")]
+    [Authorize]
+    public async Task<IActionResult> GetLanguagePreference(CancellationToken cancellationToken)
+    {
+        var account = await GetCurrentAccountAsync(cancellationToken);
+        if (account is null) return NotFound();
+        return Ok(new { locale = account.PreferredLocale });
+    }
+
+    [HttpPut("language-preference")]
+    [Authorize]
+    public async Task<IActionResult> SetLanguagePreference([FromBody] SetLanguagePreferenceRequest request, CancellationToken cancellationToken)
+    {
+        var locale = SupportedLocales.Normalize(request.Locale);
+        if (locale is null)
+            return BadRequest(new { code = "UnsupportedLocale", message = "Supported locales are tr-TR and en-US." });
+
+        var account = await GetCurrentAccountAsync(cancellationToken);
+        if (account is null) return NotFound();
+        account.PreferredLocale = locale;
+        await _unitOfWork.SaveAsync(cancellationToken);
+        return Ok(new { locale });
+    }
+
+    private async Task<Account?> GetCurrentAccountAsync(CancellationToken cancellationToken)
+    {
+        var idValue = User.FindFirst(AppClaimTypes.UserId)?.Value;
+        if (!Guid.TryParse(idValue, out var principalId)) return null;
+
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (string.Equals(role, "Customer", StringComparison.OrdinalIgnoreCase))
+        {
+            var customer = await _unitOfWork.Repository<HelpCenter.Domain.Entities.Customer>().FirstOrDefaultAsync(
+                x => x.Id == principalId, asTracking: true,
+                cancellationToken: cancellationToken, x => x.Account);
+            return customer?.Account;
+        }
+
+        var user = await _unitOfWork.Repository<User>().FirstOrDefaultAsync(
+            x => x.Id == principalId, asTracking: true,
+            cancellationToken: cancellationToken, x => x.Account);
+        return user?.Account;
+    }
+
+    public sealed record SetLanguagePreferenceRequest(string Locale);
 
     [HttpGet("verify")]
     [Authorize]

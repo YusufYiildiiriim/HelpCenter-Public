@@ -1,6 +1,7 @@
 import React from "react";
 import { Building2, LogOut } from "lucide-react";
 import type { CustomerProfile } from "@/services/customer/CustomerProfileService";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 interface DashboardNavProps {
   profile: CustomerProfile | null;
@@ -24,6 +25,7 @@ export const DashboardNav: React.FC<DashboardNavProps> = ({ profile, onLogout })
         </div>
 
         <div className="flex items-center gap-6">
+            <LanguageSwitcher className="!border-slate-700 !bg-slate-800 !text-slate-200" />
             <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
                     <p className="text-sm font-black text-white">{profile ? `${profile.firstName} ${profile.lastName}` : "Müşteri Yetkilisi"}</p>

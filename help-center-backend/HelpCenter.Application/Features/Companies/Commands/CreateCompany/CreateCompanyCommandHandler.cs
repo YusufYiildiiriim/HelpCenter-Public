@@ -1,6 +1,7 @@
 using AutoMapper;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
+using HelpCenter.Domain.Common;
 using MediatR;
 
 namespace HelpCenter.Application.Features.Companies.Commands.CreateCompany;
@@ -29,6 +30,10 @@ public class CreateCompanyCommandHandler : IRequestHandler<CreateCompanyCommand,
         await _rules.CompanyNameShouldBeUniqueAsync(request.Name, null, cancellationToken);
 
         var company = _mapper.Map<Company>(request);
+        company.DefaultLocale = SupportedLocales.Normalize(request.DefaultLocale)
+            ?? throw new ArgumentException("UnsupportedLocale");
+        company.DefaultLocale = SupportedLocales.Normalize(request.DefaultLocale)
+            ?? throw new ArgumentException("UnsupportedLocale");
 
         var moduleIds = request.ModuleIds;
         if (request.ProjectId.HasValue && moduleIds != null && moduleIds.Any())

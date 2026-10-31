@@ -95,6 +95,10 @@ async function refreshAccessToken(): Promise<string> {
 api.interceptors.request.use(
   async (config) => {
     config.metadata = { startTime: new Date() };
+    const localeCookie = typeof document === "undefined"
+      ? undefined
+      : document.cookie.split("; ").find((item) => item.startsWith("hc_locale="))?.split("=")[1];
+    if (localeCookie) config.headers["Accept-Language"] = decodeURIComponent(localeCookie);
     // Reload clears the in-memory token. Restore the cookie-backed session before
     // verification instead of deliberately sending an unauthenticated GET first.
     let token = getAccessToken();

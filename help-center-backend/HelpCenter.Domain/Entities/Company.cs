@@ -3,6 +3,7 @@ namespace HelpCenter.Domain.Entities
     public class Company : BaseEntity
     {
         public string Name { get; set; } = string.Empty;
+        public string DefaultLocale { get; set; } = HelpCenter.Domain.Common.SupportedLocales.Default;
         public string Address { get; set; } = string.Empty;
 
         public string Phone { get; set; } = string.Empty;

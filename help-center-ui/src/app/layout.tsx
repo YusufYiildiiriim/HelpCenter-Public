@@ -1,10 +1,13 @@
 ﻿import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { OrganizationProviderWrapper } from "@/components/common/OrganizationProviderWrapper";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { env } from "@/lib/env";
+import { LocaleProvider } from "@/context/LocaleContext";
+import { DEFAULT_LOCALE, localeFromPreference } from "@/lib/i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,14 +39,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const initialLocale = localeFromPreference(requestHeaders.get("x-helpcenter-locale")) ?? DEFAULT_LOCALE;
   return (
     <html
-      lang="tr"
+      lang={initialLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -51,11 +56,11 @@ export default function RootLayout({
         <style>{`@media (min-width: 64rem) { [data-admin-mobile-header] { display: none !important; } }`}</style>
       </head>
       <body className="min-h-full flex flex-col">
-        <QueryProvider>
-          <OrganizationProviderWrapper>
-            {children}
-          </OrganizationProviderWrapper>
-        </QueryProvider>
+        <LocaleProvider initialLocale={initialLocale}>
+          <QueryProvider>
+            <OrganizationProviderWrapper>{children}</OrganizationProviderWrapper>
+          </QueryProvider>
+        </LocaleProvider>
         <Toaster position="top-right" richColors expand theme="system" />
       </body>
     </html>

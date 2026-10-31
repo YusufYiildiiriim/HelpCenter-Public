@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ChevronDown, Check, FolderKanban } from "lucide-react";
 import { useOrganization } from "@/context/OrganizationContext";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { useLocale } from "@/context/LocaleContext";
 import type { PublicProject as Project } from "@/services/public/PublicProjectService";
 
 interface HomeNavbarProps {
@@ -18,6 +20,7 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
   onProjectChange,
 }) => {
   const { orgName, logoUrl } = useOrganization();
+  const { t } = useLocale();
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const projectMenuRef = useRef<HTMLDivElement>(null);
 
@@ -49,9 +52,9 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
               className="px-3.5 py-2 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700/60 text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-2 shadow-sm cursor-pointer"
             >
               <FolderKanban size={14} className="text-purple-400" />
-              <span className="text-[11px] text-slate-400 font-medium">Proje:</span>
+              <span className="text-[11px] text-slate-400 font-medium">{t("project")}</span>
               <span className="font-bold text-white max-w-[150px] truncate">
-                {selectedProject?.name || "Seçin"}
+                {selectedProject?.name || t("choose")}
               </span>
               <ChevronDown
                 size={12}
@@ -62,7 +65,7 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
             {projectMenuOpen && (
               <div className="absolute left-0 top-full mt-2 w-64 bg-obsidian-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-50 backdrop-blur-xl">
                 <div className="px-3 py-1.5 border-b border-slate-800/80">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Projeler</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("projects")}</p>
                 </div>
                 <ul className="max-h-60 overflow-y-auto py-1">
                   {projects.map((p) => {
@@ -118,13 +121,14 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
             </span>
           </div>
           <p className="text-xs text-slate-400 leading-normal mt-0.5 hidden sm:block">
-            Kurumsal Bilgi Bankası &amp; Destek Merkezi
+            {t("supportCenter")}
           </p>
         </div>
       </div>
 
       {/* Right Action Buttons */}
       <div className="flex flex-1 items-center justify-end space-x-3 ml-auto" data-purpose="header-actions">
+        <LanguageSwitcher className="!border-slate-700/60 !bg-obsidian-800 !text-slate-200" />
         {/* Ticket Button */}
         <Link
           href="/dashboard"
@@ -138,7 +142,7 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
               strokeWidth="2"
             />
           </svg>
-          <span>Talep Oluştur</span>
+          <span>{t("createRequest")}</span>
         </Link>
 
         {/* Admin Login Button */}
@@ -154,7 +158,7 @@ export const HomeNavbar: React.FC<HomeNavbarProps> = ({
               strokeWidth="2"
             />
           </svg>
-          <span>Admin Giriş</span>
+          <span>{t("adminLogin")}</span>
         </Link>
       </div>
     </header>

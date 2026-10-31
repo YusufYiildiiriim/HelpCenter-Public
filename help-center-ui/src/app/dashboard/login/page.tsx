@@ -13,6 +13,7 @@ import { PublicOrganizationService } from "@/services/public/PublicOrganizationS
 import { usePageTitle } from "@/lib/usePageTitle";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { toApiUrl } from "@/lib/env";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 export default function DashboardLoginPage() {
   usePageTitle("Müşteri Girişi");
@@ -69,6 +70,7 @@ export default function DashboardLoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-950 flex justify-center p-4 sm:p-6 relative overflow-hidden">
+      <LanguageSwitcher className="absolute right-5 top-5 z-20" />
       {/* Premium Background */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 

@@ -12,6 +12,7 @@ namespace HelpCenter.Domain.Entities
         public string? PhoneNumber { get; set; }
         public bool IsPasswordChangeRequired { get; set; } = false;
         public string? ProfilePicture { get; set; }
+        public string? PreferredLocale { get; set; }
 
         // Navigation properties for one-to-one relationship
         public virtual User? User { get; set; }

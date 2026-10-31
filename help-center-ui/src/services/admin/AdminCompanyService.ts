@@ -4,6 +4,7 @@ export interface Company {
   id: string;
   publicId: string;
   name: string;
+  defaultLocale: string;
   address: string;
   phone: string;
   mail: string;

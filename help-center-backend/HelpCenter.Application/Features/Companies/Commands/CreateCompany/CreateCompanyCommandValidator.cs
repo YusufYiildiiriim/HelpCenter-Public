@@ -1,5 +1,6 @@
 using HelpCenter.Application.Common.Validation;
 using FluentValidation;
+using HelpCenter.Domain.Common;
 
 namespace HelpCenter.Application.Features.Companies.Commands.CreateCompany;
 
@@ -7,6 +8,9 @@ public class CreateCompanyCommandValidator : AbstractValidator<CreateCompanyComm
 {
     public CreateCompanyCommandValidator()
     {
+        RuleFor(x => x.DefaultLocale)
+            .Must(locale => locale is null || SupportedLocales.IsSupported(locale))
+            .WithMessage("UnsupportedLocale");
         RuleFor(x => x.Name).NotEmpty().WithMessage("Firma adı boş bırakılamaz.");
         RuleFor(x => x.Address).NotEmpty().WithMessage("Adres boş bırakılamaz.");
         RuleFor(x => x.Phone).NotEmpty().WithMessage("Telefon boş bırakılamaz.");

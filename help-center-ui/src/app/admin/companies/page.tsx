@@ -92,6 +92,7 @@ export default function CompaniesPage() {
   // State: Forms
   const [formData, setFormData] = useState<CompanyFormData>({
     name: "",
+    defaultLocale: "tr-TR",
     mail: "",
     phone: "",
     address: "",
@@ -236,6 +237,7 @@ export default function CompaniesPage() {
     setIsEditMode(true);
     setFormData({
       name: company.name,
+      defaultLocale: company.defaultLocale || "tr-TR",
       mail: company.mail,
       phone: company.phone,
       address: company.address,
@@ -260,6 +262,7 @@ export default function CompaniesPage() {
     setSelectedCompany(null);
     setFormData({
       name: "",
+      defaultLocale: "tr-TR",
       mail: "",
       phone: "",
       address: "",

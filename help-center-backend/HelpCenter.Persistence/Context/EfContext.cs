@@ -58,6 +58,9 @@ public class EfContext : DbContext
         modelBuilder.Entity<CompanyModule>().ToTable("CompanyModule");
         modelBuilder.Entity<ProjectModule>().ToTable("ProjectModule");
 
+        modelBuilder.Entity<Company>().Property(x => x.DefaultLocale).HasMaxLength(16).HasDefaultValue(HelpCenter.Domain.Common.SupportedLocales.Default);
+        modelBuilder.Entity<Account>().Property(x => x.PreferredLocale).HasMaxLength(16);
+
         // Global Query Filter (IsDeleted = false)
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

@@ -9,6 +9,7 @@ import { useValidatedForm } from "@/hooks/useValidatedForm";
 
 export interface CompanyFormData {
   name: string;
+  defaultLocale: string;
   mail: string;
   phone: string;
   address: string;
@@ -259,8 +260,18 @@ export const CompanyModal: React.FC<CompanyModalProps> = ({
                 required
                 placeholder="Firmanın resmi adresi..."
               />
+
+              <label className="block space-y-2 text-xs font-bold text-slate-400">
+                Varsayılan dil
+                <select name="defaultLocale" value={formData.defaultLocale} onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-indigo-500">
+                  <option value="tr-TR">Türkçe</option>
+                  <option value="en-US">English</option>
+                </select>
+                <span className="block text-[10px] font-medium text-slate-500">Çevirisi bulunmayan içerikler bu dilde gösterilir.</span>
+              </label>
             </div>
-          )}
+)}
 
           {/* ─── Tab 2: Contact Person ─── */}
           {activeTab === 1 && (

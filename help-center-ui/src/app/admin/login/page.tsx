@@ -9,6 +9,7 @@ import { AdminForgotPasswordModal } from "./components/AdminForgotPasswordModal"
 import { usePageTitle } from "@/lib/usePageTitle";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { toApiUrl } from "@/lib/env";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 export default function AdminLoginPage() {
   usePageTitle("Admin Girişi");
@@ -62,6 +63,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="relative min-h-screen bg-slate-950 flex items-center justify-center p-6 overflow-hidden">
+      <LanguageSwitcher className="absolute right-5 top-5 z-20" />
       {/* Background Decorative Accents */}
       <div className="pointer-events-none absolute top-0 right-0 w-125 h-125 bg-indigo-600/10 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/3" />
       <div className="pointer-events-none absolute bottom-0 left-0 w-125 h-125 bg-violet-600/10 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3" />
