@@ -20,7 +20,15 @@ export async function proxy(request: NextRequest) {
   const isLocalizedPublicPath = pathname === "/tr" || pathname.startsWith("/tr/") || pathname === "/en" || pathname.startsWith("/en/");
   if (!isLocalizedPublicPath && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
     const target = request.nextUrl.clone();
-    target.pathname = "/" + localePath(locale) + (pathname === "/" ? "" : pathname);
+    const firstSegment = pathname.split("/")[1] ?? "";
+    const localeLikeSegment = /^[a-z]{2}(?:-[a-z]{2})?$/i.test(firstSegment);
+    if (localeLikeSegment) {
+      const pathLocale = localeFromPreference(firstSegment) ?? DEFAULT_LOCALE;
+      const remainingPath = pathname.split("/").slice(2).join("/");
+      target.pathname = "/" + localePath(pathLocale) + (remainingPath ? "/" + remainingPath : "");
+    } else {
+      target.pathname = "/" + localePath(locale) + (pathname === "/" ? "" : pathname);
+    }
     return NextResponse.redirect(target);
   }
 
