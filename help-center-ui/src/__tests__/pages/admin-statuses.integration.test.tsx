@@ -1,12 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import api from '@/lib/axios';
 import { AuthProvider } from '@/context/AuthContext';
 import { OrganizationProvider } from '@/context/OrganizationContext';
+import { LocaleProvider } from '@/context/LocaleContext';
 import type { VerifyResponse } from '@/services/common/AuthService';
 import AdminStatusesPage from '@/app/admin/statuses/page';
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/admin/statuses',
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
 
 /**
  * End-to-end "solid foundation" test: mocks the axios layer (via axios-mock-adapter)
@@ -33,11 +39,13 @@ describe('AdminStatusesPage (entegrasyon)', () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <AuthProvider userInfo={userInfo} permissions={userInfo.permissions}>
-          <OrganizationProvider initialOrgInfo={{ organizationName: 'Test Org' }}>
-            <AdminStatusesPage />
-          </OrganizationProvider>
-        </AuthProvider>
+        <LocaleProvider initialLocale="tr-TR">
+          <AuthProvider userInfo={userInfo} permissions={userInfo.permissions}>
+            <OrganizationProvider initialOrgInfo={{ organizationName: 'Test Org' }}>
+              <AdminStatusesPage />
+            </OrganizationProvider>
+          </AuthProvider>
+        </LocaleProvider>
       </QueryClientProvider>
     );
   }

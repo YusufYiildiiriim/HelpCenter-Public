@@ -77,6 +77,10 @@ export const messages = {
     collapseSubsteps: "alt adımlarını daralt", showSubsteps: "alt adımlarını göster", documents: "belge", stepProgress: "Adım {current} / {total}",
     allModulesWithCount: "Tüm Modüller ({count})", moduleLabel: "Modül:", guideItem: "kılavuz", faqItem: "SSS", openFaqDetails: "SSS detayını aç",
     noGuideMatchesModule: "\"{module}\" modülü için arama kriterine uygun kılavuz bulunamadı.", noFlowForSelection: "Bu modül veya proje için zihin haritası süreç adımları henüz tanımlanmamış.",
+    statusName: "Durum Adı", description: "Açıklama", status: "Durum", active: "Aktif", inactive: "Pasif", statusLoading: "Durumlar Getiriliyor...", statusSearch: "Durum adı veya açıklama ile ara...",
+    systemStatuses: "Talep Durumları", systemStatusPhases: "Sistemdeki sabit talep aşamaları ve açıklamaları", readOnlySystemData: "Salt okunur sistem verisi",
+    statusManagementInfo: "Durum yönetimi hakkında", statusConstantsInfo: "Bu aşamalar sistemin çekirdek işleyişini temsil eder ve sabit sistem durumlarına karşılık gelir. İş akışını korumak için eklenemez veya silinemez.",
+    systemConstant: "Sistem sabiti", activeUse: "Aktif kullanımda",
   },
   "en-US": {
     dateLabel: "Date", messageSingular: "message", messagePlural: "messages", fileSingular: "file", filePlural: "files", viewDetails: "View details",
@@ -145,6 +149,10 @@ export const messages = {
     collapseSubsteps: "Collapse substeps", showSubsteps: "Show substeps", documents: "documents", stepProgress: "Step {current} of {total}",
     allModulesWithCount: "All modules ({count})", moduleLabel: "Module:", guideItem: "guide", faqItem: "FAQ", openFaqDetails: "Open FAQ details",
     noGuideMatchesModule: "No guides match the search for the \"{module}\" module.", noFlowForSelection: "No workflow steps have been defined for this module or project yet.",
+    statusName: "Status name", description: "Description", status: "Status", active: "Active", inactive: "Inactive", statusLoading: "Loading statuses...", statusSearch: "Search by status name...",
+    systemStatuses: "Request statuses", systemStatusPhases: "Fixed request stages and their descriptions", readOnlySystemData: "Read-only system data",
+    statusManagementInfo: "About status management", statusConstantsInfo: "These stages are part of the system's core workflow and map to fixed system statuses. They cannot be added or removed because that would break the workflow.",
+    systemConstant: "System constant", activeUse: "In active use",
   },
 } as const;
 

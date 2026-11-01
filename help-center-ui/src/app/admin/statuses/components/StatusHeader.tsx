@@ -1,7 +1,9 @@
 import React from "react";
 import { LayoutList, ShieldCheck } from "lucide-react";
+import { useLocale } from "@/context/LocaleContext";
 
 export const StatusHeader: React.FC = () => {
+  const { t } = useLocale();
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 bg-slate-900/95 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-xl shadow-slate-950/20 backdrop-blur-xl overflow-hidden relative">
         <div className="flex items-center gap-6">
@@ -9,13 +11,13 @@ export const StatusHeader: React.FC = () => {
                 <LayoutList className="text-white" size={28} />
             </div>
             <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">Talep Durumları</h1>
-                <p className="text-slate-400 font-medium text-sm mt-0.5">Sistemdeki sabit talep aşamaları ve açıklamaları</p>
+                <h1 className="text-2xl font-black text-white tracking-tight">{t("systemStatuses")}</h1>
+                <p className="text-slate-400 font-medium text-sm mt-0.5">{t("systemStatusPhases")}</p>
             </div>
         </div>
         <div className="flex items-center gap-3 px-5 py-2.5 bg-indigo-500/15 rounded-xl border border-indigo-500/30">
             <ShieldCheck className="text-indigo-300" size={18} />
-            <span className="text-indigo-300 font-bold text-xs">Salt Okunur Sistem Verisi</span>
+            <span className="text-indigo-300 font-bold text-xs">{t("readOnlySystemData")}</span>
         </div>
     </div>
   );

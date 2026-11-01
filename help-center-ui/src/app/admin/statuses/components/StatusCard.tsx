@@ -3,12 +3,14 @@ import { Clock, MessageSquare, CheckCircle2, Info } from "lucide-react";
 import type { RequestStatus } from "@/services/admin/AdminStatusService";
 import { cn } from "@/lib/utils";
 import { RequestStatus as RequestStatusIds } from "@/lib/requestStatus";
+import { useLocale } from "@/context/LocaleContext";
 
 interface StatusCardProps {
   status: RequestStatus;
 }
 
 export const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
+  const { t } = useLocale();
   const getStatusIcon = (id: string) => {
     switch (id) {
         case RequestStatusIds.WaitingForReply: return <Clock className="text-amber-400" size={24} />;
@@ -66,11 +68,11 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
                 "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
                 getStatusBadge(status.id)
             )}>
-                Sistem Sabiti
+                {t("systemConstant")}
             </div>
             <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Aktif Kullanımda</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{t("activeUse")}</span>
             </div>
         </div>
     </div>

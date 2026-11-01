@@ -14,6 +14,7 @@ import { DataTable } from "@/components/common/DataTable";
 import { ApiStateView } from "@/components/common/ApiStateView";
 import { isForbiddenError } from "@/lib/api/errors";
 import type { ExportColumn } from "@/utils/csvExport";
+import { useLocale } from "@/context/LocaleContext";
 
 // Modular Components
 import { StatusHeader } from "./components/StatusHeader";
@@ -21,6 +22,7 @@ import { StatusInfoBox } from "./components/StatusInfoBox";
 
 export default function AdminStatusesPage() {
     usePageTitle("Statuses");
+    const { t } = useLocale();
     const { userInfo } = useAuth();
     const { canRead, canExport, canPrint } = usePermission(userInfo);
     const hasViewPerm = canRead("Statuses");
@@ -56,34 +58,34 @@ export default function AdminStatusesPage() {
     const columns = useMemo<ColumnDef<RequestStatus>[]>(() => [
         {
             accessorKey: "name",
-            header: "Durum Adı",
+            header: t("statusName"),
             cell: (info) => <span className="font-semibold text-slate-50">{info.getValue() as string}</span>,
         },
         {
             accessorKey: "description",
-            header: "Açıklama",
+            header: t("description"),
             cell: (info) => <span className="block max-w-md truncate text-xs font-medium text-slate-300">{(info.getValue() as string) || "-"}</span>,
         },
         {
             accessorKey: "isActive",
-            header: "Durum",
+            header: t("status"),
             cell: (info) => (
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
                     info.getValue()
                         ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                         : "bg-slate-800 text-slate-300 border-slate-700"
                 }`}>
-                    {info.getValue() ? "Aktif" : "Pasif"}
+                    {info.getValue() ? t("active") : t("inactive")}
                 </span>
             ),
         },
-    ], []);
+    ], [t]);
 
     const excelColumns: ExportColumn<RequestStatus>[] = useMemo(() => [
-        { header: "Durum Adı", key: "name" },
-        { header: "Açıklama", key: (s) => s.description || "-" },
-        { header: "Durum", key: (s) => (s.isActive ? "Aktif" : "Pasif") },
-    ], []);
+        { header: t("statusName"), key: "name" },
+        { header: t("description"), key: (s) => s.description || "-" },
+        { header: t("status"), key: (s) => (s.isActive ? t("active") : t("inactive")) },
+    ], [t]);
 
     if (!hasViewPerm) return <ForbiddenState variant="page" />;
 
@@ -99,14 +101,14 @@ export default function AdminStatusesPage() {
                 error={statusQuery.error}
                 onRetry={() => void statusQuery.refetch()}
                 variant="page"
-                loadingMessage="Durumlar Getiriliyor..."
+                loadingMessage={t("statusLoading")}
             >
                 <DataTable
                     data={statuses}
                     columns={columns}
                     excelColumns={excelColumns}
                     excelFileName="HelpCenter_Durumlar"
-                    searchPlaceholder="Durum adı veya açıklama ile ara..."
+                    searchPlaceholder={t("statusSearch")}
                     manualPagination={true}
                     pageIndex={pageIndex}
                     pageSize={pageSize}
