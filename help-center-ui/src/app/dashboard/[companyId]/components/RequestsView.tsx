@@ -29,7 +29,7 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
     ? availableRequests.filter(r => r.statusId !== RequestStatus.Completed)
     : availableRequests.filter(r => r.statusId === RequestStatus.Completed);
 
-  const filteredRequests = (activeView === "requests" && requestFilter !== "Hepsi"
+  const filteredRequests = (activeView === "requests" && requestFilter !== ""
     ? baseRequests.filter(r => r.statusId === requestFilter)
     : baseRequests
   ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -59,7 +59,7 @@ export const RequestsView: React.FC<RequestsViewProps> = ({
         {activeView === "requests" && (
             <div className="flex bg-slate-900/90 backdrop-blur-xl p-2 rounded-2xl border border-slate-800 shadow-xl shadow-slate-950/30 self-start overflow-x-auto no-scrollbar max-w-full">
                 {[
-                  { id: "Hepsi", label: t("allRequests") },
+                  { id: "", label: t("allRequests") },
                   { id: RequestStatus.WaitingForReply, label: t("statusWaitingForReply") },
                   { id: RequestStatus.Replied, label: t("statusReplied") },
                 ].map(({ id, label }) => (

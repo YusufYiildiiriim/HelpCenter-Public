@@ -265,7 +265,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                                 color.border
                               )}
                             >
-                              {faq.moduleName || "Genel"}
+                              {faq.moduleName || t("generalCategory")}
                             </span>
                             <span className="text-[11px] text-slate-400">{t("faq")}</span>
                           </div>

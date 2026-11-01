@@ -69,7 +69,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                 </span>
                 <ChevronRight size={10} className="text-slate-600 shrink-0" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">
-                  Rehber Detayı
+                  {t("guideDetail")}
                 </span>
               </div>
             </div>
@@ -77,7 +77,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
               <button
                 onClick={() => setSelectedGuide(null)}
                 className="w-8 h-8 rounded-xl bg-obsidian-850 flex items-center justify-center text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all active:scale-95 border border-slate-700/60 cursor-pointer"
-                aria-label="Kapat"
+                aria-label={t("close")}
               >
                 <X size={15} />
               </button>
@@ -115,9 +115,9 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                             </div>
                             <div>
                               <p className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-0.5">
-                                Eğitim Videosu
+                                {t("videoTraining")}
                               </p>
-                              <p className="text-xs font-bold text-slate-300">Bu adımı YouTube üzerinde izleyin</p>
+                              <p className="text-xs font-bold text-slate-300">{t("watchStepOnYoutube")}</p>
                             </div>
                           </div>
                           <ExternalLink size={16} className="text-red-400 shrink-0" />
@@ -134,7 +134,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                       <div className="flex items-center gap-3 px-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
-                          EK DOSYALAR VE GÖRSELLER
+                          {t("attachmentsList")}
                         </h4>
                       </div>
 
@@ -187,7 +187,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                                       rel="noopener noreferrer"
                                       className="text-[10px] font-bold text-purple-400 uppercase tracking-widest hover:underline"
                                     >
-                                      Dosyayı İndir
+                                      {t("downloadFile")}
                                     </a>
                                   </div>
                                 </div>
@@ -203,7 +203,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                         <Zap size={22} />
                       </div>
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        Bu adım için ek medya bulunmuyor
+                        {t("noMediaForStep")}
                       </p>
                     </div>
                   )}
@@ -225,7 +225,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                     <ArrowRight size={16} className="rotate-180" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Önceki</p>
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{t("previous")}</p>
                     <p className="text-xs font-bold text-slate-300 truncate">
                       {guides.find((g) => g.publicId === selectedGuide.previousGuidePublicId)?.title}
                     </p>
@@ -237,7 +237,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
 
               <div className="flex items-center justify-center gap-2 px-4 py-2 bg-obsidian-850 border border-slate-800 rounded-full text-[10px] font-bold text-purple-400 uppercase tracking-widest shrink-0 self-center">
                 <Check size={14} className="text-purple-400" />
-                Adım {currentStepIndex} / {sequencedGuides.length}
+                {t("step")} {currentStepIndex} / {sequencedGuides.length}
               </div>
 
               {guides.find((g) => g.previousGuidePublicId === selectedGuide.publicId) ? (
@@ -247,7 +247,7 @@ export const GuideReaderModal: React.FC<GuideReaderModalProps> = ({
                   className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 via-indigo-600 to-fuchsia-600 hover:opacity-95 text-white px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl flex items-center justify-between group transition-all shadow-glow-purple cursor-pointer"
                 >
                   <div className="text-left min-w-0">
-                    <p className="text-[9px] font-bold text-purple-200 uppercase tracking-widest">Sonraki</p>
+                    <p className="text-[9px] font-bold text-purple-200 uppercase tracking-widest">{t("next")}</p>
                     <p className="text-xs font-bold text-white truncate">
                       {guides.find((g) => g.previousGuidePublicId === selectedGuide.publicId)?.title}
                     </p>

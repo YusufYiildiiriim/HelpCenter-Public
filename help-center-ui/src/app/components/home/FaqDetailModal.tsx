@@ -43,18 +43,18 @@ export const FaqDetailModal: React.FC<FaqDetailModalProps> = ({ selectedFaq, set
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <span className="text-[10px] font-black uppercase tracking-wider text-purple-400 bg-purple-950/70 border border-purple-800/40 px-2 py-0.5 rounded-md truncate">
-                    {selectedFaq.moduleName || "Genel"}
+                    {selectedFaq.moduleName || t("generalCategory")}
                   </span>
                   <ChevronRight size={10} className="text-slate-600 shrink-0" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 truncate">
-                    SSS Detayı
+                    {t("faqDetail")}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedFaq(null)}
                 className="w-8 h-8 rounded-xl bg-obsidian-850 flex items-center justify-center text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all active:scale-95 border border-slate-700/60 cursor-pointer shrink-0"
-                aria-label="Kapat"
+                aria-label={t("close")}
               >
                 <X size={15} />
               </button>

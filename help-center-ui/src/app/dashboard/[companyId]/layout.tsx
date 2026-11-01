@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { UserPermissions, VerifyResponse } from "@/services/common/AuthService";
 import { AuthService } from "@/services/common/AuthService";
 import { AuthProvider } from "@/context/AuthContext";
+import { useLocale } from "@/context/LocaleContext";
 import PasswordChangeModal from "@/components/auth/PasswordChangeModal";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -17,6 +18,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useLocale();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -140,7 +142,7 @@ export default function DashboardLayout({
         href="#customer-main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-3 focus:font-bold focus:text-white focus:outline-none focus:ring-4 focus:ring-indigo-300/50"
       >
-        Ana içeriğe geç
+        {t("skipToMainContent")}
       </a>
       {children}
       <Toaster richColors position="top-right" theme="system" />

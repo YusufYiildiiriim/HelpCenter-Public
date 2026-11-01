@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { PublicGuide as Guide } from "@/services/public/PublicGuideService";
 import type { PublicModule as Module } from "@/services/public/PublicModuleService";
+import { useLocale } from "@/context/LocaleContext";
 
 interface MindMapFlowProps {
   projectName?: string;
@@ -219,6 +220,7 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
   selectedModule = "",
   onSelectGuide,
 }) => {
+  const { t, locale } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // View mode: 'tree' for NotebookLM item-to-item tree, 'list' for mobile list flow
@@ -719,14 +721,14 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
       {viewMode === "list" && (
         <div className="p-3 sm:p-4 max-h-[580px] overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-[11px] text-slate-400">{listRows.length} / {activeGuides.length} adım</span>
+            <span className="text-[11px] text-slate-400">{t("stepProgress").replace("{current}", new Intl.NumberFormat(locale).format(listRows.length)).replace("{total}", new Intl.NumberFormat(locale).format(activeGuides.length))}</span>
             <div className="flex gap-1.5">
-              <button type="button" onClick={handleExpandAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">Tümünü aç</button>
-              <button type="button" onClick={handleCollapseAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">Tümünü kapat</button>
+              <button type="button" onClick={handleExpandAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">{t("expandAll")}</button>
+              <button type="button" onClick={handleCollapseAll} className="min-h-10 px-3 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white hover:bg-obsidian-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400">{t("collapseAll")}</button>
             </div>
           </div>
           {listRows.length > 0 ? (
-            <ol aria-label="Sıralı rehber adımları" className="space-y-2">
+            <ol aria-label={t("orderedGuideSteps")} className="space-y-2">
               {listRows.map(({ node, path }) => {
                 const isExpanded = expandedNodes[node.guide.publicId] !== false;
                 return (
@@ -734,20 +736,20 @@ export const MindMapFlow: React.FC<MindMapFlowProps> = ({
                     className={cn("relative", node.depth > 0 && "before:absolute before:-left-2 before:top-0 before:bottom-0 before:w-px before:bg-purple-500/25")}>
                     <div className="flex items-stretch rounded-xl border border-slate-700/70 bg-obsidian-900/90 shadow-sm overflow-hidden">
                       <button type="button" onClick={() => onSelectGuide(node.guide)}
-                        aria-label={"Adım " + node.stepNumber + ": " + node.guide.title + " rehberini aç"}
+                        aria-label={`${t("step")} ${node.stepNumber}: ${node.guide.title} ${t("openGuideStep")}`}
                         className="flex min-w-0 flex-1 items-center gap-2.5 p-3 text-left hover:bg-obsidian-800 active:bg-[#202947] transition touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400">
                         <span aria-hidden="true" className="min-w-7 h-7 px-1 rounded-lg bg-purple-500/15 border border-purple-500/25 text-purple-300 text-xs font-bold flex items-center justify-center shrink-0">{node.stepNumber}</span>
                         <span className="min-w-0 flex-1">
-                          {node.depth > 0 && <span aria-label="Adım yolu" className="block text-[10px] text-purple-300/70 mb-0.5 truncate">{node.depth > 2 ? "… → " : ""}{path.join(" → ")}</span>}
+                          {node.depth > 0 && <span aria-label={t("stepPath")} className="block text-[10px] text-purple-300/70 mb-0.5 truncate">{node.depth > 2 ? "… → " : ""}{path.join(" → ")}</span>}
                           <span className="block text-xs font-semibold text-slate-100 break-words line-clamp-2">{node.guide.title}</span>
                           {!selectedModule && node.guide.module && <span className="block text-[10px] text-slate-400 mt-1 break-words">{node.guide.module}</span>}
-                          {!!node.guide.documents?.length && <span className="flex items-center gap-1 text-[10px] text-slate-400 mt-1"><FileText size={11} />{node.guide.documents.length} belge</span>}
+                          {!!node.guide.documents?.length && <span className="flex items-center gap-1 text-[10px] text-slate-400 mt-1"><FileText size={11} />{new Intl.NumberFormat(locale).format(node.guide.documents.length)} {t("documents")}</span>}
                         </span>
                         <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-slate-500" />
                       </button>
                       {node.children.length > 0 && (
                         <button type="button" onClick={() => toggleNode(node.guide.publicId)}
-                          aria-label={node.guide.title + " alt adımlarını " + (isExpanded ? "daralt" : "göster")}
+                          aria-label={`${node.guide.title} ${isExpanded ? t("collapseSubsteps") : t("showSubsteps")}`}
                           aria-expanded={isExpanded}
                           className="w-12 min-h-12 shrink-0 border-l border-slate-700/70 bg-purple-500/5 text-purple-300 hover:bg-purple-500/15 transition touch-manipulation flex flex-col items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-400">
                           <ChevronRight size={16} aria-hidden="true" className={cn("transition-transform", isExpanded && "rotate-90")} />

@@ -108,16 +108,16 @@ const GuideDetailModal: React.FC<GuideDetailModalProps> = ({ guide, guides, onCl
 export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
   const { t } = useLocale();
   const [search, setSearch] = useState("");
-  const [selectedModule, setSelectedModule] = useState("Hepsi");
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [selectedGuide, setSelectedGuide] = useState<CustomerGuide | null>(null);
 
-  const modules = ["Hepsi", ...Array.from(new Set(guides.map(g => g.module)))];
+  const modules = Array.from(new Set(guides.map(g => g.module)));
 
   const filtered = guides.filter(g => {
     const matchSearch =
       g.title.toLowerCase().includes(search.toLowerCase()) ||
       g.description.toLowerCase().includes(search.toLowerCase());
-    const matchModule = selectedModule === "Hepsi" || g.module === selectedModule;
+    const matchModule = selectedModule === null || g.module === selectedModule;
     return matchSearch && matchModule;
   });
 
@@ -148,6 +148,18 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
               />
             </div>
             <div className="flex bg-slate-800 p-1.5 rounded-2xl border border-slate-700 gap-1 overflow-x-auto no-scrollbar">
+              <button
+                key="all"
+                onClick={() => setSelectedModule(null)}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap",
+                  selectedModule === null
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                    : "text-slate-400 hover:text-white hover:bg-slate-700"
+                )}
+              >
+                {t("allModules")}
+              </button>
               {modules.map(m => (
                 <button
                   key={m}
@@ -159,7 +171,7 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
                       : "text-slate-400 hover:text-white hover:bg-slate-700"
                   )}
                 >
-                  {m === "Hepsi" ? t("allRequests") : m}
+                  {m}
                 </button>
               ))}
             </div>
@@ -204,7 +216,7 @@ export const GuidesView: React.FC<GuidesViewProps> = ({ guides }) => {
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-800">
                   <span className="text-[10px] text-slate-500 font-medium">
-                    {guide.previousGuidePublicId ? "Zincirli rehber" : "Bağımsız rehber"}
+                    {guide.previousGuidePublicId ? t("chainedGuide") : t("standaloneGuide")}
                   </span>
                   <ChevronRight size={14} className="text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
                 </div>

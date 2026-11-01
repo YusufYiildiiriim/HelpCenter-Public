@@ -49,7 +49,7 @@ export default function CompanyDashboardPage({ params }: { params: Promise<{ com
     // submit handler twice before the disabled button is rendered. Keep a
     // synchronous lock for the request lifecycle as well.
     const createRequestLockRef = useRef(false);
-    const [requestFilter, setRequestFilter] = useState("Hepsi");
+    const [requestFilter, setRequestFilter] = useState("");
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isFileTypeMenuOpen, setIsFileTypeMenuOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);

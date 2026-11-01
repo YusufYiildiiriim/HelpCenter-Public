@@ -71,6 +71,10 @@ export const messages = {
     passwordResetSuccess: "Şifreniz başarıyla sıfırlandı. Giriş ekranına aktarılıyorsunuz...", back: "Geri dön", adminPanelFooter: "Yönetici Paneli v2.0.4",
     sortLabel: "Sıralama:", noGuideForProject: "Bu proje için henüz kullanım kılavuzu yayınlanmamış.", modulesLabel: "Modül", guideLabel: "Kılavuz", faqLabel: "SSS", systemStatus: "Sistem Durumu", privacy: "Gizlilik Politikası", contactSupport: "İletişim & Destek", copyright: "Tüm hakları saklıdır.",
     close: "Kapat", faqDetail: "SSS Detayı", guideDetail: "Rehber Detayı", notFound: "İçerik bulunamadı.",
+    skipToMainContent: "Ana içeriğe geç", watchStepOnYoutube: "Bu adımı YouTube üzerinde izleyin", videoTraining: "Eğitim Videosu", noMediaForStep: "Bu adım için ek medya bulunmuyor.",
+    downloadFile: "Dosyayı indir", step: "Adım", chainedGuide: "Zincirli rehber", standaloneGuide: "Bağımsız rehber",
+    generalCategory: "Genel", expandAll: "Tümünü aç", collapseAll: "Tümünü kapat", orderedGuideSteps: "Sıralı rehber adımları", openGuideStep: "rehber adımını aç", stepPath: "Adım yolu",
+    collapseSubsteps: "alt adımlarını daralt", showSubsteps: "alt adımlarını göster", documents: "belge", stepProgress: "Adım {current} / {total}",
   },
   "en-US": {
     dateLabel: "Date", messageSingular: "message", messagePlural: "messages", fileSingular: "file", filePlural: "files", viewDetails: "View details",
@@ -133,6 +137,10 @@ export const messages = {
     passwordResetSuccess: "Your password has been reset. Returning to the sign-in page...", back: "Go back", adminPanelFooter: "Admin Panel v2.0.4",
     sortLabel: "Sort by:", noGuideForProject: "No guides have been published for this project yet.", modulesLabel: "Modules", guideLabel: "Guides", faqLabel: "FAQs", systemStatus: "System status", privacy: "Privacy policy", contactSupport: "Contact support", copyright: "All rights reserved.",
     close: "Close", faqDetail: "FAQ details", guideDetail: "Guide details", notFound: "Content not found.",
+    skipToMainContent: "Skip to main content", watchStepOnYoutube: "Watch this step on YouTube", videoTraining: "Video tutorial", noMediaForStep: "No additional media is available for this step.",
+    downloadFile: "Download file", step: "Step", chainedGuide: "Guide in a sequence", standaloneGuide: "Standalone guide",
+    generalCategory: "General", expandAll: "Expand all", collapseAll: "Collapse all", orderedGuideSteps: "Ordered guide steps", openGuideStep: "Open guide step", stepPath: "Step path",
+    collapseSubsteps: "Collapse substeps", showSubsteps: "Show substeps", documents: "documents", stepProgress: "Step {current} of {total}",
   },
 } as const;
 
