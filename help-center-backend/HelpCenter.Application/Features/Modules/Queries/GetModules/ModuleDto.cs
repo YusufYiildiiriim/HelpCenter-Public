@@ -10,4 +10,6 @@ public class ModuleDto
     public bool IsActive { get; set; }
     public bool IsLocked { get; set; }
     public Guid RowVersion { get; set; }
+    public string? SourceLocale { get; set; }
+    public List<HelpCenter.Application.Common.Models.LocalizedNameInput> Translations { get; set; } = new();
 }

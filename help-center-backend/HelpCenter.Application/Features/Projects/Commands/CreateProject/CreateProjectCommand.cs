@@ -1,4 +1,5 @@
 using MediatR;
+using HelpCenter.Application.Common.Models;
 
 namespace HelpCenter.Application.Features.Projects.Commands.CreateProject;
 
@@ -9,4 +10,6 @@ public class CreateProjectCommand : IRequest<bool>
     public bool IsActive { get; set; } = true;
     public List<Guid>? UserIds { get; set; }
     public List<Guid>? ModuleIds { get; set; }
+    public string? SourceLocale { get; set; }
+    public List<LocalizedNameInput> Translations { get; set; } = new();
 }

@@ -11,4 +11,6 @@ public class ProjectDto
     public int UserCount { get; set; }
     public List<Guid> ModuleIds { get; set; } = new();
     public Guid RowVersion { get; set; }
+    public string? SourceLocale { get; set; }
+    public List<HelpCenter.Application.Common.Models.LocalizedNameInput> Translations { get; set; } = new();
 }

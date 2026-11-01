@@ -20,9 +20,26 @@ public class GetCustomerRequestSubjectsQueryHandler : IRequestHandler<GetCustome
     {
         var subjects = await _unitOfWork.Repository<RequestSubject>().FindAsync(
             x => x.IsActive,
-            cancellationToken
+            cancellationToken, x => x.Translations
         );
-
-        return _mapper.Map<List<CustomerRequestSubjectDto>>(subjects);
+        var requestedLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+        return subjects.Select(subject =>
+        {
+            var dto = _mapper.Map<CustomerRequestSubjectDto>(subject);
+            var translation = subject.Translations.FirstOrDefault(x => x.Locale == requestedLocale)
+                ?? (subject.SourceLocale is null ? null : subject.Translations.FirstOrDefault(x => x.Locale == subject.SourceLocale));
+            dto.RequestedLocale = requestedLocale;
+            if (translation is not null)
+            {
+                dto.Name = translation.Name;
+                dto.ContentLocale = translation.Locale;
+            }
+            else
+            {
+                dto.ContentLocale = subject.SourceLocale;
+            }
+            return dto;
+        }).ToList();
     }
 }

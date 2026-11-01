@@ -29,6 +29,7 @@ public class AdminRequestSubjectsController : ControllerBase
     [HasPermission(AppResources.Subjects, PermissionActions.Read)]
     public async Task<IActionResult> GetAll([FromQuery] GetRequestSubjectsQuery query)
     {
+        query.Locale = ResolveLocale();
         var response = await _mediator.Send(query);
         return Ok(response);
     }
@@ -58,5 +59,11 @@ public class AdminRequestSubjectsController : ControllerBase
     {
         var response = await _mediator.Send(new DeleteRequestSubjectCommand(id));
         return Ok(response);
+    }
+
+    private string ResolveLocale()
+    {
+        var raw = Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0];
+        return HelpCenter.Domain.Common.SupportedLocales.Normalize(raw) ?? HelpCenter.Domain.Common.SupportedLocales.Default;
     }
 }

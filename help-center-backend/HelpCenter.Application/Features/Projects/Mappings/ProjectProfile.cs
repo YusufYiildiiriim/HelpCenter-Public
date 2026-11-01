@@ -16,11 +16,13 @@ public class ProjectProfile : AutoMapper.Profile
             .ForMember(dest => dest.CompanyCount, opt => opt.MapFrom(src => src.Companies.Count))
             .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.UserProjects.Count))
             .ForMember(dest => dest.ModuleIds, opt => opt.MapFrom(src => src.ProjectModules.Select(x => x.ModuleId).ToList()));
+        CreateMap<ProjectTranslation, HelpCenter.Application.Common.Models.LocalizedNameInput>();
         CreateMap<UserProject, ProjectUserDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User != null ? src.User.FirstName + " " + src.User.LastName : string.Empty))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty));
-        CreateMap<CreateProjectCommand, Project>();
+        CreateMap<CreateProjectCommand, Project>().ForMember(dest => dest.Translations, opt => opt.Ignore());
         CreateMap<UpdateProjectCommand, Project>()
-            .ForMember(dest => dest.RowVersion, opt => opt.Ignore());
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.Translations, opt => opt.Ignore());
     }
 }

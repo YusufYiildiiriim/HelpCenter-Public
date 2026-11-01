@@ -7,6 +7,7 @@ using HelpCenter.Application.Features.RequestSubjects.Queries.GetRequestSubjects
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Application.Tests.Common;
 using HelpCenter.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace HelpCenter.Application.Tests.Features.RequestSubjects;
@@ -28,6 +29,31 @@ public class RequestSubjectHandlerTests : HandlerTestBase
 
         result.Should().BeTrue();
         Db.RequestSubjects.Should().ContainSingle(s => s.Name == "General Inquiry");
+    }
+
+    [Fact]
+    public async Task CreateRequestSubject_should_store_only_explicit_localized_values_and_keep_source_legacy_fields()
+    {
+        var handler = new CreateRequestSubjectCommandHandler(Uow, new CreateRequestSubjectRules(Uow));
+        var command = new CreateRequestSubjectCommand
+        {
+            Name = "General Inquiry",
+            Description = "General questions",
+            SourceLocale = "en-US",
+            Translations =
+            [
+                new() { Locale = "en", Name = "General Inquiry", Description = "General questions" },
+                new() { Locale = "tr-TR", Name = "Genel Soru", Description = "Genel sorular" }
+            ]
+        };
+
+        await handler.Handle(command, CancellationToken.None);
+
+        var saved = Db.RequestSubjects.Include(x => x.Translations).Single();
+        saved.SourceLocale.Should().Be("en-US");
+        saved.Name.Should().Be("General Inquiry");
+        saved.Translations.Should().HaveCount(2);
+        saved.Translations.Select(x => x.Locale).Should().BeEquivalentTo("en-US", "tr-TR");
     }
 
     [Fact]

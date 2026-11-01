@@ -23,6 +23,15 @@ public class CreateModuleCommandHandler : IRequestHandler<CreateModuleCommand, b
         await _rules.ModuleNameShouldBeUniqueAsync(request.Name, null, cancellationToken);
 
         var module = Module.Create(request.Name, request.Description, request.IsActive);
+        if (request.Translations.Count > 0)
+        {
+            module.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale);
+            foreach (var item in request.Translations)
+                module.Translations.Add(new ModuleTranslation { Locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(item.Locale)!, Name = item.Name, Description = item.Description });
+            var source = module.Translations.Single(x => x.Locale == module.SourceLocale);
+            module.Name = source.Name;
+            module.Description = source.Description;
+        }
 
         if (request.ExpertUserIds != null && request.ExpertUserIds.Any())
         {

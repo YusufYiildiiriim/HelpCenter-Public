@@ -21,7 +21,7 @@ public class UpdateModuleCommandHandler : IRequestHandler<UpdateModuleCommand, b
     public async Task<bool> Handle(UpdateModuleCommand request, CancellationToken cancellationToken)
     {
         var modules = await _unitOfWork.Repository<Module>()
-            .FindAsync(x => x.PublicId == request.PublicId, cancellationToken, x => x.ModuleExperts);
+            .FindAsync(x => x.PublicId == request.PublicId, cancellationToken, x => x.ModuleExperts, x => x.Translations);
 
         var module = modules.FirstOrDefault();
         UpdateModuleRules.ModuleShouldExist(module);
@@ -32,6 +32,11 @@ public class UpdateModuleCommandHandler : IRequestHandler<UpdateModuleCommand, b
         _unitOfWork.SetOriginalVersion(module!, request.RowVersion);
 
         module!.UpdateInfo(request.Name, request.Description, request.IsActive);
+        if (request.Translations is not null)
+        {
+            module.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale);
+            SyncTranslations(module, request.Translations);
+        }
 
         if (request.ExpertUserIds != null)
         {
@@ -49,5 +54,18 @@ public class UpdateModuleCommandHandler : IRequestHandler<UpdateModuleCommand, b
         _cache.Invalidate(CacheCategory.PublicModules);
         _cache.Invalidate(CacheCategory.PublicGuides);
         return true;
+    }
+
+    private static void SyncTranslations(Module module, IReadOnlyCollection<HelpCenter.Application.Common.Models.LocalizedNameInput> inputs)
+    {
+        var values = inputs.ToDictionary(x => HelpCenter.Domain.Common.SupportedLocales.Normalize(x.Locale)!, StringComparer.Ordinal);
+        foreach (var obsolete in module.Translations.Where(x => !values.ContainsKey(x.Locale)).ToList()) module.Translations.Remove(obsolete);
+        foreach (var pair in values)
+        {
+            var translation = module.Translations.FirstOrDefault(x => x.Locale == pair.Key);
+            if (translation is null) { translation = new ModuleTranslation { Locale = pair.Key }; module.Translations.Add(translation); }
+            translation.Name = pair.Value.Name; translation.Description = pair.Value.Description;
+        }
+        if (module.SourceLocale is not null && values.TryGetValue(module.SourceLocale, out var source)) { module.Name = source.Name; module.Description = source.Description; }
     }
 }

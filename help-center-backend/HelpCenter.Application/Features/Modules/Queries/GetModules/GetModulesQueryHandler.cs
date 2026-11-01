@@ -37,7 +37,9 @@ public class GetModulesQueryHandler : IRequestHandler<GetModulesQuery, Paginated
             predicate,
             request.PageNumber,
             request.PageSize,
-            cancellationToken: cancellationToken);
+            null,
+            cancellationToken,
+            x => x.Translations);
 
         var dtoItems = _mapper.Map<List<ModuleDto>>(paginatedEntities.Items);
 

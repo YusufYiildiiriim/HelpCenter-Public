@@ -15,8 +15,11 @@ public class RequestSubjectProfile : AutoMapper.Profile
         CreateMap<RequestSubject, RequestSubjectDto>();
         CreateMap<RequestSubject, PublicRequestSubjectDto>();
         CreateMap<RequestSubject, CustomerRequestSubjectDto>();
-        CreateMap<CreateRequestSubjectCommand, RequestSubject>();
+        CreateMap<CreateRequestSubjectCommand, RequestSubject>()
+            .ForMember(dest => dest.Translations, opt => opt.Ignore());
         CreateMap<UpdateRequestSubjectCommand, RequestSubject>()
-            .ForMember(dest => dest.RowVersion, opt => opt.Ignore());
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.Translations, opt => opt.Ignore());
+        CreateMap<RequestSubjectTranslation, HelpCenter.Application.Common.Models.LocalizedNameInput>();
     }
 }

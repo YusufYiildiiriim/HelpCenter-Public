@@ -21,7 +21,9 @@ public class CustomerRequestSubjectsController : ControllerBase
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll()
     {
-        var response = await _mediator.Send(new GetCustomerRequestSubjectsQuery());
+        var raw = Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0];
+        var locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(raw) ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+        var response = await _mediator.Send(new GetCustomerRequestSubjectsQuery(locale));
         return Ok(response);
     }
 }

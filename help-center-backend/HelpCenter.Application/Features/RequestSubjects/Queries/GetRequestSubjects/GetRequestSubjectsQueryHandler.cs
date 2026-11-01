@@ -24,13 +24,16 @@ public class GetRequestSubjectsQueryHandler : IRequestHandler<GetRequestSubjects
 
         Expression<Func<RequestSubject, bool>> predicate = x =>
             (!request.OnlyActive || x.IsActive) &&
-            (string.IsNullOrWhiteSpace(search) || x.Name.ToLower().Contains(search));
+            (string.IsNullOrWhiteSpace(search) || x.Name.ToLower().Contains(search) ||
+             x.Translations.Any(t => t.Name.ToLower().Contains(search) || t.Description.ToLower().Contains(search)));
 
         var paginatedEntities = await _unitOfWork.Repository<RequestSubject>().GetPaginatedAsync(
             predicate,
             request.PageNumber,
             request.PageSize,
-            cancellationToken: cancellationToken);
+            null,
+            cancellationToken,
+            x => x.Translations);
 
         var dtoItems = _mapper.Map<List<RequestSubjectDto>>(paginatedEntities.Items);
         var paginatedIds = dtoItems.Select(x => x.Id).ToList();

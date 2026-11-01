@@ -14,13 +14,15 @@ public class ModuleProfile : AutoMapper.Profile
     public ModuleProfile()
     {
         CreateMap<Module, ModuleDto>();
+        CreateMap<ModuleTranslation, HelpCenter.Application.Common.Models.LocalizedNameInput>();
         CreateMap<Module, PublicModuleDto>();
         CreateMap<Module, CustomerModuleDto>();
         CreateMap<ModuleExpert, ModuleExpertDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User != null ? src.User.FirstName + " " + src.User.LastName : string.Empty))
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty));
-        CreateMap<CreateModuleCommand, Module>();
+        CreateMap<CreateModuleCommand, Module>().ForMember(dest => dest.Translations, opt => opt.Ignore());
         CreateMap<UpdateModuleCommand, Module>()
-            .ForMember(dest => dest.RowVersion, opt => opt.Ignore());
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.Translations, opt => opt.Ignore());
     }
 }

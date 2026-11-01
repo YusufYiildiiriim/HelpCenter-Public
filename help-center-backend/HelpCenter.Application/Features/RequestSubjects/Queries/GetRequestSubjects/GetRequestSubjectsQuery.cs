@@ -9,4 +9,5 @@ public class GetRequestSubjectsQuery : IRequest<PaginatedResponse<RequestSubject
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
     public string? Search { get; set; }
+    public string Locale { get; set; } = HelpCenter.Domain.Common.SupportedLocales.Default;
 }

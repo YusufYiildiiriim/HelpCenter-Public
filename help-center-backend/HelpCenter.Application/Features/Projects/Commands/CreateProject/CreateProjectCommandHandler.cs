@@ -23,6 +23,15 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
         await _rules.ProjectNameShouldBeUniqueAsync(request.Name, null, cancellationToken);
 
         var project = Project.Create(request.Name, request.Description, request.IsActive);
+        if (request.Translations.Count > 0)
+        {
+            project.SourceLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.SourceLocale);
+            foreach (var item in request.Translations)
+                project.Translations.Add(new ProjectTranslation { Locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(item.Locale)!, Name = item.Name, Description = item.Description });
+            var source = project.Translations.Single(x => x.Locale == project.SourceLocale);
+            project.Name = source.Name;
+            project.Description = source.Description;
+        }
 
         if (request.UserIds != null && request.UserIds.Any())
         {
