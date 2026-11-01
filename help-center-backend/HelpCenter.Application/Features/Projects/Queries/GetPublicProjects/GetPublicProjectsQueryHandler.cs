@@ -19,19 +19,28 @@ public class GetPublicProjectsQueryHandler : IRequestHandler<GetPublicProjectsQu
     public Task<List<PublicProjectDto>> Handle(GetPublicProjectsQuery request, CancellationToken cancellationToken)
     {
         return _cache.GetOrCreateAsync(
-            CacheKeys.PublicProjects(),
+            CacheKeys.PublicProjects(HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale) ?? HelpCenter.Domain.Common.SupportedLocales.Default),
             CacheKeys.PublicProjectsPrefix,
             async ct =>
             {
                 var projects = await _unitOfWork.Repository<Project>()
-                    .FindAsync(x => x.IsActive, ct);
+                    .FindAsync(x => x.IsActive, ct, x => x.Translations);
 
-                return projects.Select(p => new PublicProjectDto
+                var requestedLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale)
+                    ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+                return projects.Select(p =>
                 {
-                    Id = p.Id,
-                    PublicId = p.PublicId,
-                    Name = p.Name,
-                    Description = p.Description
+                    var translation = p.Translations.FirstOrDefault(x => x.Locale == requestedLocale)
+                        ?? (p.SourceLocale is null ? null : p.Translations.FirstOrDefault(x => x.Locale == p.SourceLocale));
+                    return new PublicProjectDto
+                    {
+                        Id = p.Id,
+                        PublicId = p.PublicId,
+                        Name = translation?.Name ?? p.Name,
+                        Description = translation?.Description ?? p.Description,
+                        RequestedLocale = requestedLocale,
+                        ContentLocale = translation?.Locale ?? p.SourceLocale
+                    };
                 }).ToList();
             },
             CacheKeys.PublicTtl,

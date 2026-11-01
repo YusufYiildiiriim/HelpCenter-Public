@@ -20,6 +20,7 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
     {
         Guid targetCompanyId = request.CompanyId;
         Guid? targetProjectId = null;
+        string? companyLocale = null;
 
         if (targetCompanyId == Guid.Empty && request.CustomerId != Guid.Empty)
         {
@@ -31,6 +32,7 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
             {
                 targetCompanyId = customer.CompanyId;
                 targetProjectId = customer.Company.ProjectId;
+                companyLocale = customer.Company.DefaultLocale;
             }
         }
         else if (targetCompanyId != Guid.Empty)
@@ -38,6 +40,7 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
             var company = await _unitOfWork.Repository<Company>()
                 .GetAsync(targetCompanyId, cancellationToken);
             targetProjectId = company?.ProjectId;
+            companyLocale = company?.DefaultLocale;
         }
 
         if (targetCompanyId == Guid.Empty)
@@ -67,8 +70,24 @@ public class GetCustomerModulesQueryHandler : IRequestHandler<GetCustomerModules
         }
 
         var modules = await _unitOfWork.Repository<Module>()
-            .FindAsync(x => allowedModuleIds.Contains(x.Id) && x.IsActive, cancellationToken);
+            .FindAsync(x => allowedModuleIds.Contains(x.Id) && x.IsActive, cancellationToken, x => x.Translations);
 
-        return _mapper.Map<List<CustomerModuleDto>>(modules);
+        var requestedLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+        var fallbackLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(companyLocale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+        return modules.Select(module =>
+        {
+            var translation = module.Translations.FirstOrDefault(x => x.Locale == requestedLocale)
+                ?? module.Translations.FirstOrDefault(x => x.Locale == fallbackLocale)
+                ?? (module.SourceLocale is null ? null : module.Translations.FirstOrDefault(x => x.Locale == module.SourceLocale));
+            return new CustomerModuleDto
+            {
+                Id = module.Id,
+                Name = translation?.Name ?? module.Name,
+                RequestedLocale = requestedLocale,
+                ContentLocale = translation?.Locale ?? module.SourceLocale
+            };
+        }).ToList();
     }
 }

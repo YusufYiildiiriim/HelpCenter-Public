@@ -30,7 +30,7 @@ public class PublicController : ControllerBase
     [HttpGet("projects")]
     public async Task<IActionResult> GetProjects()
     {
-        var response = await _mediator.Send(new GetPublicProjectsQuery());
+        var response = await _mediator.Send(new GetPublicProjectsQuery(GetRequestedLocale()));
         return Ok(response);
     }
 
@@ -49,7 +49,7 @@ public class PublicController : ControllerBase
     [HttpGet("modules")]
     public async Task<IActionResult> GetModules([FromQuery] Guid? projectId = null)
     {
-        var response = await _mediator.Send(new GetPublicModulesQuery(projectId));
+        var response = await _mediator.Send(new GetPublicModulesQuery(projectId, GetRequestedLocale()));
         return Ok(response);
     }
 

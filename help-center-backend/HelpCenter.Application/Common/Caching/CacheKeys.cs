@@ -14,7 +14,7 @@ public static class CacheKeys
 
     public static readonly TimeSpan PublicTtl = TimeSpan.FromMinutes(5);
 
-    public static string PublicProjects() => PublicProjectsPrefix;
+    public static string PublicProjects(string? locale = null) => $"{PublicProjectsPrefix}:{locale ?? HelpCenter.Domain.Common.SupportedLocales.Default}";
 
     /// <summary>
     /// Only called for requests without search (Search empty) — see GetPublicFaqsQueryHandler.
@@ -24,7 +24,7 @@ public static class CacheKeys
     public static string PublicFaqs(Guid? projectId, Guid? moduleId, int pageNumber, int pageSize, string? locale = null) =>
         $"{PublicFaqsPrefix}:{projectId?.ToString() ?? "all"}:{moduleId?.ToString() ?? "all"}:{pageNumber}:{pageSize}:{locale ?? "default"}";
 
-    public static string PublicModules(Guid? projectId) => $"{PublicModulesPrefix}:{projectId?.ToString() ?? "all"}";
+    public static string PublicModules(Guid? projectId, string? locale = null) => $"{PublicModulesPrefix}:{projectId?.ToString() ?? "all"}:{locale ?? HelpCenter.Domain.Common.SupportedLocales.Default}";
 
     /// <summary>Only called for requests without search (Search empty) — see GetPublicGuidesQueryHandler.</summary>
     public static string PublicGuides(Guid? projectId, string? module, int pageNumber, int pageSize, string? locale = null) =>

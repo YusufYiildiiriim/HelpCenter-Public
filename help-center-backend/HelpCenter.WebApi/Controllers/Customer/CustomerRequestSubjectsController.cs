@@ -1,5 +1,6 @@
 using HelpCenter.Application.Features.RequestSubjects.Queries;
 using HelpCenter.Application.Features.RequestSubjects.Queries.GetCustomerRequestSubjects;
+using HelpCenter.Application.Common.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,9 @@ public class CustomerRequestSubjectsController : ControllerBase
     {
         var raw = Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0];
         var locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(raw) ?? HelpCenter.Domain.Common.SupportedLocales.Default;
-        var response = await _mediator.Send(new GetCustomerRequestSubjectsQuery(locale));
+        var customerId = Guid.TryParse(User.FindFirst(AppClaimTypes.UserId)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var parsedCustomerId) ? parsedCustomerId : Guid.Empty;
+        var companyId = Guid.TryParse(User.FindFirst(AppClaimTypes.CompanyId)?.Value, out var parsedCompanyId) ? parsedCompanyId : Guid.Empty;
+        var response = await _mediator.Send(new GetCustomerRequestSubjectsQuery(locale, customerId, companyId));
         return Ok(response);
     }
 }

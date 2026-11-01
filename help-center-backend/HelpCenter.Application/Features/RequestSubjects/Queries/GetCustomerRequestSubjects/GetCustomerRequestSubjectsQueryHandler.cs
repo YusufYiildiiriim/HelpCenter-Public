@@ -24,10 +24,14 @@ public class GetCustomerRequestSubjectsQueryHandler : IRequestHandler<GetCustome
         );
         var requestedLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale)
             ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+        var companyLocale = (await ResolveCompanyAsync(request, cancellationToken))?.DefaultLocale;
+        var fallbackLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(companyLocale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
         return subjects.Select(subject =>
         {
             var dto = _mapper.Map<CustomerRequestSubjectDto>(subject);
             var translation = subject.Translations.FirstOrDefault(x => x.Locale == requestedLocale)
+                ?? subject.Translations.FirstOrDefault(x => x.Locale == fallbackLocale)
                 ?? (subject.SourceLocale is null ? null : subject.Translations.FirstOrDefault(x => x.Locale == subject.SourceLocale));
             dto.RequestedLocale = requestedLocale;
             if (translation is not null)
@@ -41,5 +45,15 @@ public class GetCustomerRequestSubjectsQueryHandler : IRequestHandler<GetCustome
             }
             return dto;
         }).ToList();
+    }
+
+    private async Task<Company?> ResolveCompanyAsync(GetCustomerRequestSubjectsQuery request, CancellationToken cancellationToken)
+    {
+        if (request.CompanyId != Guid.Empty)
+            return await _unitOfWork.Repository<Company>().GetAsync(request.CompanyId, cancellationToken);
+        if (request.CustomerId == Guid.Empty) return null;
+        var customer = (await _unitOfWork.Repository<Customer>().FindAsync(
+            x => x.Id == request.CustomerId, cancellationToken, x => x.Company)).FirstOrDefault();
+        return customer?.Company;
     }
 }

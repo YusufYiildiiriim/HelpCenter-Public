@@ -23,7 +23,7 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
     public Task<List<PublicModuleDto>> Handle(GetPublicModulesQuery request, CancellationToken cancellationToken)
     {
         return _cache.GetOrCreateAsync(
-            CacheKeys.PublicModules(request.ProjectId),
+            CacheKeys.PublicModules(request.ProjectId, HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale) ?? HelpCenter.Domain.Common.SupportedLocales.Default),
             CacheKeys.PublicModulesPrefix,
             async ct =>
             {
@@ -55,8 +55,22 @@ public class GetPublicModulesQueryHandler : IRequestHandler<GetPublicModulesQuer
                      projectModuleIds.Contains(m.Id) ||
                      guideModuleIds.Contains(m.Id) || guideModuleNames.Contains(m.Name));
 
-                var modules = await _unitOfWork.Repository<Module>().FindAsync(predicate, ct);
-                return _mapper.Map<List<PublicModuleDto>>(modules);
+                var modules = await _unitOfWork.Repository<Module>().FindAsync(predicate, ct, x => x.Translations);
+                var requestedLocale = HelpCenter.Domain.Common.SupportedLocales.Normalize(request.Locale)
+                    ?? HelpCenter.Domain.Common.SupportedLocales.Default;
+                return modules.Select(module =>
+                {
+                    var translation = module.Translations.FirstOrDefault(x => x.Locale == requestedLocale)
+                        ?? (module.SourceLocale is null ? null : module.Translations.FirstOrDefault(x => x.Locale == module.SourceLocale));
+                    return new PublicModuleDto
+                    {
+                        Id = module.Id,
+                        Name = translation?.Name ?? module.Name,
+                        Description = translation?.Description ?? module.Description,
+                        RequestedLocale = requestedLocale,
+                        ContentLocale = translation?.Locale ?? module.SourceLocale
+                    };
+                }).ToList();
             },
             CacheKeys.PublicTtl,
             cancellationToken);

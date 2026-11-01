@@ -31,7 +31,9 @@ public class CustomerModulesController : ControllerBase
         var response = await _mediator.Send(new GetCustomerModulesQuery
         {
             CustomerId = customerId,
-            CompanyId = companyId
+            CompanyId = companyId,
+            Locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0])
+                ?? HelpCenter.Domain.Common.SupportedLocales.Default
         });
         return Ok(response);
     }
