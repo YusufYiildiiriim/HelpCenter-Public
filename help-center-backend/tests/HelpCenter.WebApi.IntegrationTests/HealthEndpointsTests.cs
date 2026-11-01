@@ -27,7 +27,7 @@ public sealed class HealthEndpointsTests(PostgreSqlWebApplicationFactory factory
         var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
 
         Assert.Equal(
-            new[] { "20261030085737_InitialPostgreSql", "20261030141555_EnforceAuditLogAppendOnly" },
+            new[] { "20261030085737_InitialPostgreSql", "20261030141555_EnforceAuditLogAppendOnly", "20261031085114_AddLanguagePreferences", "20261031085807_AddFaqGuideTranslations" },
             appliedMigrations);
         Assert.Equal(4, await dbContext.Roles.IgnoreQueryFilters().CountAsync());
         Assert.True(await dbContext.Accounts.IgnoreQueryFilters().AnyAsync(account => account.Email == "admin@helpcenter.com"));
