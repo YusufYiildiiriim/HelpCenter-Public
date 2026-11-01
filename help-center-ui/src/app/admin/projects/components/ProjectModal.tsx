@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Edit, Plus, Loader2, Check, Shield, FolderKanban, Info, Users, LayoutGrid, Search, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, Edit, Plus, Loader2, Check, Shield, FolderKanban, Users, LayoutGrid, Search, ChevronRight, ChevronLeft } from "lucide-react";
 import type { User } from "@/services/admin/AdminUserService";
 import type { Module } from "@/services/admin/AdminModuleService";
 import { cn } from "@/lib/utils";
-import { FormField } from "@/components/common/FormField";
+import { LocalizedNameEditor } from "@/app/admin/components/LocalizedNameEditor";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 
 interface ProjectModalProps {
@@ -14,6 +15,10 @@ interface ProjectModalProps {
   setName: (name: string) => void;
   description: string;
   setDescription: (description: string) => void;
+  sourceLocale: string;
+  setSourceLocale: (locale: string) => void;
+  translations: RequestSubjectTranslation[];
+  setTranslations: (translations: RequestSubjectTranslation[]) => void;
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
   allUsers: User[];
@@ -39,6 +44,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   setName,
   description,
   setDescription,
+  sourceLocale,
+  setSourceLocale,
+  translations,
+  setTranslations,
   isActive,
   setIsActive,
   allUsers,
@@ -56,15 +65,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const [userSearch, setUserSearch] = useState("");
 
   const values = { name, description };
-  const { register, handleSubmit, validateFields } = useValidatedForm<typeof values>(values, {
+  const { handleSubmit, validateFields } = useValidatedForm<typeof values>(values, {
     name: { label: "Proje Adı", rules: { required: true } },
     description: { label: "Açıklama", rules: { required: true } },
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    if (e.target.name === "name") setName(e.target.value);
-    else if (e.target.name === "description") setDescription(e.target.value);
-  };
 
   const filteredModules = allModules.filter((m) =>
     m.name.toLowerCase().includes(moduleSearch.toLowerCase().trim())
@@ -88,6 +92,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const validateStep = (step: number) => {
     const fields = TAB_FIELDS[step] || [];
     if (fields.length === 0) return true;
+    if (!sourceLocale || !translations.some(item => item.locale === sourceLocale && item.name.trim() && item.description.trim())) return false;
     return validateFields(fields);
   };
 
@@ -199,31 +204,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             <div className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               {sectionHeader(<FolderKanban size={16} className="text-indigo-400" />, "Proje Bilgileri")}
 
-              <FormField
-                name="name"
-                label="Proje Adı"
-                value={name}
-                onChange={handleChange}
-                onBlur={register("name").onBlur}
-                error={register("name").error}
-                required
-                icon={<FolderKanban size={12} />}
-                placeholder="Örn: A Projesi, B Müşteri Grubu..."
-              />
-
-              <FormField
-                as="textarea"
-                name="description"
-                label="Açıklama"
-                rows={3}
-                value={description}
-                onChange={handleChange}
-                onBlur={register("description").onBlur}
-                error={register("description").error}
-                required
-                icon={<Info size={12} />}
-                placeholder="Projenin kapsamını ve amacını belirtin."
-              />
+              <LocalizedNameEditor nameLabel="Proje Adı" sourceLocale={sourceLocale} onSourceLocaleChange={setSourceLocale}
+                translations={translations} onTranslationsChange={setTranslations} legacyName={name} legacyDescription={description}
+                onLegacyChange={(nextName, nextDescription) => { setName(nextName); setDescription(nextDescription); }} />
 
               {/* Active Status */}
               <div className="p-3.5 sm:p-5 bg-slate-800/60 rounded-xl sm:rounded-2xl border border-slate-700 flex items-center justify-between group">

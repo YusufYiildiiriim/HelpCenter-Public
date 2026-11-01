@@ -1,5 +1,7 @@
 import api from "@/lib/axios";
 
+export interface RequestSubjectTranslation { locale: string; name: string; description: string }
+
 export interface RequestSubject {
   id: string;
   publicId: string;
@@ -8,6 +10,8 @@ export interface RequestSubject {
   usageCount: number;
   isActive: boolean;
   isLocked: boolean;
+  sourceLocale?: string | null;
+  translations?: RequestSubjectTranslation[];
 }
 
 export const AdminRequestSubjectService = {
@@ -33,13 +37,13 @@ export const AdminRequestSubjectService = {
     };
   },
 
-  create: async (name: string, description: string, isActive: boolean = true): Promise<boolean> => {
-    const response = await api.post("/api/admin/subjects/add", { name, description, isActive });
+  create: async (name: string, description: string, isActive: boolean = true, sourceLocale?: string, translations?: RequestSubjectTranslation[]): Promise<boolean> => {
+    const response = await api.post("/api/admin/subjects/add", { name, description, isActive, sourceLocale, translations });
     return response.data;
   },
 
-  update: async (id: string, name: string, description: string, isActive: boolean): Promise<boolean> => {
-    const response = await api.put("/api/admin/subjects/update", { id, name, description, isActive });
+  update: async (id: string, name: string, description: string, isActive: boolean, sourceLocale?: string, translations?: RequestSubjectTranslation[]): Promise<boolean> => {
+    const response = await api.put("/api/admin/subjects/update", { id, name, description, isActive, sourceLocale, translations });
     return response.data;
   },
 

@@ -4,6 +4,7 @@ import { ForbiddenState } from "@/components/common/ForbiddenState";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Sparkles, Edit, Trash2, UserPlus, Lock } from "lucide-react";
 import type { Module } from "@/services/admin/AdminModuleService";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 import { AdminModuleService as ModuleService } from "@/services/admin/AdminModuleService";
 import type { ModuleExpertDto } from "@/services/admin/AdminModuleExpertService";
 import { AdminModuleExpertService as ModuleExpertService } from "@/services/admin/AdminModuleExpertService";
@@ -37,6 +38,8 @@ export default function ModulesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [sourceLocale, setSourceLocale] = useState("");
+  const [translations, setTranslations] = useState<RequestSubjectTranslation[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -152,12 +155,17 @@ export default function ModulesPage() {
   };
 
   const handleSaveModule = async () => {
+    const completeTranslations = translations.filter(item => item.name.trim() && item.description.trim());
+    if (!sourceLocale || !completeTranslations.some(item => item.locale === sourceLocale)) {
+      toast.error("Kaynak dilde modül adı ve açıklaması zorunludur.");
+      return;
+    }
     setLoading(true);
     try {
       if (isEditMode && selectedModulePublicId && selectedModuleId) {
-        await ModuleService.update(selectedModulePublicId, name, description, isActive, selectedExpertIds);
+        await ModuleService.update(selectedModulePublicId, name, description, isActive, selectedExpertIds, sourceLocale, completeTranslations);
       } else {
-        await ModuleService.create(name, description, isActive, selectedExpertIds);
+        await ModuleService.create(name, description, isActive, selectedExpertIds, sourceLocale, completeTranslations);
       }
       toast.success("Modül başarıyla kaydedildi.");
       await fetchModules();
@@ -193,6 +201,8 @@ export default function ModulesPage() {
   const openEditModal = useCallback(async (mod: Module) => {
     setName(mod.name);
     setDescription(mod.description);
+    setSourceLocale(mod.sourceLocale ?? "");
+    setTranslations(mod.translations ?? []);
     setIsActive(mod.isActive);
     setSelectedModuleId(mod.id);
     setSelectedModulePublicId(mod.publicId);
@@ -215,6 +225,8 @@ export default function ModulesPage() {
     setSelectedModulePublicId(null);
     setName("");
     setDescription("");
+    setSourceLocale("");
+    setTranslations([]);
     setIsActive(true);
     setSelectedExpertIds([]);
   };
@@ -433,6 +445,10 @@ export default function ModulesPage() {
             setName={setName}
             description={description}
             setDescription={setDescription}
+            sourceLocale={sourceLocale}
+            setSourceLocale={setSourceLocale}
+            translations={translations}
+            setTranslations={setTranslations}
             isActive={isActive}
             setIsActive={setIsActive}
             allUsers={allUsers}

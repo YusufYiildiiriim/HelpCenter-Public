@@ -4,6 +4,7 @@ import { ForbiddenState } from "@/components/common/ForbiddenState";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Edit, Trash2, Lock } from "lucide-react";
 import type { RequestSubject } from "@/services/admin/AdminRequestSubjectService";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 import { AdminRequestSubjectService as RequestSubjectService } from "@/services/admin/AdminRequestSubjectService";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -34,7 +35,11 @@ export default function AdminSubjectsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [subjectData, setSubjectData] = useState({ name: "", description: "", isActive: true });
+    const emptyTranslations = (): RequestSubjectTranslation[] => [
+        { locale: "tr-TR", name: "", description: "" },
+        { locale: "en-US", name: "", description: "" },
+    ];
+    const [subjectData, setSubjectData] = useState({ name: "", description: "", isActive: true, sourceLocale: "", translations: emptyTranslations() });
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -106,13 +111,24 @@ export default function AdminSubjectsPage() {
 
     const handleSaveSubject = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!subjectData.sourceLocale) {
+            toast.error("Önce bu içeriğin kaynak dilini seçin.");
+            return;
+        }
+        const translations = subjectData.translations.map(item => item.locale === subjectData.sourceLocale && !item.name.trim()
+            ? { ...item, name: subjectData.name, description: subjectData.description }
+            : item).filter(item => item.name.trim() && item.description.trim());
+        if (!translations.some(item => item.locale === subjectData.sourceLocale)) {
+            toast.error("Kaynak dilde konu adı ve açıklaması zorunludur.");
+            return;
+        }
         setSubmitting(true);
         try {
             if (isEditMode && selectedId) {
-                await RequestSubjectService.update(selectedId, subjectData.name, subjectData.description, subjectData.isActive);
+                await RequestSubjectService.update(selectedId, subjectData.name, subjectData.description, subjectData.isActive, subjectData.sourceLocale, translations);
                 toast.success("Konu başarıyla güncellendi.");
             } else {
-                await RequestSubjectService.create(subjectData.name, subjectData.description, subjectData.isActive);
+                await RequestSubjectService.create(subjectData.name, subjectData.description, subjectData.isActive, subjectData.sourceLocale, translations);
                 toast.success("Yeni konu başarıyla eklendi.");
             }
             setSuccess(true);
@@ -149,7 +165,8 @@ export default function AdminSubjectsPage() {
     }, [fetchData]);
 
     const openEditModal = useCallback((subject: RequestSubject) => {
-        setSubjectData({ name: subject.name, description: subject.description, isActive: subject.isActive });
+        const translations = emptyTranslations().map(item => ({ ...item, ...(subject.translations?.find(t => t.locale === item.locale) ?? {}) }));
+        setSubjectData({ name: subject.name, description: subject.description, isActive: subject.isActive, sourceLocale: subject.sourceLocale ?? "", translations });
         setSelectedId(subject.id);
         setIsEditMode(true);
         setIsModalOpen(true);
@@ -159,7 +176,7 @@ export default function AdminSubjectsPage() {
         setIsModalOpen(false);
         setIsEditMode(false);
         setSelectedId(null);
-        setSubjectData({ name: "", description: "", isActive: true });
+        setSubjectData({ name: "", description: "", isActive: true, sourceLocale: "", translations: emptyTranslations() });
         setSuccess(false);
     };
 
@@ -173,6 +190,17 @@ export default function AdminSubjectsPage() {
             accessorKey: "description",
             header: "Açıklama",
             cell: (info) => <span className="block max-w-xs truncate text-slate-300">{(info.getValue() as string) || "-"}</span>,
+        },
+        {
+            id: "translationStatus",
+            header: "Çeviriler",
+            cell: ({ row }) => {
+                const locales = new Set(row.original.translations?.map(item => item.locale) ?? []);
+                const missing = ["tr-TR", "en-US"].filter(locale => !locales.has(locale));
+                return <span className={`text-xs font-semibold ${missing.length ? "text-amber-300" : "text-emerald-300"}`}>
+                    {missing.length ? `Eksik: ${missing.map(locale => locale === "tr-TR" ? "TR" : "EN").join(", ")}` : "TR + EN"}
+                </span>;
+            },
         },
         {
             accessorKey: "usageCount",

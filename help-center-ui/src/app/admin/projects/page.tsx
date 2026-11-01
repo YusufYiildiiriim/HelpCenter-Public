@@ -4,6 +4,7 @@ import { ForbiddenState } from "@/components/common/ForbiddenState";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Sparkles, Edit, Trash2, UserPlus } from "lucide-react";
 import type { Project } from "@/services/admin/AdminProjectService";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 import { AdminProjectService as ProjectService } from "@/services/admin/AdminProjectService";
 import type { ProjectUserDto } from "@/services/admin/AdminUserProjectService";
 import { AdminUserProjectService as UserProjectService } from "@/services/admin/AdminUserProjectService";
@@ -39,6 +40,8 @@ export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [sourceLocale, setSourceLocale] = useState("");
+  const [translations, setTranslations] = useState<RequestSubjectTranslation[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -171,12 +174,17 @@ export default function ProjectsPage() {
 
   const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    const completeTranslations = translations.filter(item => item.name.trim() && item.description.trim());
+    if (!sourceLocale || !completeTranslations.some(item => item.locale === sourceLocale)) {
+      toast.error("Kaynak dilde proje adı ve açıklaması zorunludur.");
+      return;
+    }
     setLoading(true);
     try {
       if (isEditMode && selectedProjectPublicId && selectedProjectId) {
-        await ProjectService.update(selectedProjectPublicId, name, description, isActive, selectedUserIds, selectedModuleIds);
+        await ProjectService.update(selectedProjectPublicId, name, description, isActive, selectedUserIds, selectedModuleIds, sourceLocale, completeTranslations);
       } else {
-        await ProjectService.create(name, description, isActive, selectedUserIds, selectedModuleIds);
+        await ProjectService.create(name, description, isActive, selectedUserIds, selectedModuleIds, sourceLocale, completeTranslations);
       }
       toast.success("Proje başarıyla kaydedildi.");
       await fetchProjects();
@@ -212,6 +220,8 @@ export default function ProjectsPage() {
   const openEditModal = useCallback(async (project: Project) => {
     setName(project.name);
     setDescription(project.description);
+    setSourceLocale(project.sourceLocale ?? "");
+    setTranslations(project.translations ?? []);
     setIsActive(project.isActive);
     setSelectedProjectId(project.id);
     setSelectedProjectPublicId(project.publicId);
@@ -235,6 +245,8 @@ export default function ProjectsPage() {
     setSelectedProjectPublicId(null);
     setName("");
     setDescription("");
+    setSourceLocale("");
+    setTranslations([]);
     setIsActive(true);
     setSelectedUserIds([]);
     setSelectedModuleIds([]);
@@ -451,6 +463,10 @@ export default function ProjectsPage() {
             setName={setName}
             description={description}
             setDescription={setDescription}
+            sourceLocale={sourceLocale}
+            setSourceLocale={setSourceLocale}
+            translations={translations}
+            setTranslations={setTranslations}
             isActive={isActive}
             setIsActive={setIsActive}
             allUsers={allUsers}

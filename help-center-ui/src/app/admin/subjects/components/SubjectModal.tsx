@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { X, Save, Plus, Loader2, CheckCircle2, Info, Shield, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormField } from "@/components/common/FormField";
 import { AppDialog } from "@/components/common/AppDialog";
-import { useValidatedForm } from "@/hooks/useValidatedForm";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 
 interface SubjectModalProps {
   isEditMode: boolean;
-  subjectData: { name: string; description: string; isActive: boolean };
-  setSubjectData: React.Dispatch<React.SetStateAction<{ name: string; description: string; isActive: boolean }>>;
+  subjectData: { name: string; description: string; isActive: boolean; sourceLocale: string; translations: RequestSubjectTranslation[] };
+  setSubjectData: React.Dispatch<React.SetStateAction<{ name: string; description: string; isActive: boolean; sourceLocale: string; translations: RequestSubjectTranslation[] }>>;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   submitting: boolean;
@@ -27,14 +27,20 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
   success
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const values = { name: subjectData.name, description: subjectData.description };
-  const { register, handleSubmit } = useValidatedForm<typeof values>(values, {
-    name: { label: "Konu Başlığı", rules: { required: true } },
-    description: { label: "Açıklama", rules: { required: true } },
-  });
+  const [activeLocale, setActiveLocale] = useState("tr-TR");
+  const activeTranslation = subjectData.translations.find(item => item.locale === activeLocale) ?? { locale: activeLocale, name: "", description: "" };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setSubjectData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "sourceLocale") {
+      setSubjectData(prev => ({ ...prev, sourceLocale: value }));
+      return;
+    }
+    setSubjectData(prev => {
+      const translations = prev.translations.map(item => item.locale === activeLocale ? { ...item, [name]: value } : item);
+      if (!translations.some(item => item.locale === activeLocale)) translations.push({ locale: activeLocale, name: "", description: "", [name]: value });
+      return { ...prev, translations, ...(prev.sourceLocale === activeLocale ? { [name]: value } : {}) };
+    });
   };
 
   return (
@@ -71,7 +77,7 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
           </button>
         </div>
         
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} noValidate className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar">
+        <form ref={formRef} onSubmit={onSubmit} noValidate className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar">
           {success ? (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 animate-in zoom-in">
               <div className="w-20 h-20 bg-emerald-500/15 text-emerald-400 rounded-full flex items-center justify-center border border-emerald-500/30">
@@ -84,14 +90,23 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
             </div>
           ) : (
             <div className="space-y-6">
+              <label className="block text-xs font-bold text-slate-300">Kaynak dil
+                <select name="sourceLocale" value={subjectData.sourceLocale} onChange={handleChange} required className="mt-2 w-full rounded-xl bg-slate-800 border border-slate-700 p-3 text-white">
+                  <option value="">Kaynak dili seçin</option><option value="tr-TR">Türkçe</option><option value="en-US">English</option>
+                </select>
+              </label>
+              <div className="flex gap-2" role="tablist" aria-label="İçerik dili">
+                {[{ locale: "tr-TR", label: "Türkçe" }, { locale: "en-US", label: "English" }].map(item => {
+                  const filled = subjectData.translations.find(value => value.locale === item.locale)?.name.trim();
+                  return <button key={item.locale} type="button" role="tab" aria-selected={activeLocale === item.locale} onClick={() => setActiveLocale(item.locale)} className={`rounded-lg px-3 py-2 text-xs font-bold ${activeLocale === item.locale ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-300"}`}>{item.label}{filled ? "" : " · Eksik"}</button>;
+                })}
+              </div>
               <FormField
                 name="name"
                 label="Konu Başlığı"
-                value={subjectData.name}
+                value={activeTranslation.name}
                 onChange={handleChange}
-                onBlur={register("name").onBlur}
-                error={register("name").error}
-                required
+                required={activeLocale === subjectData.sourceLocale}
                 icon={<MessageSquare size={12} />}
                 placeholder="Örn: Teknik Sorun, Fatura İtirazı..."
               />
@@ -101,11 +116,9 @@ export const SubjectModal: React.FC<SubjectModalProps> = ({
                 name="description"
                 label="Açıklama"
                 rows={4}
-                value={subjectData.description}
+                value={activeTranslation.description}
                 onChange={handleChange}
-                onBlur={register("description").onBlur}
-                error={register("description").error}
-                required
+                required={activeLocale === subjectData.sourceLocale}
                 icon={<Info size={12} />}
                 placeholder="Bu kategori hangi tür talepleri kapsıyor?"
               />

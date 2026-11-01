@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import type { RequestSubjectTranslation } from "@/services/admin/AdminRequestSubjectService";
 
 export interface LookupItem {
   id: string;
@@ -14,6 +15,8 @@ export interface Project {
   companyCount: number;
   userCount: number;
   moduleIds: string[];
+  sourceLocale?: string | null;
+  translations?: RequestSubjectTranslation[];
 }
 
 export interface PaginatedResult<T> {
@@ -53,15 +56,15 @@ export const AdminProjectService = {
     };
   },
 
-  create: async (name: string, description: string, isActive: boolean = true, userIds: string[] = [], moduleIds: string[] = []): Promise<boolean> => {
-    const response = await api.post("/api/admin/projects/add-project", { name, description, isActive, userIds, moduleIds });
+  create: async (name: string, description: string, isActive: boolean = true, userIds: string[] = [], moduleIds: string[] = [], sourceLocale?: string, translations?: RequestSubjectTranslation[]): Promise<boolean> => {
+    const response = await api.post("/api/admin/projects/add-project", { name, description, isActive, userIds, moduleIds, sourceLocale, translations });
     return response.data;
   },
 
   // Note: Id is resolved on the server side from the publicId route parameter (see AdminProjectsController.Update);
   // there is no need to send the raw numeric id in the body.
-  update: async (publicId: string, name: string, description: string, isActive: boolean, userIds: string[] = [], moduleIds: string[] = []): Promise<boolean> => {
-    const response = await api.put(`/api/admin/projects/${publicId}`, { name, description, isActive, userIds, moduleIds });
+  update: async (publicId: string, name: string, description: string, isActive: boolean, userIds: string[] = [], moduleIds: string[] = [], sourceLocale?: string, translations?: RequestSubjectTranslation[]): Promise<boolean> => {
+    const response = await api.put(`/api/admin/projects/${publicId}`, { name, description, isActive, userIds, moduleIds, sourceLocale, translations });
     return response.data;
   },
 
