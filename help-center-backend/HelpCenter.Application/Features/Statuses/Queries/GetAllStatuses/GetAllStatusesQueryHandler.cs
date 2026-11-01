@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-using AutoMapper;
 using HelpCenter.Application.Common.Models;
 using HelpCenter.Application.Interfaces;
 using HelpCenter.Domain.Entities;
@@ -10,36 +8,46 @@ namespace HelpCenter.Application.Features.Statuses.Queries.GetAllStatuses;
 public class GetAllStatusesQueryHandler : IRequestHandler<GetAllStatusesQuery, PaginatedResponse<StatusDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public GetAllStatusesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetAllStatusesQueryHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<PaginatedResponse<StatusDto>> Handle(GetAllStatusesQuery request, CancellationToken cancellationToken)
     {
-        var search = request.Search?.Trim().ToLower();
+        var statuses = await _unitOfWork.Repository<CustomerRequestStatus>()
+            .FindAsync(_ => true, cancellationToken);
+        var search = request.Search?.Trim();
+        var localized = statuses
+            .Select(status =>
+            {
+                var text = StatusTextLocalizer.Localize(status.Id, status.Name, status.Description, request.Locale);
+                return new StatusDto
+                {
+                    Id = status.Id,
+                    Name = text.Name,
+                    Description = text.Description,
+                    IsActive = status.IsActive
+                };
+            })
+            .Where(status => string.IsNullOrWhiteSpace(search)
+                || status.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(status => status.Id)
+            .ToList();
 
-        Expression<Func<CustomerRequestStatus, bool>> predicate = x =>
-            string.IsNullOrWhiteSpace(search) || x.Name.ToLower().Contains(search);
-
-        var paginatedEntities = await _unitOfWork.Repository<CustomerRequestStatus>().GetPaginatedAsync(
-            predicate,
-            request.PageNumber,
-            request.PageSize,
-            cancellationToken: cancellationToken);
-
-        var dtoItems = _mapper.Map<List<StatusDto>>(paginatedEntities.Items);
+        var pageNumber = Math.Max(1, request.PageNumber);
+        var pageSize = request.PageSize <= 0 ? Math.Max(localized.Count, 1) : request.PageSize;
+        var totalCount = localized.Count;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
         return new PaginatedResponse<StatusDto>
         {
-            Items = dtoItems,
-            TotalCount = paginatedEntities.TotalCount,
-            TotalPages = paginatedEntities.TotalPages,
-            CurrentPage = paginatedEntities.CurrentPage,
-            PageSize = paginatedEntities.PageSize
+            Items = localized.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList(),
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            CurrentPage = pageNumber,
+            PageSize = pageSize
         };
     }
 }

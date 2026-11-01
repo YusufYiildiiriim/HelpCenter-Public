@@ -24,6 +24,9 @@ public class AdminStatusController : ControllerBase
     [HasPermission(AppResources.Statuses, PermissionActions.Read)]
     public async Task<IActionResult> GetAll([FromQuery] GetAllStatusesQuery query)
     {
+        var rawLocale = Request.Headers.AcceptLanguage.ToString().Split(',')[0].Split(';')[0];
+        query.Locale = HelpCenter.Domain.Common.SupportedLocales.Normalize(rawLocale)
+            ?? HelpCenter.Domain.Common.SupportedLocales.Default;
         var result = await _mediator.Send(query);
         return Ok(result);
     }
