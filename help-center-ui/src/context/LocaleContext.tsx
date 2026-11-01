@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { usePathname, useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { getAccessToken } from "@/lib/authSession";
-import { DEFAULT_LOCALE, localeFromPreference, localeFromPath, localePath, messages, type Locale, type MessageKey } from "@/lib/i18n";
+import { DEFAULT_LOCALE, localeFromPreference, localeFromPath, messages, type Locale, type MessageKey } from "@/lib/i18n";
+import { localizedRoute } from "@/lib/localeRoutes";
 
 interface LocaleContextValue {
   locale: Locale;
@@ -72,9 +73,9 @@ export function LocaleProvider({ initialLocale, children }: { initialLocale: Loc
     updateLocale(nextLocale);
     const pathLocale = localeFromPath(pathname.split("/")[1]);
     if (pathLocale) {
-      const segments = pathname.split("/");
-      segments[1] = localePath(nextLocale);
-      router.push(segments.join("/") || "/" + localePath(nextLocale));
+      const query = typeof window === "undefined" ? "" : window.location.search;
+      const hash = typeof window === "undefined" ? "" : window.location.hash;
+      router.push(localizedRoute(pathname, nextLocale, query, hash));
     }
 
     if (typeof window !== "undefined" && getAccessToken() !== null) {
