@@ -4,6 +4,8 @@ public class Module : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? SourceLocale { get; set; }
+    public virtual ICollection<ModuleTranslation> Translations { get; set; } = new HashSet<ModuleTranslation>();
     public bool IsLocked { get; set; } = false;
     public virtual ICollection<CompanyModule> CompanyModules { get; set; } = new HashSet<CompanyModule>();
     public virtual ICollection<ModuleExpert> ModuleExperts { get; set; } = new HashSet<ModuleExpert>();

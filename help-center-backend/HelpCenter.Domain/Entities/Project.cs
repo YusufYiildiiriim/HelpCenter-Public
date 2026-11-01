@@ -4,6 +4,8 @@ public class Project : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? SourceLocale { get; set; }
+    public virtual ICollection<ProjectTranslation> Translations { get; set; } = new HashSet<ProjectTranslation>();
     public virtual ICollection<Company> Companies { get; set; } = new HashSet<Company>();
     public virtual ICollection<UserProject> UserProjects { get; set; } = new HashSet<UserProject>();
     public virtual ICollection<ProjectModule> ProjectModules { get; set; } = new HashSet<ProjectModule>();

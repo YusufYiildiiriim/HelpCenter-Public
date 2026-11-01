@@ -29,6 +29,9 @@ public class EfContext : DbContext
     public DbSet<Guide> Guides { get; set; } = default!;
     public DbSet<FAQ> FAQs { get; set; } = default!;
     public DbSet<FAQTranslation> FAQTranslations { get; set; } = default!;
+    public DbSet<ProjectTranslation> ProjectTranslations { get; set; } = default!;
+    public DbSet<ModuleTranslation> ModuleTranslations { get; set; } = default!;
+    public DbSet<RequestSubjectTranslation> RequestSubjectTranslations { get; set; } = default!;
     public DbSet<GuideTranslation> GuideTranslations { get; set; } = default!;
     public DbSet<GuideTranslationDocument> GuideTranslationDocuments { get; set; } = default!;
     public DbSet<RequestSubject> RequestSubjects { get; set; } = default!;
@@ -123,6 +126,30 @@ public class EfContext : DbContext
 
         modelBuilder.Entity<FAQ>().Property(x => x.SourceLocale).HasMaxLength(16);
         modelBuilder.Entity<Guide>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<Project>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<Domain.Entities.Module>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<RequestSubject>().Property(x => x.SourceLocale).HasMaxLength(16);
+        modelBuilder.Entity<ProjectTranslation>(entity =>
+        {
+            entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(500).IsRequired();
+            entity.HasIndex(x => new { x.ProjectId, x.Locale }).IsUnique();
+            entity.HasOne(x => x.Project).WithMany(x => x.Translations).HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<ModuleTranslation>(entity =>
+        {
+            entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(500).IsRequired();
+            entity.HasIndex(x => new { x.ModuleId, x.Locale }).IsUnique();
+            entity.HasOne(x => x.Module).WithMany(x => x.Translations).HasForeignKey(x => x.ModuleId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<RequestSubjectTranslation>(entity =>
+        {
+            entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(500).IsRequired();
+            entity.HasIndex(x => new { x.RequestSubjectId, x.Locale }).IsUnique();
+            entity.HasOne(x => x.RequestSubject).WithMany(x => x.Translations).HasForeignKey(x => x.RequestSubjectId).OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<FAQTranslation>(entity =>
         {
             entity.Property(x => x.Locale).HasMaxLength(16).IsRequired();
@@ -282,6 +309,7 @@ public class EfContext : DbContext
 
         base.OnModelCreating(modelBuilder);
     }
+
 
     public override int SaveChanges() => SaveChanges(acceptAllChangesOnSuccess: true);
 

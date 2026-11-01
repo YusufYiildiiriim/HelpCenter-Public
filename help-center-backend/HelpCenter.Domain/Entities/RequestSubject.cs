@@ -4,6 +4,8 @@ namespace HelpCenter.Domain.Entities
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string? SourceLocale { get; set; }
+        public virtual ICollection<RequestSubjectTranslation> Translations { get; set; } = new HashSet<RequestSubjectTranslation>();
         public bool IsLocked { get; set; } = false;
 
         public Guid? ModuleId { get; set; }
