@@ -75,6 +75,8 @@ export const messages = {
     downloadFile: "Dosyayı indir", step: "Adım", chainedGuide: "Zincirli rehber", standaloneGuide: "Bağımsız rehber",
     generalCategory: "Genel", expandAll: "Tümünü aç", collapseAll: "Tümünü kapat", orderedGuideSteps: "Sıralı rehber adımları", openGuideStep: "rehber adımını aç", stepPath: "Adım yolu",
     collapseSubsteps: "alt adımlarını daralt", showSubsteps: "alt adımlarını göster", documents: "belge", stepProgress: "Adım {current} / {total}",
+    allModulesWithCount: "Tüm Modüller ({count})", moduleLabel: "Modül:", guideItem: "kılavuz", faqItem: "SSS", openFaqDetails: "SSS detayını aç",
+    noGuideMatchesModule: "\"{module}\" modülü için arama kriterine uygun kılavuz bulunamadı.", noFlowForSelection: "Bu modül veya proje için zihin haritası süreç adımları henüz tanımlanmamış.",
   },
   "en-US": {
     dateLabel: "Date", messageSingular: "message", messagePlural: "messages", fileSingular: "file", filePlural: "files", viewDetails: "View details",
@@ -141,6 +143,8 @@ export const messages = {
     downloadFile: "Download file", step: "Step", chainedGuide: "Guide in a sequence", standaloneGuide: "Standalone guide",
     generalCategory: "General", expandAll: "Expand all", collapseAll: "Collapse all", orderedGuideSteps: "Ordered guide steps", openGuideStep: "Open guide step", stepPath: "Step path",
     collapseSubsteps: "Collapse substeps", showSubsteps: "Show substeps", documents: "documents", stepProgress: "Step {current} of {total}",
+    allModulesWithCount: "All modules ({count})", moduleLabel: "Module:", guideItem: "guide", faqItem: "FAQ", openFaqDetails: "Open FAQ details",
+    noGuideMatchesModule: "No guides match the search for the \"{module}\" module.", noFlowForSelection: "No workflow steps have been defined for this module or project yet.",
   },
 } as const;
 

@@ -220,7 +220,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                     title={t("noGuides")}
                     hint={
                       selectedModule
-                        ? `"${selectedModule}" modülü için arama kriterine uygun kılavuz bulunamadı.`
+                        ? t("noGuideMatchesModule").replace("{module}", selectedModule)
                         : t("noGuideForProject")
                     }
                   />
@@ -235,7 +235,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                 pageSize={guidesPagination.pageSize}
                 onPageChange={onGuidesPageChange}
                 onPageSizeChange={onGuidesPageSizeChange}
-                itemsLabel={locale === "tr-TR" ? "kılavuz" : "guide"}
+                itemsLabel={t("guideItem")}
                 containerClassName={cn(PAGINATION_CONTAINER_CLASS, contentLoading && "opacity-60 pointer-events-none")}
               />
             )}
@@ -252,7 +252,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                         type="button"
                         key={faq.publicId}
                         onClick={() => onSelectFaq(faq)}
-                        aria-label={`${faq.title} SSS detayını aç`}
+                        aria-label={`${faq.title} ${t("openFaqDetails")}`}
                         className="w-full p-4 text-left rounded-2xl bg-obsidian-850/80 border border-slate-800 hover:border-purple-500/40 transition-all duration-200 group flex flex-col justify-between min-h-[140px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-900"
                       >
                         <div>
@@ -307,7 +307,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                 pageSize={faqsPagination.pageSize}
                 onPageChange={onFaqsPageChange}
                 onPageSizeChange={onFaqsPageSizeChange}
-                itemsLabel={locale === "tr-TR" ? "SSS" : "FAQ"}
+                itemsLabel={t("faqItem")}
                 containerClassName={cn(PAGINATION_CONTAINER_CLASS, contentLoading && "opacity-60 pointer-events-none")}
               />
             )}
@@ -326,7 +326,7 @@ export const SupportTabs: React.FC<SupportTabsProps> = ({
                 ) : (
                   <EmptyBlock
                     title={t("noFlow")}
-                    hint="Bu modül veya proje için zihin haritası süreç adımları henüz tanımlanmamış."
+                    hint={t("noFlowForSelection")}
                   />
                 )}
               </div>

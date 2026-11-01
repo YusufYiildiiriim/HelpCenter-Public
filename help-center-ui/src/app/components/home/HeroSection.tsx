@@ -45,7 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   setSortBy,
   placeholder,
 }) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ⌘K / Ctrl+K keyboard shortcut → focus search
@@ -76,10 +76,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
   const moduleOptions: PortalSelectOption<string>[] = useMemo(() => {
     return [
-      { value: "", label: `Tüm Modüller (${modules.length})` },
+      { value: "", label: t("allModulesWithCount").replace("{count}", new Intl.NumberFormat(locale).format(modules.length)) },
       ...modules.map((m) => ({ value: m.name, label: m.name })),
     ];
-  }, [modules, t]);
+  }, [modules, t, locale]);
 
   const sortOptions: PortalSelectOption<"newest" | "az" | "za">[] = [
     { value: "newest", label: t("newestUpdated") },
@@ -269,7 +269,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {modules && modules.length > 0 && setSelectedModule && (
             <div className="flex items-center justify-start lg:justify-center">
               <PortalSelect
-                label="Modül:"
+                label={t("moduleLabel")}
                 icon={<Layers size={14} className="text-purple-400" />}
                 value={selectedModule}
                 onChange={setSelectedModule}
