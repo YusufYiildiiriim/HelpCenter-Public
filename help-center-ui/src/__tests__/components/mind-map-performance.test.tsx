@@ -1,10 +1,12 @@
 import React from 'react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MindMapFlow } from '@/app/components/home/MindMapFlow';
+import { LocaleProvider } from '@/context/LocaleContext';
 import type { PublicGuide } from '@/services/public/PublicGuideService';
 
 const renders = vi.hoisted(() => ({ nodes: 0, paths: 0 }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/tr', useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
   motion: {
@@ -25,6 +27,10 @@ const guides: PublicGuide[] = Array.from({ length: 100 }, (_, i) => ({
   publicId: `60000000-0000-4000-8000-${String(i + 1).padStart(12, "0")}`, title: `Guide ${i}`, description: '', module: 'Module',
   previousGuidePublicId: i === 0 ? null : `60000000-0000-4000-8000-${String(Math.floor((i - 1) / 3) + 1).padStart(12, "0")}`,
 }));
+
+const render = (ui: React.ReactNode) => rtlRender(ui, {
+  wrapper: ({ children }) => <LocaleProvider initialLocale="tr-TR">{children}</LocaleProvider>,
+});
 
 describe('MindMap interaction performance and graph invalidation', () => {
   beforeEach(() => { renders.nodes = 0; renders.paths = 0; });
@@ -115,7 +121,7 @@ describe('MindMap interaction performance and graph invalidation', () => {
     const select = vi.fn();
     render(<MindMapFlow guides={chain} onSelectGuide={select} />);
     fireEvent.click(screen.getByRole('button', { name: 'Sıralı Akış' }));
-    const last = screen.getByRole('button', { name: 'Adım 8: Guide 7 rehberini aç' });
+    const last = screen.getByRole('button', { name: 'Adım 8: Guide 7 rehber adımını aç' });
     expect(last.closest('li')).toHaveStyle({ marginLeft: '24px' });
     expect(screen.getByText('… → 6 → 7 → 8')).toBeInTheDocument();
     fireEvent.click(last);

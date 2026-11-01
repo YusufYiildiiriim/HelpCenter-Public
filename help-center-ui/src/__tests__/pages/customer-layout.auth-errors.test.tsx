@@ -1,12 +1,18 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { act, cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Layout from '@/app/dashboard/[companyId]/layout';
+import { LocaleProvider } from '@/context/LocaleContext';
 
 const mocks = vi.hoisted(() => ({ verify: vi.fn(), logout: vi.fn(), replace: vi.fn() }));
 const router = { replace: mocks.replace };
 vi.mock('next/navigation', () => ({ usePathname: () => '/dashboard/test', useRouter: () => router }));
 vi.mock('@/services/common/AuthService', () => ({ AuthService: { verify: mocks.verify, logout: mocks.logout } }));
 vi.mock('@/components/auth/PasswordChangeModal', () => ({ default: () => null }));
+
+const render = (ui: ReactNode) => rtlRender(ui, {
+  wrapper: ({ children }) => <LocaleProvider initialLocale="tr-TR">{children}</LocaleProvider>,
+});
 
 describe('customer verification failures', () => {
   beforeEach(() => { vi.resetAllMocks(); vi.spyOn(console, 'error').mockImplementation(() => {}); });
